@@ -28,7 +28,7 @@ Plan de implementación siguiendo metodología **TDD (Test-Driven Development)**
   - Crear `nginx.conf` para frontend en producción
   - _Requirements: Setup, DevOps_
 
-- [ ] 2. Configurar proyecto NestJS con TypeScript estricto
+- [x] 2. Configurar proyecto NestJS con TypeScript estricto
   - Crear proyecto NestJS con `nest new backend`
   - Configurar `tsconfig.json` con `strict: true`, `noImplicitAny: true`
   - Instalar dependencias: `typeorm`, `pg`, `class-validator`, `class-transformer`, `fast-check`
@@ -422,12 +422,145 @@ Plan de implementación siguiendo metodología **TDD (Test-Driven Development)**
   - Documentar comandos de despliegue en README.md
   - _Requirements: DevOps_
 
-- [ ] 34. Checkpoint Final
+- [ ] 34. Checkpoint Final Pre-CI/CD
   - Ejecutar suite completa de tests: `docker-compose exec backend npm test`
   - Ejecutar tests E2E: `docker-compose --profile test exec backend npm run test:e2e`
   - Verificar cobertura total > 80%
   - Verificar que todos los property tests pasan con 100 iteraciones
   - Verificar que imágenes de producción construyen correctamente
+  - Ensure all tests pass, ask the user if questions arise.
+
+---
+
+### Fase 10: CI/CD Pipeline y Pruebas Automatizadas
+
+- [ ] 35. Configurar GitHub Actions CI Pipeline
+  - [ ] 35.1 Crear workflow `.github/workflows/ci.yml`
+    - Trigger en push a `develop` y `main`
+    - Trigger en pull requests a `develop` y `main`
+    - Configurar matriz de Node.js versiones (18.x, 20.x)
+    - _Requirements: DevOps, CI/CD_
+  - [ ] 35.2 Configurar job de Build/Compilación
+    - Checkout del código
+    - Setup Node.js con cache de npm
+    - Instalar dependencias: `npm ci`
+    - Compilar TypeScript: `npm run build`
+    - Verificar que no hay errores de compilación
+    - _Requirements: DevOps, CI/CD_
+  - [ ] 35.3 Configurar job de Tests Unitarios
+    - Ejecutar tests unitarios: `npm run test`
+    - Generar reporte de cobertura
+    - Fallar si cobertura < 80%
+    - Subir artefactos de cobertura
+    - _Requirements: DevOps, CI/CD_
+  - [ ] 35.4 Configurar job de Tests de Propiedades
+    - Ejecutar property tests: `npm run test:property`
+    - Verificar que todos los property tests pasan con 100 iteraciones
+    - _Requirements: DevOps, CI/CD_
+
+- [ ] 36. Configurar Linting y Análisis de Código
+  - [ ] 36.1 Configurar ESLint estricto
+    - Crear `.eslintrc.js` con reglas estrictas
+    - Configurar reglas: `@typescript-eslint/strict`, `no-explicit-any`, `no-unused-vars`
+    - Agregar script `npm run lint`
+    - _Requirements: DevOps, CI/CD_
+  - [ ] 36.2 Configurar Prettier
+    - Crear `.prettierrc` con configuración consistente
+    - Agregar script `npm run format:check`
+    - _Requirements: DevOps, CI/CD_
+  - [ ] 36.3 (Opcional) Integrar SonarCloud
+    - Crear `sonar-project.properties`
+    - Configurar token de SonarCloud en GitHub Secrets
+    - Agregar step de análisis en CI pipeline
+    - Configurar quality gates
+    - _Requirements: DevOps, CI/CD_
+
+- [ ] 37. Implementar Pruebas Automatizadas de API (Criterios de Aceptación)
+  - [ ] 37.1 Configurar framework de pruebas de API
+    - Instalar `supertest` y `@nestjs/testing`
+    - Crear estructura `test/api/` para pruebas de endpoints
+    - Configurar base de datos de prueba en CI
+    - _Requirements: DevOps, QA_
+  - [ ] 37.2 Prueba API #1: Crear Evento (POST /events)
+    - Verificar criterio 1.1: Crear evento retorna ID único
+    - Verificar criterio 1.2: Configuración de tickets se almacena correctamente
+    - Verificar respuesta 201 Created con estructura correcta
+    - Verificar error 400 con datos inválidos
+    - _Requirements: 1.1, 1.2, QA_
+  - [ ] 37.3 Prueba API #2: Crear Reserva (POST /reservations)
+    - Verificar criterio 3.1: Reserva se crea con estado ACTIVE
+    - Verificar criterio 3.2: Disponibilidad se decrementa
+    - Verificar criterio 3.4: Retorna ID único de reserva
+    - Verificar error 409 cuando no hay disponibilidad
+    - _Requirements: 3.1, 3.2, 3.4, 3.5, QA_
+  - [ ] 37.4 Prueba API #3: Procesar Pago (POST /reservations/:id/payment)
+    - Verificar criterio 4.2: Pago exitoso actualiza estado a COMPLETED
+    - Verificar criterio 4.3: Reserva cambia a CONFIRMED
+    - Verificar criterio 4.4: Tickets se generan con datos correctos
+    - Verificar criterio 5.1: Pago fallido cancela reserva y libera tickets
+    - _Requirements: 4.2, 4.3, 4.4, 5.1, QA_
+  - [ ] 37.5 Prueba API #4: Consultar Tickets (GET /tickets)
+    - Verificar criterio 6.1: Retorna tickets confirmados del comprador
+    - Verificar criterio 6.2: Cada ticket incluye código, evento, tipo, fecha
+    - Verificar criterio 6.3: Lista vacía sin error si no tiene tickets
+    - _Requirements: 6.1, 6.2, 6.3, QA_
+
+- [ ] 38. Implementar Pruebas de UI con Playwright + Screenplay Pattern
+  - [ ] 38.1 Configurar Playwright con patrón Screenplay
+    - Instalar `@playwright/test`
+    - Crear estructura `test/ui/` con patrón Screenplay
+    - Crear actores: `Buyer`, `Organizer`
+    - Crear tareas: `CreateEvent`, `SelectTickets`, `CompletePayment`
+    - Crear preguntas: `TicketAvailability`, `ReservationStatus`
+    - _Requirements: DevOps, QA_
+  - [ ] 38.2 Prueba UI #1: Flujo de compra completo
+    - Actor: Buyer
+    - Tarea: Seleccionar evento → Elegir tickets VIP → Completar pago
+    - Verificar: Tickets aparecen en "Mis Tickets"
+    - Verificar criterios: 2.2, 3.1, 4.4, 6.1
+    - _Requirements: 2.2, 3.1, 4.4, 6.1, QA_
+  - [ ] 38.3 Prueba UI #2: Validación de disponibilidad
+    - Actor: Buyer
+    - Tarea: Intentar comprar más tickets de los disponibles
+    - Verificar: Mensaje de error "No hay suficientes entradas"
+    - Verificar criterios: 2.5, 3.5
+    - _Requirements: 2.5, 3.5, QA_
+  - [ ] 38.4 Prueba UI #3: Expiración de reserva
+    - Actor: Buyer
+    - Tarea: Crear reserva → Esperar 15 minutos → Verificar expiración
+    - Verificar: Tickets vuelven a estar disponibles
+    - Verificar criterios: 3.3, 5.2
+    - _Requirements: 3.3, 5.2, QA_
+
+- [ ] 39. Configurar Pipeline Completo en GitHub Actions
+  - [ ] 39.1 Crear workflow completo `.github/workflows/ci.yml`
+    ```yaml
+    # Estructura del pipeline:
+    # 1. Build & Lint (paralelo)
+    # 2. Unit Tests + Property Tests (paralelo)
+    # 3. API Tests (secuencial, requiere DB)
+    # 4. UI Tests (secuencial, requiere servicios)
+    # 5. SonarCloud Analysis (opcional)
+    # 6. Build Docker Images (solo en main)
+    ```
+    - _Requirements: DevOps, CI/CD_
+  - [ ] 39.2 Configurar servicios de CI (PostgreSQL)
+    - Usar `services` de GitHub Actions para PostgreSQL
+    - Configurar variables de entorno para tests
+    - _Requirements: DevOps, CI/CD_
+  - [ ] 39.3 Configurar artefactos y reportes
+    - Subir reportes de cobertura como artefactos
+    - Subir reportes de Playwright como artefactos
+    - Configurar badges de estado en README
+    - _Requirements: DevOps, CI/CD_
+
+- [ ] 40. Checkpoint Final CI/CD
+  - Verificar que pipeline corre en push a develop y main
+  - Verificar que build/compilación pasa sin errores
+  - Verificar que tests unitarios pasan con cobertura > 80%
+  - Verificar que las 4 pruebas de API pasan
+  - Verificar que las 3 pruebas de UI pasan
+  - Verificar integración con SonarCloud (si aplica)
   - Ensure all tests pass, ask the user if questions arise.
 
 ---
@@ -440,9 +573,84 @@ Plan de implementación siguiendo metodología **TDD (Test-Driven Development)**
 - Property tests usan fast-check con mínimo 100 iteraciones
 - Tipado estricto: no usar `any` en ningún momento
 - **Docker**: Usar `docker-compose up -d` para desarrollo, `docker-compose --profile test` para tests
+- **CI/CD**: Pipeline se ejecuta en cada push a `develop` o `main`
+- **Pruebas Automatizadas**: 4 pruebas de API + 3 pruebas de UI verifican criterios de aceptación
 - **Comandos útiles**:
   - `docker-compose up -d` - Iniciar entorno de desarrollo
   - `docker-compose exec backend npm test` - Ejecutar tests
   - `docker-compose exec backend npm run migration:run` - Ejecutar migraciones
   - `docker-compose logs -f backend` - Ver logs del backend
   - `docker-compose down -v` - Detener y limpiar volúmenes
+  - `npm run lint` - Ejecutar linter
+  - `npm run test:api` - Ejecutar pruebas de API
+  - `npm run test:ui` - Ejecutar pruebas de UI con Playwright
+
+## CI/CD Pipeline Structure
+
+```mermaid
+flowchart TD
+    subgraph Trigger["🔔 Triggers"]
+        PUSH[Push to develop/main]
+        PR[Pull Request]
+    end
+    
+    subgraph Build["🔨 Build Stage"]
+        CHECKOUT[Checkout Code]
+        INSTALL[npm ci]
+        COMPILE[npm run build]
+        LINT[npm run lint]
+    end
+    
+    subgraph Test["🧪 Test Stage"]
+        UNIT[Unit Tests]
+        PROPERTY[Property Tests]
+        COVERAGE[Coverage > 80%]
+    end
+    
+    subgraph Integration["🔗 Integration Stage"]
+        API1[API Test: Create Event]
+        API2[API Test: Create Reservation]
+        API3[API Test: Process Payment]
+        API4[API Test: Get Tickets]
+    end
+    
+    subgraph UI["🖥️ UI Stage"]
+        UI1[UI Test: Purchase Flow]
+        UI2[UI Test: Availability]
+        UI3[UI Test: Expiration]
+    end
+    
+    subgraph Analysis["📊 Analysis Stage"]
+        SONAR[SonarCloud]
+        REPORT[Generate Reports]
+    end
+    
+    subgraph Deploy["🚀 Deploy Stage"]
+        DOCKER[Build Docker Images]
+        PUSH_IMG[Push to Registry]
+    end
+    
+    PUSH --> CHECKOUT
+    PR --> CHECKOUT
+    CHECKOUT --> INSTALL
+    INSTALL --> COMPILE
+    INSTALL --> LINT
+    COMPILE --> UNIT
+    COMPILE --> PROPERTY
+    UNIT --> COVERAGE
+    PROPERTY --> COVERAGE
+    COVERAGE --> API1
+    COVERAGE --> API2
+    COVERAGE --> API3
+    COVERAGE --> API4
+    API1 --> UI1
+    API2 --> UI2
+    API3 --> UI3
+    API4 --> UI1
+    UI1 --> SONAR
+    UI2 --> SONAR
+    UI3 --> SONAR
+    SONAR --> REPORT
+    REPORT --> DOCKER
+    DOCKER --> PUSH_IMG
+```
