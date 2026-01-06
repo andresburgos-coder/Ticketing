@@ -37,7 +37,7 @@ Plan de implementación siguiendo metodología **TDD (Test-Driven Development)**
   - Configurar variables de entorno para Docker
   - _Requirements: Setup_
 
-- [ ] 3. Configurar base de datos PostgreSQL con Docker
+- [x] 3. Configurar base de datos PostgreSQL con Docker
   - Verificar que contenedor postgres inicia correctamente: `docker-compose up postgres`
   - Crear archivo `typeorm.config.ts` con configuración de conexión usando variables de entorno
   - Crear migraciones para tablas: `events`, `ticket_configurations`, `reservations`, `tickets`, `payments`
@@ -45,7 +45,7 @@ Plan de implementación siguiendo metodología **TDD (Test-Driven Development)**
   - Verificar esquema de base de datos
   - _Requirements: 8.1, 8.2_
 
-- [ ] 4. Verificar entorno Docker completo
+- [x] 4. Verificar entorno Docker completo
   - Ejecutar `docker-compose up -d` y verificar que todos los servicios inician
   - Verificar conectividad entre backend y postgres
   - Verificar que hot-reload funciona en desarrollo
@@ -58,11 +58,12 @@ Plan de implementación siguiendo metodología **TDD (Test-Driven Development)**
 ### Fase 2: Value Objects (TDD)
 
 - [ ] 3. Implementar Value Object `Money` con TDD
-  - [ ] 3.1 🔴 Escribir tests unitarios para `Money` (creación, add, multiply, equals)
+  - [x] 3.1 🔴 Escribir tests unitarios para `Money` (creación, add, multiply, equals)
     - Test: crear Money con amount válido debe funcionar
     - Test: crear Money con amount negativo debe lanzar excepción
     - Test: add de dos Money con misma moneda debe sumar correctamente
     - Test: multiply debe calcular correctamente
+    - Commit: crear commit y push
     - _Requirements: 2.3, 7.2_
   - [ ] 3.2 🟢 Implementar clase `Money` para pasar los tests
     - Implementar constructor privado con validación
@@ -371,19 +372,104 @@ Plan de implementación siguiendo metodología **TDD (Test-Driven Development)**
 
 ---
 
-### Fase 8: Jobs y Eventos de Dominio
+### Fase 8: Autenticación y Usuarios (TDD)
 
-- [ ] 29. Implementar job de expiración de reservas con TDD
-  - [ ] 29.1 🔴 Escribir tests para ReservationExpirationJob
+- [ ] 29. Implementar entidad `User` con TDD
+  - [ ] 29.1 🔴 Escribir tests unitarios para `User`
+    - Test: crear User con datos válidos
+    - Test: hashear password correctamente
+    - Test: verificar password correcto retorna true
+    - Test: verificar password incorrecto retorna false
+    - _Requirements: 9.1, 9.2_
+  - [ ] 29.2 🟢 Implementar clase `User` para pasar los tests
+    - Implementar constructor con validación
+    - Implementar métodos `hashPassword()`, `verifyPassword()`
+    - Usar bcrypt para hashing
+    - _Requirements: 9.1, 9.2_
+
+- [ ] 30. Implementar `AuthService` con TDD
+  - [ ] 30.1 🔴 Escribir tests para AuthService
+    - Test: register crea usuario y retorna tokens
+    - Test: login con credenciales válidas retorna tokens
+    - Test: login con credenciales inválidas lanza excepción
+    - Test: refreshToken genera nuevo accessToken
+    - _Requirements: 9.1, 9.2, 9.3_
+  - [ ] 30.2 🟢 Implementar `AuthService` para pasar los tests
+    - Inyectar IUserRepository, JwtService
+    - Implementar métodos register, login, refreshToken
+    - Generar JWT con payload correcto
+    - _Requirements: 9.1, 9.2, 9.3_
+  - [ ] 30.3 🔵 Escribir property test para JWT
+    - **Property 13: JWT Token Validity**
+    - **Validates: Requirements 9.2, 9.3**
+
+- [ ] 31. Implementar `AuthController` con TDD
+  - [ ] 31.1 🔴 Escribir tests de integración para AuthController
+    - Test: POST /auth/register crea usuario y retorna 201
+    - Test: POST /auth/login retorna tokens con 200
+    - Test: POST /auth/login retorna 401 con credenciales inválidas
+    - Test: POST /auth/refresh retorna nuevo token
+    - _Requirements: 9.1, 9.2, 9.3, 9.4_
+  - [ ] 31.2 🟢 Implementar `AuthController` para pasar los tests
+    - Crear DTOs: LoginDto, RegisterDto, RefreshTokenDto
+    - Implementar endpoints REST
+    - _Requirements: 9.1, 9.2, 9.3, 9.4_
+
+- [ ] 32. Implementar Guards de Autenticación
+  - [ ] 32.1 Crear JwtAuthGuard
+    - Validar token JWT en header Authorization
+    - Extraer usuario del token y agregarlo a request
+    - _Requirements: 9.2_
+  - [ ] 32.2 Crear RoleGuard
+    - Verificar que usuario tiene rol requerido
+    - Retornar 403 si no tiene permisos
+    - _Requirements: 11.4_
+
+- [ ] 33. Implementar `ProfileController` con TDD
+  - [ ] 33.1 🔴 Escribir tests para ProfileController
+    - Test: GET /profile retorna datos del usuario autenticado
+    - Test: PUT /profile actualiza datos
+    - Test: PUT /profile/password cambia contraseña
+    - Test: GET /profile/purchases retorna historial
+    - _Requirements: 10.1, 10.2, 10.3, 10.4_
+  - [ ] 33.2 🟢 Implementar `ProfileController` para pasar los tests
+    - Crear DTOs: UpdateProfileDto, ChangePasswordDto
+    - Implementar endpoints protegidos con JwtAuthGuard
+    - _Requirements: 10.1, 10.2, 10.3, 10.4_
+
+- [ ] 34. Implementar `OrganizerController` con TDD
+  - [ ] 34.1 🔴 Escribir tests para OrganizerController
+    - Test: GET /organizer/events retorna eventos del organizador
+    - Test: POST /organizer/events crea evento (solo ORGANIZER)
+    - Test: GET /organizer/events/:id/stats retorna estadísticas
+    - Test: POST /organizer/events retorna 403 para BUYER
+    - _Requirements: 11.1, 11.2, 11.3, 11.4_
+  - [ ] 34.2 🟢 Implementar `OrganizerController` para pasar los tests
+    - Usar RoleGuard para verificar rol ORGANIZER
+    - Implementar endpoints de gestión de eventos
+    - _Requirements: 11.1, 11.2, 11.3, 11.4_
+
+- [ ] 35. Checkpoint - Autenticación y Usuarios
+  - Ejecutar todos los tests de auth
+  - Verificar que guards funcionan correctamente
+  - Ensure all tests pass, ask the user if questions arise.
+
+---
+
+### Fase 9: Jobs y Eventos de Dominio
+
+- [ ] 36. Implementar job de expiración de reservas con TDD
+  - [ ] 36. Implementar job de expiración de reservas con TDD
+  - [ ] 36.1 🔴 Escribir tests para ReservationExpirationJob
     - Test: encuentra reservas expiradas y las procesa
     - Test: libera tickets de reservas expiradas
     - _Requirements: 3.3_
-  - [ ] 29.2 🟢 Implementar `ReservationExpirationJob` para pasar los tests
+  - [ ] 36.2 🟢 Implementar `ReservationExpirationJob` para pasar los tests
     - Usar @Cron decorator de NestJS
     - Ejecutar cada minuto
     - _Requirements: 3.3_
 
-- [ ] 30. Implementar handlers de eventos de dominio
+- [ ] 37. Implementar handlers de eventos de dominio
   - Implementar `PaymentFailedHandler` con @OnEvent
   - Implementar `TicketReleasedHandler` para logging
   - Configurar EventEmitter2 en módulo
@@ -391,29 +477,34 @@ Plan de implementación siguiendo metodología **TDD (Test-Driven Development)**
 
 ---
 
-### Fase 9: Integración Final, E2E y Docker Production
+### Fase 10: Integración Final, E2E y Docker Production
 
-- [ ] 31. Configurar módulos NestJS
+- [ ] 38. Configurar módulos NestJS
   - Crear `EventModule` con providers y exports
   - Crear `ReservationModule` con providers y exports
   - Crear `TicketModule` con providers y exports
   - Crear `PaymentModule` con adapter de Stripe
+  - Crear `AuthModule` con JWT y guards
+  - Crear `ProfileModule` con servicios de perfil
   - Configurar inyección de dependencias
   - _Requirements: Setup_
 
-- [ ] 32. Escribir tests E2E del flujo completo
-  - [ ] 32.1 Test E2E: Flujo de compra exitosa
-    - Crear evento → Crear reserva → Procesar pago → Verificar tickets
+- [ ] 39. Escribir tests E2E del flujo completo
+  - [ ] 39.1 Test E2E: Flujo de compra exitosa
+    - Registrar usuario → Login → Crear reserva → Procesar pago → Verificar tickets
     - Ejecutar con: `docker-compose --profile test up -d && npm run test:e2e`
-    - _Requirements: 1.1, 3.1, 4.1, 6.1_
-  - [ ] 32.2 Test E2E: Flujo de pago fallido
-    - Crear evento → Crear reserva → Pago falla → Verificar liberación
+    - _Requirements: 1.1, 3.1, 4.1, 6.1, 9.1, 9.2_
+  - [ ] 39.2 Test E2E: Flujo de pago fallido
+    - Login → Crear reserva → Pago falla → Verificar liberación
     - _Requirements: 3.1, 4.5, 5.1, 5.2_
-  - [ ] 32.3 Test E2E: Expiración de reserva
-    - Crear evento → Crear reserva → Esperar expiración → Verificar liberación
+  - [ ] 39.3 Test E2E: Expiración de reserva
+    - Login → Crear reserva → Esperar expiración → Verificar liberación
     - _Requirements: 3.3_
+  - [ ] 39.4 Test E2E: Flujo de organizador
+    - Registrar organizador → Login → Crear evento → Verificar estadísticas
+    - _Requirements: 11.1, 11.2, 11.3_
 
-- [ ] 33. Configurar Docker para producción
+- [ ] 40. Configurar Docker para producción
   - Crear `docker-compose.prod.yml` con configuración de producción
   - Configurar health checks para todos los servicios
   - Configurar logging centralizado
@@ -422,7 +513,7 @@ Plan de implementación siguiendo metodología **TDD (Test-Driven Development)**
   - Documentar comandos de despliegue en README.md
   - _Requirements: DevOps_
 
-- [ ] 34. Checkpoint Final Pre-CI/CD
+- [ ] 41. Checkpoint Final Pre-CI/CD
   - Ejecutar suite completa de tests: `docker-compose exec backend npm test`
   - Ejecutar tests E2E: `docker-compose --profile test exec backend npm run test:e2e`
   - Verificar cobertura total > 80%
@@ -432,108 +523,117 @@ Plan de implementación siguiendo metodología **TDD (Test-Driven Development)**
 
 ---
 
-### Fase 10: CI/CD Pipeline y Pruebas Automatizadas
+### Fase 11: CI/CD Pipeline y Pruebas Automatizadas
 
-- [ ] 35. Configurar GitHub Actions CI Pipeline
-  - [ ] 35.1 Crear workflow `.github/workflows/ci.yml`
+- [ ] 42. Configurar GitHub Actions CI Pipeline
+  - [ ] 42.1 Crear workflow `.github/workflows/ci.yml`
     - Trigger en push a `develop` y `main`
     - Trigger en pull requests a `develop` y `main`
     - Configurar matriz de Node.js versiones (18.x, 20.x)
     - _Requirements: DevOps, CI/CD_
-  - [ ] 35.2 Configurar job de Build/Compilación
+  - [ ] 42.2 Configurar job de Build/Compilación
     - Checkout del código
     - Setup Node.js con cache de npm
     - Instalar dependencias: `npm ci`
     - Compilar TypeScript: `npm run build`
     - Verificar que no hay errores de compilación
     - _Requirements: DevOps, CI/CD_
-  - [ ] 35.3 Configurar job de Tests Unitarios
+  - [ ] 42.3 Configurar job de Tests Unitarios
     - Ejecutar tests unitarios: `npm run test`
     - Generar reporte de cobertura
     - Fallar si cobertura < 80%
     - Subir artefactos de cobertura
     - _Requirements: DevOps, CI/CD_
-  - [ ] 35.4 Configurar job de Tests de Propiedades
+  - [ ] 42.4 Configurar job de Tests de Propiedades
     - Ejecutar property tests: `npm run test:property`
     - Verificar que todos los property tests pasan con 100 iteraciones
     - _Requirements: DevOps, CI/CD_
 
-- [ ] 36. Configurar Linting y Análisis de Código
-  - [ ] 36.1 Configurar ESLint estricto
+- [ ] 43. Configurar Linting y Análisis de Código
+  - [ ] 43.1 Configurar ESLint estricto
     - Crear `.eslintrc.js` con reglas estrictas
     - Configurar reglas: `@typescript-eslint/strict`, `no-explicit-any`, `no-unused-vars`
     - Agregar script `npm run lint`
     - _Requirements: DevOps, CI/CD_
-  - [ ] 36.2 Configurar Prettier
+  - [ ] 43.2 Configurar Prettier
     - Crear `.prettierrc` con configuración consistente
     - Agregar script `npm run format:check`
     - _Requirements: DevOps, CI/CD_
-  - [ ] 36.3 (Opcional) Integrar SonarCloud
+  - [ ] 43.3 (Opcional) Integrar SonarCloud
     - Crear `sonar-project.properties`
     - Configurar token de SonarCloud en GitHub Secrets
     - Agregar step de análisis en CI pipeline
     - Configurar quality gates
     - _Requirements: DevOps, CI/CD_
 
-- [ ] 37. Implementar Pruebas Automatizadas de API (Criterios de Aceptación)
-  - [ ] 37.1 Configurar framework de pruebas de API
+- [ ] 44. Implementar Pruebas Automatizadas de API (Criterios de Aceptación)
+  - [ ] 44.1 Configurar framework de pruebas de API
     - Instalar `supertest` y `@nestjs/testing`
     - Crear estructura `test/api/` para pruebas de endpoints
     - Configurar base de datos de prueba en CI
     - _Requirements: DevOps, QA_
-  - [ ] 37.2 Prueba API #1: Crear Evento (POST /events)
+  - [ ] 44.2 Prueba API #1: Autenticación (POST /auth/*)
+    - Verificar criterio 9.1: Registro crea usuario y retorna tokens
+    - Verificar criterio 9.2: Login retorna tokens válidos
+    - Verificar criterio 9.4: Credenciales inválidas retorna 401
+    - _Requirements: 9.1, 9.2, 9.4, QA_
+  - [ ] 44.3 Prueba API #2: Crear Evento (POST /events)
     - Verificar criterio 1.1: Crear evento retorna ID único
     - Verificar criterio 1.2: Configuración de tickets se almacena correctamente
     - Verificar respuesta 201 Created con estructura correcta
     - Verificar error 400 con datos inválidos
     - _Requirements: 1.1, 1.2, QA_
-  - [ ] 37.3 Prueba API #2: Crear Reserva (POST /reservations)
+  - [ ] 44.4 Prueba API #3: Crear Reserva (POST /reservations)
     - Verificar criterio 3.1: Reserva se crea con estado ACTIVE
     - Verificar criterio 3.2: Disponibilidad se decrementa
     - Verificar criterio 3.4: Retorna ID único de reserva
     - Verificar error 409 cuando no hay disponibilidad
     - _Requirements: 3.1, 3.2, 3.4, 3.5, QA_
-  - [ ] 37.4 Prueba API #3: Procesar Pago (POST /reservations/:id/payment)
+  - [ ] 44.5 Prueba API #4: Procesar Pago (POST /reservations/:id/payment)
     - Verificar criterio 4.2: Pago exitoso actualiza estado a COMPLETED
     - Verificar criterio 4.3: Reserva cambia a CONFIRMED
     - Verificar criterio 4.4: Tickets se generan con datos correctos
     - Verificar criterio 5.1: Pago fallido cancela reserva y libera tickets
     - _Requirements: 4.2, 4.3, 4.4, 5.1, QA_
-  - [ ] 37.5 Prueba API #4: Consultar Tickets (GET /tickets)
+  - [ ] 44.6 Prueba API #5: Consultar Tickets (GET /tickets)
     - Verificar criterio 6.1: Retorna tickets confirmados del comprador
     - Verificar criterio 6.2: Cada ticket incluye código, evento, tipo, fecha
     - Verificar criterio 6.3: Lista vacía sin error si no tiene tickets
     - _Requirements: 6.1, 6.2, 6.3, QA_
 
-- [ ] 38. Implementar Pruebas de UI con Playwright + Screenplay Pattern
-  - [ ] 38.1 Configurar Playwright con patrón Screenplay
+- [ ] 45. Implementar Pruebas de UI con Playwright + Screenplay Pattern
+  - [ ] 45.1 Configurar Playwright con patrón Screenplay
     - Instalar `@playwright/test`
     - Crear estructura `test/ui/` con patrón Screenplay
     - Crear actores: `Buyer`, `Organizer`
-    - Crear tareas: `CreateEvent`, `SelectTickets`, `CompletePayment`
-    - Crear preguntas: `TicketAvailability`, `ReservationStatus`
+    - Crear tareas: `Register`, `Login`, `CreateEvent`, `SelectTickets`, `CompletePayment`
+    - Crear preguntas: `TicketAvailability`, `ReservationStatus`, `UserProfile`
     - _Requirements: DevOps, QA_
-  - [ ] 38.2 Prueba UI #1: Flujo de compra completo
+  - [ ] 45.2 Prueba UI #1: Flujo de registro y login
     - Actor: Buyer
-    - Tarea: Seleccionar evento → Elegir tickets VIP → Completar pago
+    - Tarea: Registrar → Login → Verificar sesión
+    - Verificar criterios: 9.1, 9.2
+    - _Requirements: 9.1, 9.2, QA_
+  - [ ] 45.3 Prueba UI #2: Flujo de compra completo
+    - Actor: Buyer
+    - Tarea: Login → Seleccionar evento → Elegir tickets VIP → Completar pago
     - Verificar: Tickets aparecen en "Mis Tickets"
     - Verificar criterios: 2.2, 3.1, 4.4, 6.1
     - _Requirements: 2.2, 3.1, 4.4, 6.1, QA_
-  - [ ] 38.3 Prueba UI #2: Validación de disponibilidad
+  - [ ] 45.4 Prueba UI #3: Validación de disponibilidad
     - Actor: Buyer
     - Tarea: Intentar comprar más tickets de los disponibles
     - Verificar: Mensaje de error "No hay suficientes entradas"
     - Verificar criterios: 2.5, 3.5
     - _Requirements: 2.5, 3.5, QA_
-  - [ ] 38.4 Prueba UI #3: Expiración de reserva
-    - Actor: Buyer
-    - Tarea: Crear reserva → Esperar 15 minutos → Verificar expiración
-    - Verificar: Tickets vuelven a estar disponibles
-    - Verificar criterios: 3.3, 5.2
-    - _Requirements: 3.3, 5.2, QA_
+  - [ ] 45.5 Prueba UI #4: Flujo de organizador
+    - Actor: Organizer
+    - Tarea: Login → Crear evento → Verificar en dashboard
+    - Verificar criterios: 11.1, 11.2, 11.3
+    - _Requirements: 11.1, 11.2, 11.3, QA_
 
-- [ ] 39. Configurar Pipeline Completo en GitHub Actions
-  - [ ] 39.1 Crear workflow completo `.github/workflows/ci.yml`
+- [ ] 46. Configurar Pipeline Completo en GitHub Actions
+  - [ ] 46.1 Crear workflow completo `.github/workflows/ci.yml`
     ```yaml
     # Estructura del pipeline:
     # 1. Build & Lint (paralelo)
@@ -544,22 +644,22 @@ Plan de implementación siguiendo metodología **TDD (Test-Driven Development)**
     # 6. Build Docker Images (solo en main)
     ```
     - _Requirements: DevOps, CI/CD_
-  - [ ] 39.2 Configurar servicios de CI (PostgreSQL)
+  - [ ] 46.2 Configurar servicios de CI (PostgreSQL)
     - Usar `services` de GitHub Actions para PostgreSQL
     - Configurar variables de entorno para tests
     - _Requirements: DevOps, CI/CD_
-  - [ ] 39.3 Configurar artefactos y reportes
+  - [ ] 46.3 Configurar artefactos y reportes
     - Subir reportes de cobertura como artefactos
     - Subir reportes de Playwright como artefactos
     - Configurar badges de estado en README
     - _Requirements: DevOps, CI/CD_
 
-- [ ] 40. Checkpoint Final CI/CD
+- [ ] 47. Checkpoint Final CI/CD
   - Verificar que pipeline corre en push a develop y main
   - Verificar que build/compilación pasa sin errores
   - Verificar que tests unitarios pasan con cobertura > 80%
-  - Verificar que las 4 pruebas de API pasan
-  - Verificar que las 3 pruebas de UI pasan
+  - Verificar que las 5 pruebas de API pasan
+  - Verificar que las 4 pruebas de UI pasan
   - Verificar integración con SonarCloud (si aplica)
   - Ensure all tests pass, ask the user if questions arise.
 
@@ -574,7 +674,9 @@ Plan de implementación siguiendo metodología **TDD (Test-Driven Development)**
 - Tipado estricto: no usar `any` en ningún momento
 - **Docker**: Usar `docker-compose up -d` para desarrollo, `docker-compose --profile test` para tests
 - **CI/CD**: Pipeline se ejecuta en cada push a `develop` o `main`
-- **Pruebas Automatizadas**: 4 pruebas de API + 3 pruebas de UI verifican criterios de aceptación
+- **Pruebas Automatizadas**: 5 pruebas de API + 4 pruebas de UI verifican criterios de aceptación
+- **Autenticación**: JWT con accessToken (15 min) y refreshToken (7 días)
+- **Roles**: BUYER (comprador), ORGANIZER (organizador), ADMIN (administrador)
 - **Comandos útiles**:
   - `docker-compose up -d` - Iniciar entorno de desarrollo
   - `docker-compose exec backend npm test` - Ejecutar tests
@@ -584,6 +686,14 @@ Plan de implementación siguiendo metodología **TDD (Test-Driven Development)**
   - `npm run lint` - Ejecutar linter
   - `npm run test:api` - Ejecutar pruebas de API
   - `npm run test:ui` - Ejecutar pruebas de UI con Playwright
+
+## Alineación con Frontend
+
+Este backend está alineado con el spec del frontend (`ticket-sales-frontend`). Ver documento de alineación en `.kiro/specs/ALIGNMENT.md` para:
+- Modelos de dominio compartidos
+- Endpoints API unificados
+- Reglas de negocio compartidas
+- Estructura de respuestas API
 
 ## CI/CD Pipeline Structure
 

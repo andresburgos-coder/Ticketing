@@ -368,6 +368,103 @@ stateDiagram-v2
 
 ---
 
+### Requirement 9: Autenticación de Usuarios
+
+**User Story:**
+> Como **usuario**, quiero **registrarme e iniciar sesión**, para **acceder a funcionalidades personalizadas y comprar tickets**.
+
+#### ¿Qué necesita el Cliente?
+- Registro con email y contraseña
+- Login seguro con JWT
+- Persistencia de sesión
+- Recuperación de contraseña
+
+#### ¿Qué debe verificar QA?
+- Registro crea usuario correctamente
+- Login retorna tokens válidos
+- Tokens expiran correctamente
+- Refresh token funciona
+
+#### ¿Qué debe implementar Desarrollo?
+- **Controller**: `AuthController` con endpoints login, register, refresh
+- **Service**: `AuthService` con JWT handling
+- **Entity**: `User` con roles (BUYER, ORGANIZER, ADMIN)
+- **Guard**: `JwtAuthGuard` para proteger rutas
+- **Strategy**: `JwtStrategy` para validar tokens
+- **Tipado**: `AuthResponse`, `LoginDto`, `RegisterDto`
+
+#### Acceptance Criteria
+
+1. WHEN un usuario se registra con email y password válidos THEN el sistema SHALL crear el usuario y retornar tokens JWT
+2. WHEN un usuario hace login con credenciales válidas THEN el sistema SHALL retornar accessToken y refreshToken
+3. WHEN el accessToken expira THEN el sistema SHALL permitir renovarlo con el refreshToken
+4. IF las credenciales son inválidas THEN el sistema SHALL retornar error 401 Unauthorized
+5. WHEN se valida un password THEN el sistema SHALL verificar mínimo 8 caracteres, 1 mayúscula, 1 número
+
+---
+
+### Requirement 10: Gestión de Perfil de Usuario
+
+**User Story:**
+> Como **usuario**, quiero **gestionar mi perfil**, para **mantener mi información actualizada**.
+
+#### ¿Qué necesita el Cliente?
+- Ver su información personal
+- Actualizar nombre, email, avatar
+- Cambiar contraseña
+- Ver historial de compras
+
+#### ¿Qué debe verificar QA?
+- Perfil se actualiza correctamente
+- Cambio de contraseña requiere contraseña actual
+- Historial muestra compras reales
+
+#### ¿Qué debe implementar Desarrollo?
+- **Controller**: `ProfileController` con endpoints CRUD
+- **Service**: `ProfileService` para gestión de perfil
+- **DTO**: `UpdateProfileDto`, `ChangePasswordDto`
+- **Tipado**: `ProfileResponse`, `PurchaseHistoryResponse`
+
+#### Acceptance Criteria
+
+1. WHEN un usuario consulta su perfil THEN el sistema SHALL retornar id, email, firstName, lastName, avatarUrl, role
+2. WHEN un usuario actualiza su perfil THEN el sistema SHALL validar y persistir los cambios
+3. WHEN un usuario cambia su contraseña THEN el sistema SHALL verificar la contraseña actual antes de actualizar
+4. WHEN un usuario consulta su historial THEN el sistema SHALL retornar lista de órdenes con fecha, evento y total
+
+---
+
+### Requirement 11: Gestión de Eventos por Organizador
+
+**User Story:**
+> Como **organizador**, quiero **crear y gestionar mis eventos**, para **vender tickets a los asistentes**.
+
+#### ¿Qué necesita el Cliente?
+- Crear eventos con información completa
+- Definir tipos de tickets con precios
+- Ver estadísticas de ventas
+- Editar y cancelar eventos
+
+#### ¿Qué debe verificar QA?
+- Solo organizadores pueden crear eventos
+- Eventos se crean con todos los campos
+- Estadísticas son precisas
+
+#### ¿Qué debe implementar Desarrollo?
+- **Guard**: `RoleGuard` para verificar rol ORGANIZER
+- **Controller**: `OrganizerController` con endpoints de gestión
+- **Service**: `OrganizerService` para estadísticas
+- **DTO**: `CreateEventDto` extendido con imagen, categoría, tags
+
+#### Acceptance Criteria
+
+1. WHEN un organizador crea un evento THEN el sistema SHALL validar rol ORGANIZER y persistir el evento
+2. WHEN un organizador consulta sus eventos THEN el sistema SHALL retornar solo eventos creados por él
+3. WHEN un organizador consulta estadísticas THEN el sistema SHALL retornar tickets vendidos, ingresos y disponibilidad
+4. IF un usuario sin rol ORGANIZER intenta crear evento THEN el sistema SHALL retornar error 403 Forbidden
+
+---
+
 ## Resumen de Criterios de Aceptación
 
 | Req | Criterios | Testeable como Propiedad |
@@ -380,5 +477,8 @@ stateDiagram-v2
 | 6 | 3 | 2 propiedades + 1 edge case |
 | 7 | 4 | 4 propiedades |
 | 8 | 3 | 1 propiedad round-trip |
+| 9 | 5 | 3 propiedades + 2 ejemplos |
+| 10 | 4 | 2 propiedades + 2 ejemplos |
+| 11 | 4 | 2 propiedades + 2 ejemplos |
 
-**Total: 34 criterios de aceptación → 12 propiedades consolidadas para TDD**
+**Total: 47 criterios de aceptación → 15 propiedades consolidadas para TDD**
