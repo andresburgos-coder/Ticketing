@@ -1,0 +1,2 @@
+# Data Transfer Objects
+# CreateEventDto, CreateReservationDto, ProcessPaymentDto, etc. will be implemented here

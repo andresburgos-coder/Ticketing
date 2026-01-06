@@ -1,0 +1,2 @@
+# Domain Events
+# PaymentCompletedEvent, PaymentFailedEvent, TicketReleasedEvent will be implemented here

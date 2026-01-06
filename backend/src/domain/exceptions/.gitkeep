@@ -1,0 +1,2 @@
+# Domain Exceptions
+# DomainException, EventNotFoundException, InsufficientTicketsException, etc. will be implemented here

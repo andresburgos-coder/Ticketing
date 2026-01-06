@@ -1,0 +1,2 @@
+# Reservation State Pattern
+# ActiveState, ConfirmedState, ExpiredState, CancelledState will be implemented here

@@ -1,0 +1,2 @@
+# TypeORM Entities (separated from domain)
+# EventOrmEntity, TicketOrmEntity, ReservationOrmEntity will be implemented here
