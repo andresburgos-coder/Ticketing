@@ -30,7 +30,43 @@ Sistema de Venta de Entradas (Ticketing)
 
 ## Comandos Docker
 
-### Desarrollo
+### Scripts NPM (Recomendado)
+
+Desde la raíz del proyecto, puedes usar los siguientes scripts npm:
+
+```bash
+# Desarrollo
+npm run docker:dev              # Iniciar servicios en modo desarrollo
+npm run docker:dev:build        # Iniciar con rebuild de imágenes
+npm run docker:down             # Detener servicios
+npm run docker:down:volumes     # Detener y limpiar volúmenes
+
+# Logs
+npm run docker:logs             # Ver todos los logs
+npm run docker:logs:backend     # Ver logs del backend
+npm run docker:logs:frontend    # Ver logs del frontend
+npm run docker:logs:postgres    # Ver logs de PostgreSQL
+
+# Estado y acceso
+npm run docker:ps               # Ver estado de servicios
+npm run docker:exec:backend     # Acceder al shell del backend
+npm run docker:exec:postgres    # Acceder a psql
+
+# Tests
+npm run docker:test             # Iniciar con base de datos de prueba
+npm run backend:test            # Ejecutar tests unitarios
+npm run backend:test:property   # Ejecutar property tests
+
+# Migraciones
+npm run backend:migration:run   # Ejecutar migraciones
+npm run backend:migration:revert # Revertir última migración
+
+# Producción
+npm run docker:prod             # Ejecutar en modo producción
+npm run docker:prod:build       # Construir y ejecutar producción
+```
+
+### Comandos Docker Compose Directos
 
 ```bash
 # Iniciar todos los servicios en modo desarrollo

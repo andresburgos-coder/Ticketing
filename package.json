@@ -1,0 +1,36 @@
+{
+  "name": "ticket-sales-system",
+  "version": "1.0.0",
+  "description": "Ticket Sales System - Monorepo",
+  "private": true,
+  "scripts": {
+    "docker:dev": "docker-compose up -d",
+    "docker:dev:build": "docker-compose up -d --build",
+    "docker:test": "docker-compose --profile test up -d",
+    "docker:test:build": "docker-compose --profile test up -d --build",
+    "docker:down": "docker-compose down",
+    "docker:down:volumes": "docker-compose down -v",
+    "docker:logs": "docker-compose logs -f",
+    "docker:logs:backend": "docker-compose logs -f backend",
+    "docker:logs:frontend": "docker-compose logs -f frontend",
+    "docker:logs:postgres": "docker-compose logs -f postgres",
+    "docker:ps": "docker-compose ps",
+    "docker:exec:backend": "docker-compose exec backend sh",
+    "docker:exec:postgres": "docker-compose exec postgres psql -U ticket_user -d ticket_sales",
+    "docker:build": "docker-compose build",
+    "docker:prod": "docker-compose -f docker-compose.yml -f docker/docker-compose.prod.yml up -d",
+    "docker:prod:build": "docker-compose -f docker-compose.yml -f docker/docker-compose.prod.yml up -d --build",
+    "backend:test": "docker-compose exec backend npm test",
+    "backend:test:property": "docker-compose exec backend npm run test:property",
+    "backend:migration:run": "docker-compose exec backend npm run migration:run",
+    "backend:migration:revert": "docker-compose exec backend npm run migration:revert"
+  },
+  "keywords": [
+    "ticket-sales",
+    "nestjs",
+    "angular",
+    "docker"
+  ],
+  "author": "",
+  "license": "UNLICENSED"
+}
