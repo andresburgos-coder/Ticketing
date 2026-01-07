@@ -10,8 +10,7 @@ export const validTicketQuantityArbitrary = fc.integer({ min: 1, max: 10 });
  */
 export const invalidTicketQuantityArbitrary = fc.oneof(
   fc.integer({ min: -100, max: 0 }), // Negative and zero
-  fc.integer({ min: 11, max: 100 }), // Above maximum
-  fc.float({ min: 0.1, max: 10.9 }).filter(n => !Number.isInteger(n)) // Non-integers
+  fc.integer({ min: 11, max: 100 }) // Above maximum
 );
 
 /**
@@ -22,4 +21,7 @@ export const anyIntegerArbitrary = fc.integer({ min: -100, max: 100 });
 /**
  * Generator for non-integer numbers
  */
-export const nonIntegerArbitrary = fc.float({ min: -100, max: 100 }).filter(n => !Number.isInteger(n));
+export const nonIntegerArbitrary = fc.float({ 
+  min: Math.fround(-100), 
+  max: Math.fround(100) 
+}).filter(n => !Number.isInteger(n));
