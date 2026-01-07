@@ -1,0 +1,285 @@
+<div class="bg-background-light dark:bg-background-dark text-[#111118] dark:text-white font-display">
+    @if (isLoading()) {
+        <div class="flex justify-center items-center min-h-screen">
+            <app-loading-spinner size="lg" message="Loading event details..."></app-loading-spinner>
+        </div>
+    } @else if (event()) {
+    <!-- Top Navigation -->
+    <header class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#f0f0f4] dark:border-b-[#2a2a35] px-4 md:px-10 py-3 bg-white dark:bg-[#101022]">
+        <div class="flex items-center gap-4 md:gap-8">
+            <div class="flex items-center gap-4 text-[#111118] dark:text-white">
+                <div class="size-6 text-primary">
+                    <span class="material-symbols-outlined !text-2xl">confirmation_number</span>
+                </div>
+                <h2 class="text-[#111118] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">TicketMastery</h2>
+            </div>
+        </div>
+        <div class="flex items-center justify-end gap-4 md:gap-8">
+            <div class="hidden md:flex items-center gap-6">
+                <a class="text-[#111118] dark:text-white text-sm font-medium leading-normal hover:text-primary transition-colors" href="/">Events</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="relative flex flex-col min-h-screen">
+        <!-- Hero Section with Background Image -->
+        <div class="relative w-full h-[400px] md:h-[480px]">
+            <div class="absolute inset-0 bg-cover bg-center"
+                [style.backgroundImage]="'linear-gradient(rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.7) 100%), url(' + (event()?.imageUrl || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBdX0ORt3oDTckbcZm16R0Ry13cdxFGeTB4nvNJdrKj3cjIwp6gp5xrHCQbSYoWx7AIgqr_HS1ziiC_QlBfU0WnAYxoDnDSWxg4QEm98wIDgfStLgi1k_dyX-550xTZEciAG6FpJFJ2bidK1IcfWSwMng1uM02GnEolGh2ZizOi1GkQCiWxHusJ_2-nfJQ3Va5T2324Eje8gnj1Vj4oL1VLBMkiQ4bw5ULisBO8yV8Ryfr7by6ynWcE9wl2ZC5uKBMU-dHj-sSaAw3S') + ')'">
+            </div>
+            <div class="absolute inset-0 flex flex-col justify-end pb-12 px-4 md:px-10 lg:px-40 layout-content-container max-w-[1440px] mx-auto w-full">
+                <span class="inline-block px-3 py-1 mb-4 text-xs font-bold tracking-wide text-white uppercase bg-primary rounded-full w-fit">
+                    Verified Event
+                </span>
+                <h1 class="text-white text-3xl md:text-5xl font-black leading-tight tracking-[-0.033em] mb-4">
+                    {{ event()!.name }}
+                </h1>
+                <div class="flex flex-wrap gap-6 text-white/90">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined">calendar_month</span>
+                        <span class="text-sm md:text-base font-medium">{{ event()!.date | dateFormat:'long' }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined">location_on</span>
+                        <span class="text-sm md:text-base font-medium">{{ event()!.location }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="layout-container flex flex-col grow px-4 md:px-10 lg:px-40 py-8 lg:py-12 bg-background-light dark:bg-background-dark">
+            <div class="layout-content-container max-w-[1440px] mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+                <!-- Left Column: Content -->
+                <div class="lg:col-span-8 flex flex-col gap-8">
+                    <!-- Organizer Info -->
+                    <div class="flex items-center gap-4 pb-6 border-b border-[#dbdbe6] dark:border-[#2a2a35]">
+                        <div class="w-12 h-12 rounded-full bg-gray-200 overflow-hidden">
+                            <img alt="Organizer" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqnsi021ryoTifgO-gyc5QXe-9hIe2OQwSFbTu_l7SrJrvruQKfVNuwqoPBB9iFbu0O8wAmTd24u7Gpkx2taF5CexGmuOCkbDlXkD7ByNxg20p3_rHVkC7b9nk9q0dC-0s3BUoQfuuPSysjDDyvGSHRSvydss8wJZgYzKH1pCRPk7ZGAMOUiUaBskqGCAd-x-6Yvb9_IRHdBCcLYYn-3RG2YOkVI7MP79ja86eqaqTNKWYbY45BkgKMHA31d9s6Yw8hbKZhavP03zg"/>
+                        </div>
+                        <div>
+                            <p class="text-sm text-[#616189] dark:text-gray-400 font-medium">Hosted by</p>
+                            <a class="text-base font-bold text-[#111118] dark:text-white hover:text-primary flex items-center gap-1" href="#">
+                                {{ event()!.organizer || 'Event Organizer' }}
+                                <span class="material-symbols-outlined text-blue-500 text-[18px]">verified</span>
+                            </a>
+                        </div>
+                        <button class="ml-auto text-sm font-semibold text-primary border border-primary px-4 py-2 rounded-lg hover:bg-primary/5 transition-colors">
+                            Follow
+                        </button>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="flex flex-col gap-4">
+                        <h3 class="text-xl font-bold text-[#111118] dark:text-white">About the event</h3>
+                        <p class="text-[#111118] dark:text-gray-300 text-base leading-relaxed">
+                            {{ event()!.description || 'Join us for an unforgettable event experience.' }}
+                        </p>
+                    </div>
+
+                    <!-- Event Meta Details Grid -->
+                    <div class="bg-white dark:bg-[#1e1e2d] rounded-xl p-6 border border-[#dbdbe6] dark:border-[#2a2a35] shadow-sm">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="flex gap-4 items-start">
+                                <div class="p-3 bg-primary/10 rounded-lg text-primary">
+                                    <span class="material-symbols-outlined">calendar_today</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-[#111118] dark:text-white">Date &amp; Time</h4>
+                                    <p class="text-[#616189] dark:text-gray-400 text-sm mt-1">{{ event()!.date | dateFormat:'long' }}</p>
+                                    <p class="text-[#616189] dark:text-gray-400 text-sm">{{ event()!.startTime || '9:00 AM' }} - {{ event()!.endTime || '6:00 PM' }}</p>
+                                    <a class="text-primary text-sm font-semibold mt-2 inline-block" href="#">Add to Calendar</a>
+                                </div>
+                            </div>
+                            <div class="flex gap-4 items-start">
+                                <div class="p-3 bg-primary/10 rounded-lg text-primary">
+                                    <span class="material-symbols-outlined">map</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-[#111118] dark:text-white">Location</h4>
+                                    <p class="text-[#616189] dark:text-gray-400 text-sm mt-1">{{ event()!.venueName || 'Venue' }}</p>
+                                    <p class="text-[#616189] dark:text-gray-400 text-sm">{{ event()!.location }}</p>
+                                    <a class="text-primary text-sm font-semibold mt-2 inline-block" href="#">View Map</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Map Placeholder -->
+                    <div class="rounded-xl overflow-hidden h-64 w-full bg-gray-100 dark:bg-[#1e1e2d] border border-[#dbdbe6] dark:border-[#2a2a35] relative">
+                        <div class="absolute inset-0 bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAIac4MIpA5sDqQLAJzaMuYvTnIkYKRstzsKCkx3OUFms_oV0smanlqzK7fEaKA0WgGyLLh3Adx2_YtP12qlgds-5cOGuOC6yj6yocUnc_lPiAtejTp-20FWGERG-NAW1m3Kvk1WJ6YA1R_88gQ7LNAv-B6ED9QOjffbtsu8Piw4XmV5l7-pglYcebYgDYZY-nWsVwuQxZfw4yd5_9lI_OBKeqpA_l4Q8e2bTcBhTfroLRjnRZFqM9OAl5NpIPVrd3-xs4qvybyGtr6");'></div>
+                        <div class="absolute inset-0 bg-black/10 flex items-center justify-center">
+                            <button class="bg-white dark:bg-[#1e1e2d] text-[#111118] dark:text-white px-4 py-2 rounded-lg font-bold shadow-lg flex items-center gap-2 hover:scale-105 transition-transform">
+                                <span class="material-symbols-outlined text-primary">near_me</span>
+                                Get Directions
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tags -->
+                    <div class="flex flex-wrap gap-2">
+                        @for (tag of getEventTags(); track tag) {
+                        <span class="px-3 py-1 bg-[#f0f0f4] dark:bg-[#2a2a35] text-[#616189] dark:text-gray-300 rounded-full text-sm font-medium">{{ tag }}</span>
+                        }
+                    </div>
+                </div>
+
+                <!-- Right Column: Sticky Ticket Sidebar -->
+                <div class="lg:col-span-4 relative">
+                    <div class="lg:sticky lg:top-24 flex flex-col gap-6">
+                        <!-- Ticket Selection Card -->
+                        <div class="bg-white dark:bg-[#1e1e2d] border border-[#dbdbe6] dark:border-[#2a2a35] rounded-xl shadow-lg overflow-hidden">
+                            <div class="p-5 border-b border-[#dbdbe6] dark:border-[#2a2a35] bg-gray-50 dark:bg-[#252536]">
+                                <h3 class="text-lg font-bold text-[#111118] dark:text-white">Select Tickets</h3>
+                                <p class="text-xs text-[#616189] dark:text-gray-400 mt-1">Prices may increase as the date approaches.</p>
+                            </div>
+                            <div class="p-5 flex flex-col gap-6">
+                                <!-- Handle ticketConfigurations (new format) -->
+                                @if (getTicketConfigurations().length > 0) {
+                                @for (config of getTicketConfigurations(); track config.type) {
+                                <div [ngClass]="{'opacity-60': isTicketSoldOut(config)}" class="flex flex-col gap-3 pb-4 border-b border-dashed border-[#dbdbe6] dark:border-[#2a2a35]">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h4 class="font-bold text-[#111118] dark:text-white">{{ getTicketName(config) }}</h4>
+                                            <p class="text-xs text-[#616189] dark:text-gray-400">{{ getTicketTypeDescription(config) }}</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="block text-lg font-black text-[#111118] dark:text-white">{{ getTicketPrice(config) | currencyFormat }}</span>
+                                            @if (getAvailableCount(config) < 500 && getAvailableCount(config) > 0) {
+                                            <span class="text-[10px] text-orange-600 dark:text-orange-400 font-bold bg-orange-100 dark:bg-orange-900/30 px-1.5 py-0.5 rounded flex items-center gap-1 justify-end mt-1">
+                                                <span class="material-symbols-outlined text-[10px]">local_fire_department</span>
+                                                Low Stock
+                                            </span>
+                                            }
+                                            @if (getAvailableCount(config) >= 5000) {
+                                            <span class="text-[10px] text-green-600 font-bold bg-green-100 dark:bg-green-900/30 px-1.5 py-0.5 rounded">Best Value</span>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <div class="flex justify-between items-center">
+                                        @if (!isTicketSoldOut(config)) {
+                                        <div class="flex items-center gap-3">
+                                            <button (click)="decreaseQty(config)"
+                                                class="w-8 h-8 rounded-full border border-[#dbdbe6] dark:border-[#4a4a5a] flex items-center justify-center text-[#616189] hover:bg-gray-100 dark:hover:bg-[#2a2a35] transition-colors">
+                                                <span class="material-symbols-outlined text-sm">remove</span>
+                                            </button>
+                                            <span class="text-[#111118] dark:text-white font-bold w-4 text-center">{{ selectedQuantities[config.type] || 0 }}</span>
+                                            <button (click)="increaseQty(config)"
+                                                class="w-8 h-8 rounded-full border border-primary bg-primary/5 dark:bg-primary/20 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-colors">
+                                                <span class="material-symbols-outlined text-sm">add</span>
+                                            </button>
+                                        </div>
+                                        } @else {
+                                        <div class="flex justify-between items-center bg-[#f0f0f4] dark:bg-[#2a2a35] p-2 rounded-lg w-full">
+                                            <span class="text-xs font-bold text-[#616189] pl-2 uppercase">Sold Out</span>
+                                            <button class="w-8 h-8 flex items-center justify-center rounded bg-gray-300 dark:bg-gray-600 text-white cursor-not-allowed" disabled="">
+                                                <span class="material-symbols-outlined text-sm">lock</span>
+                                            </button>
+                                        </div>
+                                        }
+                                    </div>
+                                </div>
+                                }
+                                } @else {
+                                <!-- Handle ticketTypes (old format) -->
+                                @for (type of getTicketTypes(); track type.id) {
+                                <div [ngClass]="{'opacity-60': isTicketSoldOut(type)}" class="flex flex-col gap-3 pb-4 border-b border-dashed border-[#dbdbe6] dark:border-[#2a2a35]">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h4 class="font-bold text-[#111118] dark:text-white">{{ getTicketName(type) }}</h4>
+                                            <p class="text-xs text-[#616189] dark:text-gray-400">{{ getTicketTypeDescription(type) }}</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="block text-lg font-black text-[#111118] dark:text-white">{{ getTicketPrice(type) | currencyFormat }}</span>
+                                            @if (getAvailableCount(type) < 5 && getAvailableCount(type) > 0) {
+                                            <span class="text-[10px] text-orange-600 dark:text-orange-400 font-bold bg-orange-100 dark:bg-orange-900/30 px-1.5 py-0.5 rounded flex items-center gap-1 justify-end mt-1">
+                                                <span class="material-symbols-outlined text-[10px]">local_fire_department</span>
+                                                Low Stock
+                                            </span>
+                                            }
+                                            @if (getAvailableCount(type) >= 5) {
+                                            <span class="text-[10px] text-green-600 font-bold bg-green-100 dark:bg-green-900/30 px-1.5 py-0.5 rounded">Best Value</span>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <div class="flex justify-between items-center">
+                                        @if (!isTicketSoldOut(type)) {
+                                        <div class="flex items-center gap-3">
+                                            <button (click)="decreaseQty(type)"
+                                                class="w-8 h-8 rounded-full border border-[#dbdbe6] dark:border-[#4a4a5a] flex items-center justify-center text-[#616189] hover:bg-gray-100 dark:hover:bg-[#2a2a35] transition-colors">
+                                                <span class="material-symbols-outlined text-sm">remove</span>
+                                            </button>
+                                            <span class="text-[#111118] dark:text-white font-bold w-4 text-center">{{ selectedQuantities[type.id] || 0 }}</span>
+                                            <button (click)="increaseQty(type)"
+                                                class="w-8 h-8 rounded-full border border-primary bg-primary/5 dark:bg-primary/20 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-colors">
+                                                <span class="material-symbols-outlined text-sm">add</span>
+                                            </button>
+                                        </div>
+                                        } @else {
+                                        <div class="flex justify-between items-center bg-[#f0f0f4] dark:bg-[#2a2a35] p-2 rounded-lg w-full">
+                                            <span class="text-xs font-bold text-[#616189] pl-2 uppercase">Sold Out</span>
+                                            <button class="w-8 h-8 flex items-center justify-center rounded bg-gray-300 dark:bg-gray-600 text-white cursor-not-allowed" disabled="">
+                                                <span class="material-symbols-outlined text-sm">lock</span>
+                                            </button>
+                                        </div>
+                                        }
+                                    </div>
+                                </div>
+                                }
+                                }
+                            </div>
+
+                            <!-- Total & Checkout -->
+                            <div class="p-5 border-t border-[#dbdbe6] dark:border-[#2a2a35] bg-gray-50 dark:bg-[#252536]">
+                                <div class="flex justify-between items-end mb-4">
+                                    <span class="text-sm font-medium text-[#616189] dark:text-gray-400">Total</span>
+                                    <span class="text-2xl font-black text-[#111118] dark:text-white">{{ getTotal() | currencyFormat }}</span>
+                                </div>
+                                <button (click)="checkout()" [disabled]="getTotal() === 0"
+                                    class="w-full flex cursor-pointer items-center justify-center rounded-lg h-12 px-5 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                                    Checkout
+                                </button>
+                                <div class="flex items-center justify-center gap-2 mt-3 text-[#616189] dark:text-gray-500">
+                                    <span class="material-symbols-outlined text-sm">lock</span>
+                                    <span class="text-xs">Secure checkout powered by Stripe</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Help Card -->
+                        <div class="hidden md:flex flex-col gap-2 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30">
+                            <h4 class="text-sm font-bold text-[#111118] dark:text-white">Have questions?</h4>
+                            <p class="text-xs text-[#616189] dark:text-gray-400">Contact the organizer for questions about refunds or accessibility.</p>
+                            <a class="text-xs font-bold text-primary hover:underline" href="#">Contact Organizer</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-[#101022] border-t border-[#f0f0f4] dark:border-[#2a2a35] py-10 px-4 md:px-10 lg:px-40">
+        <div class="layout-content-container max-w-[1440px] mx-auto w-full flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2 text-[#111118] dark:text-white">
+                <span class="material-symbols-outlined text-primary">confirmation_number</span>
+                <span class="font-bold text-lg">TicketMastery</span>
+            </div>
+            <div class="flex gap-8 text-sm font-medium text-[#616189] dark:text-gray-400">
+                <a class="hover:text-primary" href="#">About</a>
+                <a class="hover:text-primary" href="#">Privacy</a>
+                <a class="hover:text-primary" href="#">Terms</a>
+                <a class="hover:text-primary" href="#">Support</a>
+            </div>
+            <div class="text-sm text-[#616189] dark:text-gray-500">
+                © 2024 TicketMastery Inc.
+            </div>
+        </div>
+    </footer>
+    } @else {
+        <div class="flex justify-center items-center min-h-screen">
+            <p class="text-gray-500">Event not found.</p>
+        </div>
+    }
+</div>

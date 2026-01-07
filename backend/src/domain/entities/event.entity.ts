@@ -13,7 +13,8 @@ export class Event {
     public readonly name: string,
     public readonly date: Date,
     public readonly location: string,
-    private _ticketConfigurations: TicketConfiguration[]
+    private _ticketConfigurations: TicketConfiguration[],
+    public readonly imageUrl?: string,
   ) {}
 
   /**

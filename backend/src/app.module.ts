@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { HealthController } from './presentation/controllers/health.controller';
+import { EventModule } from './modules/event.module';
+import { AuthModule } from './modules/auth.module';
 
 @Module({
   imports: [
@@ -23,6 +25,8 @@ import { HealthController } from './presentation/controllers/health.controller';
     }),
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
+    EventModule,
+    AuthModule,
   ],
   controllers: [HealthController],
   providers: [],

@@ -131,4 +131,112 @@ describe('TypeOrmEventRepository Integration Tests', () => {
       expect(foundEvent).toBeNull();
     });
   });
+
+  describe('findAll', () => {
+    it('should return all events', async () => {
+      // Arrange
+      const event1 = new Event(
+        uuidv4(),
+        'Concierto 1',
+        new Date('2025-03-15T20:00:00Z'),
+        'Lugar 1',
+        [
+          new TicketConfiguration(
+            TicketType.VIP,
+            Money.create(150000, 'COP'),
+            100,
+            100
+          ),
+        ]
+      );
+
+      const event2 = new Event(
+        uuidv4(),
+        'Concierto 2',
+        new Date('2025-04-20T20:00:00Z'),
+        'Lugar 2',
+        [
+          new TicketConfiguration(
+            TicketType.GENERAL,
+            Money.create(100000, 'COP'),
+            200,
+            200
+          ),
+        ]
+      );
+
+      // Save events
+      await repository.save(event1);
+      await repository.save(event2);
+
+      // Act
+      const allEvents = await repository.findAll();
+
+      // Assert
+      expect(allEvents).toHaveLength(2);
+      expect(allEvents.map(e => e.name)).toContain('Concierto 1');
+      expect(allEvents.map(e => e.name)).toContain('Concierto 2');
+    });
+
+    it('should return empty array when no events exist', async () => {
+      // Act
+      const allEvents = await repository.findAll();
+
+      // Assert
+      expect(allEvents).toEqual([]);
+    });
+  });
+
+  describe('update', () => {
+    it('should update an existing event', async () => {
+      // Arrange
+      const eventId = uuidv4();
+      const originalEvent = new Event(
+        eventId,
+        'Original Name',
+        new Date('2025-03-15T20:00:00Z'),
+        'Original Location',
+        [
+          new TicketConfiguration(
+            TicketType.VIP,
+            Money.create(150000, 'COP'),
+            100,
+            100
+          ),
+        ]
+      );
+
+      // Save original event
+      await repository.save(originalEvent);
+
+      // Create updated event with same ID but different data
+      const updatedEvent = new Event(
+        eventId,
+        'Updated Name',
+        new Date('2025-03-15T20:00:00Z'),
+        'Updated Location',
+        [
+          new TicketConfiguration(
+            TicketType.VIP,
+            Money.create(150000, 'COP'),
+            100,
+            100
+          ),
+        ]
+      );
+
+      // Act
+      const result = await repository.update(updatedEvent);
+
+      // Assert
+      expect(result.id).toBe(eventId);
+      expect(result.name).toBe('Updated Name');
+      expect(result.location).toBe('Updated Location');
+
+      // Verify by fetching
+      const fetched = await repository.findById(eventId);
+      expect(fetched?.name).toBe('Updated Name');
+      expect(fetched?.location).toBe('Updated Location');
+    });
+  });
 });

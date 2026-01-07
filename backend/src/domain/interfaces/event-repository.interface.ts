@@ -38,4 +38,12 @@ export interface IEventRepository {
    * @throws Error if event not found or update fails
    */
   update(event: Event): Promise<Event>;
+
+  /**
+   * Deletes an event from the repository
+   * @param id - The ID of the event to delete
+   * @returns Promise resolving to void
+   * @throws Error if event not found or delete fails
+   */
+  delete(id: string): Promise<void>;
 }

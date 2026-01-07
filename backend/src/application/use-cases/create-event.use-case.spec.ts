@@ -157,4 +157,148 @@ describe('CreateEventUseCase', () => {
       expect(result.ticketConfigurations).toHaveLength(1);
     });
   });
+
+  describe('validation', () => {
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + 30);
+
+    const validInput = {
+      name: 'Valid Event',
+      date: futureDate,
+      location: 'Valid Location',
+      ticketConfigurations: [
+        {
+          type: TicketType.VIP,
+          price: 100000,
+          quantity: 100,
+        },
+      ],
+    };
+
+    it('should reject empty event name', async () => {
+      // Arrange
+      const input = { ...validInput, name: '' };
+
+      // Act & Assert
+      await expect(useCase.execute(input)).rejects.toThrow('Event name is required');
+    });
+
+    it('should reject whitespace-only event name', async () => {
+      // Arrange
+      const input = { ...validInput, name: '   ' };
+
+      // Act & Assert
+      await expect(useCase.execute(input)).rejects.toThrow('Event name is required');
+    });
+
+    it('should reject missing event date', async () => {
+      // Arrange
+      const input = { ...validInput, date: null as any };
+
+      // Act & Assert
+      await expect(useCase.execute(input)).rejects.toThrow('Event date is required');
+    });
+
+    it('should reject past event date', async () => {
+      // Arrange
+      const pastDate = new Date();
+      pastDate.setDate(pastDate.getDate() - 1);
+      const input = { ...validInput, date: pastDate };
+
+      // Act & Assert
+      await expect(useCase.execute(input)).rejects.toThrow('Event date cannot be in the past');
+    });
+
+    it('should reject empty event location', async () => {
+      // Arrange
+      const input = { ...validInput, location: '' };
+
+      // Act & Assert
+      await expect(useCase.execute(input)).rejects.toThrow('Event location is required');
+    });
+
+    it('should reject whitespace-only event location', async () => {
+      // Arrange
+      const input = { ...validInput, location: '   ' };
+
+      // Act & Assert
+      await expect(useCase.execute(input)).rejects.toThrow('Event location is required');
+    });
+
+    it('should reject missing ticket configurations', async () => {
+      // Arrange
+      const input = { ...validInput, ticketConfigurations: [] };
+
+      // Act & Assert
+      await expect(useCase.execute(input)).rejects.toThrow('At least one ticket configuration is required');
+    });
+
+    it('should reject ticket configuration with missing type', async () => {
+      // Arrange
+      const input = {
+        ...validInput,
+        ticketConfigurations: [
+          {
+            type: null as any,
+            price: 100000,
+            quantity: 100,
+          },
+        ],
+      };
+
+      // Act & Assert
+      await expect(useCase.execute(input)).rejects.toThrow('missing type');
+    });
+
+    it('should reject ticket configuration with negative price', async () => {
+      // Arrange
+      const input = {
+        ...validInput,
+        ticketConfigurations: [
+          {
+            type: TicketType.VIP,
+            price: -100000,
+            quantity: 100,
+          },
+        ],
+      };
+
+      // Act & Assert
+      await expect(useCase.execute(input)).rejects.toThrow('invalid price');
+    });
+
+    it('should reject ticket configuration with zero quantity', async () => {
+      // Arrange
+      const input = {
+        ...validInput,
+        ticketConfigurations: [
+          {
+            type: TicketType.VIP,
+            price: 100000,
+            quantity: 0,
+          },
+        ],
+      };
+
+      // Act & Assert
+      await expect(useCase.execute(input)).rejects.toThrow('invalid quantity');
+    });
+
+    it('should reject ticket configuration with negative quantity', async () => {
+      // Arrange
+      const input = {
+        ...validInput,
+        ticketConfigurations: [
+          {
+            type: TicketType.VIP,
+            price: 100000,
+            quantity: -50,
+          },
+        ],
+      };
+
+      // Act & Assert
+      await expect(useCase.execute(input)).rejects.toThrow('invalid quantity');
+    });
+  });
 });

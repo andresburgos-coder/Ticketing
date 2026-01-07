@@ -1,0 +1,54 @@
+<header class="w-full bg-white border-b border-gray-200 sticky top-0 z-50">
+  <div class="flex items-center justify-between px-4 py-3 max-w-7xl mx-auto">
+    <!-- Logo -->
+    <div class="flex items-center gap-2">
+      <a [routerLink]="['/']" class="flex items-center gap-2 text-gray-900 hover:text-blue-600 transition-colors">
+        <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 48 48">
+          <path d="M6 6H42L36 24L42 42H6L12 24L6 6Z"></path>
+        </svg>
+        <h1 class="text-xl font-bold">TicketMastery</h1>
+      </a>
+    </div>
+
+    <!-- Desktop Navigation -->
+    <nav class="hidden md:flex items-center gap-6">
+      <a [routerLink]="['/']" class="text-gray-700 hover:text-blue-600 transition-colors">Events</a>
+      @if (isAuthenticated()) {
+        <a [routerLink]="['/my-tickets']" class="text-gray-700 hover:text-blue-600 transition-colors">My Tickets</a>
+        <a [routerLink]="['/profile']" class="text-gray-700 hover:text-blue-600 transition-colors">Profile</a>
+      }
+    </nav>
+
+    <!-- Auth Buttons Desktop -->
+    <div class="hidden md:flex items-center gap-2">
+      @if (!isAuthenticated()) {
+        <a [routerLink]="['/login']" class="px-4 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+          Login
+        </a>
+        <a [routerLink]="['/register']" class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+          Sign Up
+        </a>
+      } @else {
+        <button (click)="logout()" class="px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+          Logout
+        </button>
+      }
+    </div>
+
+    <!-- Mobile Menu Button -->
+    <button (click)="toggleMobileMenu()" class="md:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-lg">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        @if (!mobileMenuOpen()) {
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        } @else {
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        }
+      </svg>
+    </button>
+  </div>
+
+  <!-- Mobile Menu -->
+  @if (mobileMenuOpen()) {
+    <app-mobile-menu [isAuthenticated]="isAuthenticated()" (close)="toggleMobileMenu()"></app-mobile-menu>
+  }
+</header>

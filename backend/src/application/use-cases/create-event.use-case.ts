@@ -21,9 +21,11 @@ export interface CreateEventInput {
   name: string;
   date: Date;
   location: string;
+  imageUrl?: string;
   ticketConfigurations: Array<{
     type: TicketType;
     price: number;
+    currency: string;
     quantity: number;
   }>;
 }
@@ -50,7 +52,7 @@ export class CreateEventUseCase {
     const ticketConfigurations = input.ticketConfigurations.map(
       config => new TicketConfiguration(
         config.type,
-        Money.create(config.price, 'COP'),
+        Money.create(config.price, config.currency),
         config.quantity,
         config.quantity // Initially, all tickets are available
       )
@@ -62,7 +64,8 @@ export class CreateEventUseCase {
       input.name,
       input.date,
       input.location,
-      ticketConfigurations
+      ticketConfigurations,
+      input.imageUrl
     );
 
     // Persist event
@@ -106,6 +109,10 @@ export class CreateEventUseCase {
 
       if (config.price < 0) {
         throw new Error(`Ticket configuration ${index} has invalid price`);
+      }
+
+      if (!config.currency || config.currency.length !== 3) {
+        throw new Error(`Ticket configuration ${index} has invalid currency`);
       }
 
       if (config.quantity <= 0) {

@@ -65,43 +65,46 @@ Plan de implementación siguiendo metodología **TDD (Test-Driven Development)**
     - Test: multiply debe calcular correctamente
     - Commit: crear commit y push
     - _Requirements: 2.3, 7.2_
-  - [ ] 3.2 🟢 Implementar clase `Money` para pasar los tests
+  - [x] 3.2 🟢 Implementar clase `Money` para pasar los tests
     - Implementar constructor privado con validación
     - Implementar método estático `create()`
     - Implementar métodos `add()`, `multiply()`, `equals()`
     - _Requirements: 2.3, 7.2_
-  - [ ] 3.3 🔵 Escribir property test para `Money`
+  - [x] 3.3 🔵 Escribir property test para `Money`
     - **Property 11: Price Calculation by Ticket Type**
     - **Validates: Requirements 2.3**
 
-- [ ] 4. Implementar Value Object `Email` con TDD
-  - [ ] 4.1 🔴 Escribir tests unitarios para `Email`
+- [x] 4. Implementar Value Object `Email` con TDD
+  - [x] 4.1 🔴 Escribir tests unitarios para `Email`
     - Test: crear Email con formato válido debe funcionar
     - Test: crear Email con formato inválido debe lanzar excepción
     - Test: emails equivalentes (case insensitive) deben ser iguales
     - _Requirements: 7.4_
-  - [ ] 4.2 🟢 Implementar clase `Email` para pasar los tests
+  - [x] 4.2 🟢 Implementar clase `Email` para pasar los tests
     - Implementar validación con regex
     - Implementar normalización (lowercase, trim)
     - _Requirements: 7.4_
-  - [ ] 4.3 🔵 Escribir property test para `Email`
+  - [x] 4.3 🔵 Escribir property test para `Email`
     - **Property 10: Email Format Validation**
     - **Validates: Requirements 7.4**
 
-- [ ] 5. Implementar Value Object `TicketQuantity` con TDD
-  - [ ] 5.1 🔴 Escribir tests unitarios para `TicketQuantity`
+- [x] 5. Implementar Value Object `TicketQuantity` con TDD
+  - [x] 5.1 🔴 Escribir tests unitarios para `TicketQuantity`
     - Test: crear con cantidad entre 1-10 debe funcionar
     - Test: crear con cantidad 0 debe lanzar excepción
     - Test: crear con cantidad > 10 debe lanzar excepción
+    - Commit: `git add . && git commit -m "🔴 RED: Add TicketQuantity unit tests"`
     - _Requirements: 7.1_
-  - [ ] 5.2 🟢 Implementar clase `TicketQuantity` para pasar los tests
+  - [x] 5.2 🟢 Implementar clase `TicketQuantity` para pasar los tests
     - Implementar validación de rango [1, 10]
+    - Commit: `git add . && git commit -m "🟢 GREEN: Implement TicketQuantity value object"`
     - _Requirements: 7.1_
-  - [ ] 5.3 🔵 Escribir property test para `TicketQuantity`
+  - [x] 5.3 🔵 Escribir property test para `TicketQuantity`
     - **Property 8: Reservation Quantity Validation**
     - **Validates: Requirements 7.1**
+    - Commit: `git add . && git commit -m "🔵 REFACTOR: Add TicketQuantity property tests"`
 
-- [ ] 6. Checkpoint - Value Objects
+- [x] 6. Checkpoint - Value Objects
   - Ejecutar todos los tests: `npm test`
   - Verificar cobertura de tests
   - Ensure all tests pass, ask the user if questions arise.
@@ -110,63 +113,73 @@ Plan de implementación siguiendo metodología **TDD (Test-Driven Development)**
 
 ### Fase 3: Entidades de Dominio (TDD)
 
-- [ ] 7. Implementar entidad `Event` con TDD
-  - [ ] 7.1 🔴 Escribir tests unitarios para `Event`
+- [-] 7. Implementar entidad `Event` con TDD
+  - [x] 7.1 🔴 Escribir tests unitarios para `Event`
     - Test: crear Event con datos válidos
     - Test: getAvailability retorna cantidad correcta por tipo
     - Test: reserveTickets decrementa disponibilidad
     - Test: releaseTickets incrementa disponibilidad
     - Test: reserveTickets con cantidad insuficiente lanza excepción
+    - Commit: `git add . && git commit -m "🔴 RED: Add Event entity unit tests"`
     - _Requirements: 1.1, 1.2, 1.3, 3.2, 5.2_
-  - [ ] 7.2 🟢 Implementar clase `Event` para pasar los tests
+  - [x] 7.2 🟢 Implementar clase `Event` para pasar los tests
     - Implementar constructor con validación
     - Implementar `getAvailability()`, `reserveTickets()`, `releaseTickets()`
+    - Commit: `git add . && git commit -m "🟢 GREEN: Implement Event entity to pass tests"`
     - _Requirements: 1.1, 1.2, 1.3, 3.2, 5.2_
-  - [ ] 7.3 🔵 Escribir property test para invariante de disponibilidad
+  - [x] 7.3 🔵 Escribir property test para invariante de disponibilidad
     - **Property 2: Ticket Availability Invariant**
     - **Validates: Requirements 3.2, 5.2**
+    - Commit: `git add . && git commit -m "🔵 REFACTOR: Add Event property tests for availability invariant"`
 
-- [ ] 8. Implementar patrón State para `Reservation` con TDD
-  - [ ] 8.1 🔴 Escribir tests para estados de reserva
+- [x] 8. Implementar patrón State para `Reservation` con TDD
+  - [x] 8.1 🔴 Escribir tests para estados de reserva
     - Test: ActiveState permite confirm, cancel, expire
     - Test: ConfirmedState no permite ninguna transición
     - Test: ExpiredState no permite ninguna transición
     - Test: CancelledState no permite ninguna transición
+    - Commit: `git add . && git commit -m "🔴 RED: Add Reservation State pattern unit tests"`
     - _Requirements: 3.1, 3.3, 5.1_
-  - [ ] 8.2 🟢 Implementar interface `IReservationState` y estados concretos
+  - [x] 8.2 🟢 Implementar interface `IReservationState` y estados concretos
     - Implementar `ActiveReservationState`
     - Implementar `ConfirmedReservationState`
     - Implementar `ExpiredReservationState`
     - Implementar `CancelledReservationState`
+    - Commit: `git add . && git commit -m "🟢 GREEN: Implement Reservation State pattern"`
     - _Requirements: 3.1, 3.3, 5.1_
-  - [ ] 8.3 🔵 Escribir property test para máquina de estados
+  - [x] 8.3 🔵 Escribir property test para máquina de estados
     - **Property 6: Reservation State Machine Validity**
     - **Validates: Requirements 3.1, 3.3, 5.1**
+    - Commit: `git add . && git commit -m "🔵 REFACTOR: Add Reservation state machine property tests"`
 
 - [ ] 9. Implementar entidad `Reservation` con TDD
-  - [ ] 9.1 🔴 Escribir tests unitarios para `Reservation`
+  - [x] 9.1 🔴 Escribir tests unitarios para `Reservation`
     - Test: crear Reservation con estado inicial Active
     - Test: confirm() cambia estado a Confirmed
     - Test: cancel() cambia estado a Cancelled
     - Test: expire() cambia estado a Expired
     - Test: isExpired retorna true cuando expiresAt < now
+    - Commit: `git add . && git commit -m "🔴 RED: Add Reservation entity unit tests"`
     - _Requirements: 3.1, 3.3, 3.4, 4.3, 5.1_
-  - [ ] 9.2 🟢 Implementar clase `Reservation` para pasar los tests
+  - [x] 9.2 🟢 Implementar clase `Reservation` para pasar los tests
     - Implementar constructor con estado inicial
     - Implementar métodos de transición usando State Pattern
+    - Commit: `git add . && git commit -m "🟢 GREEN: Implement Reservation entity with State pattern"`
     - _Requirements: 3.1, 3.3, 3.4, 4.3, 5.1_
 
-- [ ] 10. Implementar entidad `Ticket` con TDD
-  - [ ] 10.1 🔴 Escribir tests unitarios para `Ticket`
+- [x] 10. Implementar entidad `Ticket` con TDD
+  - [x] 10.1 🔴 Escribir tests unitarios para `Ticket`
     - Test: crear Ticket con todos los campos requeridos
     - Test: toJSON() retorna objeto con todos los campos
+    - Commit: `git add . && git commit -m "🔴 RED: Add Ticket entity unit tests"`
     - _Requirements: 4.4, 6.2_
-  - [ ] 10.2 🟢 Implementar clase `Ticket` para pasar los tests
+  - [x] 10.2 🟢 Implementar clase `Ticket` para pasar los tests
     - Implementar constructor con validación
     - Implementar método `toJSON()`
+    - Commit: `git add . && git commit -m "🟢 GREEN: Implement Ticket entity"`
     - _Requirements: 4.4, 6.2_
 
-- [ ] 11. Checkpoint - Entidades de Dominio
+- [x] 11. Checkpoint - Entidades de Dominio
   - Ejecutar todos los tests: `npm test`
   - Verificar que property tests pasan con 100 iteraciones
   - Ensure all tests pass, ask the user if questions arise.
@@ -176,80 +189,85 @@ Plan de implementación siguiendo metodología **TDD (Test-Driven Development)**
 ### Fase 4: Estrategias de Precio (TDD)
 
 - [ ] 12. Implementar patrón Strategy para precios con TDD
-  - [ ] 12.1 🔴 Escribir tests para estrategias de precio
+  - [x] 12.1 🔴 Escribir tests para estrategias de precio
     - Test: VipPricingStrategy calcula precio × 1.5
     - Test: GeneralPricingStrategy calcula precio × 1.0
     - Test: EarlyBirdPricingStrategy calcula precio × 0.8
+    - Commit: `git add . && git commit -m "🔴 RED: Add pricing strategy unit tests"`
     - _Requirements: 2.3_
-  - [ ] 12.2 🟢 Implementar interface `IPricingStrategy` y estrategias concretas
+  - [x] 12.2 🟢 Implementar interface `IPricingStrategy` y estrategias concretas
     - Implementar `VipPricingStrategy`
     - Implementar `GeneralPricingStrategy`
     - Implementar `EarlyBirdPricingStrategy`
+    - Commit: `git add . && git commit -m "🟢 GREEN: Implement pricing strategies"`
     - _Requirements: 2.3_
-  - [ ] 12.3 🔵 Escribir property test para cálculo de precios
+  - [x] 12.3 🔵 Escribir property test para cálculo de precios
     - **Property 11: Price Calculation by Ticket Type**
     - **Validates: Requirements 2.3**
+    - Commit: `git add . && git commit -m "🔵 REFACTOR: Add pricing strategy property tests"`
 
-- [ ] 13. Implementar `PricingService` con TDD
-  - [ ] 13.1 🔴 Escribir tests para PricingService
+- [-] 13. Implementar `PricingService` con TDD
+  - [x] 13.1 🔴 Escribir tests para PricingService
     - Test: calculatePrice usa estrategia correcta según tipo
     - Test: lanza error si tipo no tiene estrategia
+    - Commit: `git add . && git commit -m "🔴 RED: Add PricingService unit tests"`
     - _Requirements: 2.3_
-  - [ ] 13.2 🟢 Implementar `PricingService` para pasar los tests
+  - [x] 13.2 🟢 Implementar `PricingService` para pasar los tests
     - Inyectar estrategias en constructor
     - Implementar `calculatePrice()`
+    - Commit: `git add . && git commit -m "🟢 GREEN: Implement PricingService"`
     - _Requirements: 2.3_
 
 ---
 
 ### Fase 5: Repositorios e Infraestructura (TDD)
 
-- [ ] 14. Implementar interfaces de repositorio
+- [x] 14. Implementar interfaces de repositorio
   - Crear `IEventRepository` con métodos: save, findById, findAll, update
   - Crear `ITicketRepository` con métodos: save, saveMany, findByBuyer, findByEvent
   - Crear `IReservationRepository` con métodos: save, findById, findExpired, update
   - Crear tokens de inyección para DIP
   - _Requirements: 1.1, 1.3, 6.1_
 
-- [ ] 15. Implementar `TypeOrmEventRepository` con TDD
-  - [ ] 15.1 🔴 Escribir tests de integración para EventRepository
+- [-] 15. Implementar `TypeOrmEventRepository` con TDD
+  - [x] 15.1 🔴 Escribir tests de integración para EventRepository
     - Test: save persiste evento y retorna con ID
     - Test: findById retorna evento existente
     - Test: findById retorna null para ID inexistente
     - _Requirements: 1.1, 1.3, 1.4_
-  - [ ] 15.2 🟢 Implementar `TypeOrmEventRepository` para pasar los tests
+  - [x] 15.2 🟢 Implementar `TypeOrmEventRepository` para pasar los tests
     - Implementar mapper Event ↔ EventOrmEntity
     - Implementar métodos del repositorio
     - _Requirements: 1.1, 1.3, 1.4_
-  - [ ] 15.3 🔵 Escribir property test para round-trip de persistencia
+  - [x] 15.3 🔵 Escribir property test para round-trip de persistencia
     - **Property 1: Event Persistence Round-Trip**
     - **Validates: Requirements 1.1, 1.3, 8.3**
 
-- [ ] 16. Implementar `TypeOrmReservationRepository` con TDD
-  - [ ] 16.1 🔴 Escribir tests de integración para ReservationRepository
+- [x] 16. Implementar `TypeOrmReservationRepository` con TDD
+  - [x] 16.1 🔴 Escribir tests de integración para ReservationRepository
     - Test: save persiste reserva
     - Test: findExpired retorna reservas con expiresAt < now y status ACTIVE
     - Test: update actualiza estado correctamente
     - _Requirements: 3.1, 3.3, 3.4_
-  - [ ] 16.2 🟢 Implementar `TypeOrmReservationRepository` para pasar los tests
+  - [x] 16.2 🟢 Implementar `TypeOrmReservationRepository` para pasar los tests
     - Implementar mapper Reservation ↔ ReservationOrmEntity
     - Implementar métodos del repositorio
     - _Requirements: 3.1, 3.3, 3.4_
 
-- [ ] 17. Implementar `TypeOrmTicketRepository` con TDD
-  - [ ] 17.1 🔴 Escribir tests de integración para TicketRepository
+- [-] 17. Implementar `TypeOrmTicketRepository` con TDD
+  - [x] 17.1 🔴 Escribir tests de integración para TicketRepository
     - Test: save persiste ticket
     - Test: findByBuyer retorna tickets del comprador
     - _Requirements: 4.4, 6.1_
-  - [ ] 17.2 🟢 Implementar `TypeOrmTicketRepository` para pasar los tests
+  - [x] 17.2 🟢 Implementar `TypeOrmTicketRepository` para pasar los tests
     - Implementar mapper Ticket ↔ TicketOrmEntity
     - Implementar métodos del repositorio
     - _Requirements: 4.4, 6.1_
-  - [ ] 17.3 🔵 Escribir property test para serialización round-trip
+  - [x] 17.3 🔵 Escribir property test para serialización round-trip
     - **Property 5: Entity Serialization Round-Trip**
     - **Validates: Requirements 8.3**
 
-- [ ] 18. Checkpoint - Repositorios
+- [x] 18. Checkpoint - Repositorios
   - Ejecutar tests de integración con base de datos de prueba
   - Verificar que mappers funcionan correctamente
   - Ensure all tests pass, ask the user if questions arise.
@@ -258,72 +276,72 @@ Plan de implementación siguiendo metodología **TDD (Test-Driven Development)**
 
 ### Fase 6: Casos de Uso (TDD)
 
-- [ ] 19. Implementar `CreateEventUseCase` con TDD
-  - [ ] 19.1 🔴 Escribir tests para CreateEventUseCase
+- [x] 19. Implementar `CreateEventUseCase` con TDD
+  - [x] 19.1 🔴 Escribir tests para CreateEventUseCase
     - Test: crea evento con configuraciones de tickets
     - Test: valida datos de entrada
     - Test: retorna evento creado con ID
     - _Requirements: 1.1, 1.2_
-  - [ ] 19.2 🟢 Implementar `CreateEventUseCase` para pasar los tests
+  - [x] 19.2 🟢 Implementar `CreateEventUseCase` para pasar los tests
     - Inyectar IEventRepository
     - Implementar método execute()
     - _Requirements: 1.1, 1.2_
 
-- [ ] 20. Implementar `CreateReservationUseCase` con TDD
-  - [ ] 20.1 🔴 Escribir tests para CreateReservationUseCase
+- [x] 20. Implementar `CreateReservationUseCase` con TDD
+  - [x] 20.1 🔴 Escribir tests para CreateReservationUseCase
     - Test: crea reserva y decrementa disponibilidad
     - Test: rechaza si no hay suficientes tickets
     - Test: establece expiración a 15 minutos
     - _Requirements: 3.1, 3.2, 3.4, 3.5_
-  - [ ] 20.2 🟢 Implementar `CreateReservationUseCase` para pasar los tests
+  - [x] 20.2 🟢 Implementar `CreateReservationUseCase` para pasar los tests
     - Inyectar IEventRepository, IReservationRepository
     - Implementar transacción atómica
     - _Requirements: 3.1, 3.2, 3.4, 3.5_
-  - [ ] 20.3 🔵 Escribir property test para disponibilidad
+  - [x] 20.3 🔵 Escribir property test para disponibilidad
     - **Property 12: Availability Reflects Reservations**
     - **Validates: Requirements 2.2, 2.4, 2.5**
 
-- [ ] 21. Implementar `ProcessPaymentUseCase` con TDD
-  - [ ] 21.1 🔴 Escribir tests para ProcessPaymentUseCase
+- [x] 21. Implementar `ProcessPaymentUseCase` con TDD
+  - [x] 21.1 🔴 Escribir tests para ProcessPaymentUseCase
     - Test: pago exitoso confirma reserva y genera tickets
     - Test: pago fallido cancela reserva y libera tickets
     - Test: valida que monto coincide con total de reserva
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
-  - [ ] 21.2 🟢 Implementar `ProcessPaymentUseCase` para pasar los tests
+  - [x] 21.2 🟢 Implementar `ProcessPaymentUseCase` para pasar los tests
     - Inyectar IPaymentGateway, IReservationRepository, ITicketRepository, IEventRepository
     - Implementar flujo de pago con transacción
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
-  - [ ] 21.3 🔵 Escribir property tests para flujos de pago
+  - [x] 21.3 🔵 Escribir property tests para flujos de pago
     - **Property 3: Successful Payment State Transitions**
     - **Property 4: Failed Payment Triggers Ticket Release**
     - **Validates: Requirements 4.2, 4.3, 4.4, 4.5, 5.1, 5.2**
 
-- [ ] 22. Implementar `ReleaseTicketsUseCase` con TDD
-  - [ ] 22.1 🔴 Escribir tests para ReleaseTicketsUseCase
+- [-] 22. Implementar `ReleaseTicketsUseCase` con TDD
+  - [x] 22.1 🔴 Escribir tests para ReleaseTicketsUseCase
     - Test: libera tickets e incrementa disponibilidad
     - Test: registra evento de liberación con timestamp y motivo
     - Test: reintenta hasta 3 veces si falla
     - _Requirements: 5.1, 5.2, 5.3, 5.5_
-  - [ ] 22.2 🟢 Implementar `ReleaseTicketsUseCase` para pasar los tests
+  - [x] 22.2 🟢 Implementar `ReleaseTicketsUseCase` para pasar los tests
     - Inyectar IEventRepository, IReservationRepository
     - Implementar RetryPolicy
     - _Requirements: 5.1, 5.2, 5.3, 5.5_
 
-- [ ] 23. Implementar `GetBuyerTicketsUseCase` con TDD
-  - [ ] 23.1 🔴 Escribir tests para GetBuyerTicketsUseCase
+- [x] 23. Implementar `GetBuyerTicketsUseCase` con TDD
+  - [x] 23.1 🔴 Escribir tests para GetBuyerTicketsUseCase
     - Test: retorna tickets confirmados del comprador
     - Test: retorna lista vacía si no tiene tickets
     - Test: cada ticket incluye todos los campos requeridos
     - _Requirements: 6.1, 6.2, 6.3_
-  - [ ] 23.2 🟢 Implementar `GetBuyerTicketsUseCase` para pasar los tests
+  - [x] 23.2 🟢 Implementar `GetBuyerTicketsUseCase` para pasar los tests
     - Inyectar ITicketRepository
     - Implementar método execute()
     - _Requirements: 6.1, 6.2, 6.3_
-  - [ ] 23.3 🔵 Escribir property test para consulta de tickets
+  - [x] 23.3 🔵 Escribir property test para consulta de tickets
     - **Property 7: Buyer Ticket Query Completeness**
     - **Validates: Requirements 6.1, 6.2**
 
-- [ ] 24. Checkpoint - Casos de Uso
+- [x] 24. Checkpoint - Casos de Uso
   - Ejecutar todos los tests unitarios y de propiedades
   - Verificar cobertura > 80%
   - Ensure all tests pass, ask the user if questions arise.
@@ -332,39 +350,39 @@ Plan de implementación siguiendo metodología **TDD (Test-Driven Development)**
 
 ### Fase 7: Controladores y API (TDD)
 
-- [ ] 25. Implementar `EventController` con TDD
-  - [ ] 25.1 🔴 Escribir tests de integración para EventController
+- [x] 25. Implementar `EventController` con TDD
+  - [x] 25.1 🔴 Escribir tests de integración para EventController
     - Test: POST /events crea evento y retorna 201
     - Test: GET /events/:id retorna evento existente
     - Test: GET /events/:id retorna 404 para ID inexistente
     - _Requirements: 1.1, 1.3, 1.4_
-  - [ ] 25.2 🟢 Implementar `EventController` para pasar los tests
+  - [x] 25.2 🟢 Implementar `EventController` para pasar los tests
     - Crear DTOs con class-validator
     - Implementar endpoints REST
     - _Requirements: 1.1, 1.3, 1.4_
 
-- [ ] 26. Implementar `ReservationController` con TDD
-  - [ ] 26.1 🔴 Escribir tests de integración para ReservationController
+- [x] 26. Implementar `ReservationController` con TDD
+  - [x] 26.1 🔴 Escribir tests de integración para ReservationController
     - Test: POST /reservations crea reserva y retorna 201
     - Test: POST /reservations retorna 409 si no hay disponibilidad
     - Test: POST /reservations/:id/payment procesa pago
     - _Requirements: 3.1, 3.5, 4.1_
-  - [ ] 26.2 🟢 Implementar `ReservationController` para pasar los tests
+  - [x] 26.2 🟢 Implementar `ReservationController` para pasar los tests
     - Crear DTOs con validación
     - Implementar endpoints REST
     - _Requirements: 3.1, 3.5, 4.1_
 
-- [ ] 27. Implementar `TicketController` con TDD
-  - [ ] 27.1 🔴 Escribir tests de integración para TicketController
+- [x] 27. Implementar `TicketController` con TDD
+  - [x] 27.1 🔴 Escribir tests de integración para TicketController
     - Test: GET /tickets?email=x retorna tickets del comprador
     - Test: GET /tickets?email=x retorna lista vacía si no tiene
     - _Requirements: 6.1, 6.3_
-  - [ ] 27.2 🟢 Implementar `TicketController` para pasar los tests
+  - [x] 27.2 🟢 Implementar `TicketController` para pasar los tests
     - Crear DTOs de respuesta
     - Implementar endpoint REST
     - _Requirements: 6.1, 6.3_
 
-- [ ] 28. Implementar `DomainExceptionFilter`
+- [x] 28. Implementar `DomainExceptionFilter`
   - Crear filtro global para excepciones de dominio
   - Mapear códigos de error a HTTP status codes
   - Formatear respuestas de error consistentes
@@ -374,43 +392,43 @@ Plan de implementación siguiendo metodología **TDD (Test-Driven Development)**
 
 ### Fase 8: Autenticación y Usuarios (TDD)
 
-- [ ] 29. Implementar entidad `User` con TDD
-  - [ ] 29.1 🔴 Escribir tests unitarios para `User`
+- [x] 29. Implementar entidad `User` con TDD
+  - [x] 29.1 🔴 Escribir tests unitarios para `User`
     - Test: crear User con datos válidos
     - Test: hashear password correctamente
     - Test: verificar password correcto retorna true
     - Test: verificar password incorrecto retorna false
     - _Requirements: 9.1, 9.2_
-  - [ ] 29.2 🟢 Implementar clase `User` para pasar los tests
+  - [x] 29.2 🟢 Implementar clase `User` para pasar los tests
     - Implementar constructor con validación
     - Implementar métodos `hashPassword()`, `verifyPassword()`
     - Usar bcrypt para hashing
     - _Requirements: 9.1, 9.2_
 
-- [ ] 30. Implementar `AuthService` con TDD
-  - [ ] 30.1 🔴 Escribir tests para AuthService
+- [x] 30. Implementar `AuthService` con TDD
+  - [x] 30.1 🔴 Escribir tests para AuthService
     - Test: register crea usuario y retorna tokens
     - Test: login con credenciales válidas retorna tokens
     - Test: login con credenciales inválidas lanza excepción
     - Test: refreshToken genera nuevo accessToken
     - _Requirements: 9.1, 9.2, 9.3_
-  - [ ] 30.2 🟢 Implementar `AuthService` para pasar los tests
+  - [x] 30.2 🟢 Implementar `AuthService` para pasar los tests
     - Inyectar IUserRepository, JwtService
     - Implementar métodos register, login, refreshToken
     - Generar JWT con payload correcto
     - _Requirements: 9.1, 9.2, 9.3_
-  - [ ] 30.3 🔵 Escribir property test para JWT
+  - [x] 30.3 🔵 Escribir property test para JWT
     - **Property 13: JWT Token Validity**
     - **Validates: Requirements 9.2, 9.3**
 
-- [ ] 31. Implementar `AuthController` con TDD
-  - [ ] 31.1 🔴 Escribir tests de integración para AuthController
+- [x] 31. Implementar `AuthController` con TDD
+  - [x] 31.1 🔴 Escribir tests de integración para AuthController
     - Test: POST /auth/register crea usuario y retorna 201
     - Test: POST /auth/login retorna tokens con 200
     - Test: POST /auth/login retorna 401 con credenciales inválidas
     - Test: POST /auth/refresh retorna nuevo token
     - _Requirements: 9.1, 9.2, 9.3, 9.4_
-  - [ ] 31.2 🟢 Implementar `AuthController` para pasar los tests
+  - [x] 31.2 🟢 Implementar `AuthController` para pasar los tests
     - Crear DTOs: LoginDto, RegisterDto, RefreshTokenDto
     - Implementar endpoints REST
     - _Requirements: 9.1, 9.2, 9.3, 9.4_
@@ -669,6 +687,10 @@ Plan de implementación siguiendo metodología **TDD (Test-Driven Development)**
 
 - Todas las tareas son obligatorias para TDD completo
 - Cada tarea sigue el ciclo TDD: 🔴 Red → 🟢 Green → 🔵 Refactor
+- **Git Commits**: Cada fase TDD debe hacer commit con mensaje descriptivo:
+  - 🔴 RED: `git add . && git commit -m "🔴 RED: Add [component] unit tests"`
+  - 🟢 GREEN: `git add . && git commit -m "🟢 GREEN: Implement [component] to pass tests"`
+  - 🔵 REFACTOR: `git add . && git commit -m "🔵 REFACTOR: Add [component] property tests"`
 - Los checkpoints son puntos de validación donde todos los tests deben pasar
 - Property tests usan fast-check con mínimo 100 iteraciones
 - Tipado estricto: no usar `any` en ningún momento
@@ -680,6 +702,7 @@ Plan de implementación siguiendo metodología **TDD (Test-Driven Development)**
 - **Comandos útiles**:
   - `docker-compose up -d` - Iniciar entorno de desarrollo
   - `docker-compose exec backend npm test` - Ejecutar tests
+  
   - `docker-compose exec backend npm run migration:run` - Ejecutar migraciones
   - `docker-compose logs -f backend` - Ver logs del backend
   - `docker-compose down -v` - Detener y limpiar volúmenes

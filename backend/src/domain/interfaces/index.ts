@@ -8,8 +8,10 @@
 export { IEventRepository } from './event-repository.interface';
 export { ITicketRepository } from './ticket-repository.interface';
 export { IReservationRepository } from './reservation-repository.interface';
+export { IUserRepository } from './user-repository.interface';
 export {
   EVENT_REPOSITORY,
   TICKET_REPOSITORY,
   RESERVATION_REPOSITORY,
+  USER_REPOSITORY,
 } from './repository-tokens';

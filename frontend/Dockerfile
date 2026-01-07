@@ -1,26 +1,39 @@
-# frontend/Dockerfile
-FROM node:20-alpine AS base
+# Etapa de desarrollo
+FROM node:20-alpine as development
+
 WORKDIR /app
-RUN apk add --no-cache libc6-compat
 
-# Development stage
-FROM base AS development
+# Copiar archivos de dependencias
 COPY package*.json ./
-RUN npm ci
+
+# Instalar dependencias
+RUN npm install
+
+# Copiar el código fuente
 COPY . .
-EXPOSE 4200
-CMD ["npm", "run", "start", "--", "--host", "0.0.0.0"]
 
-# Build stage
-FROM base AS builder
+# Exponer el puerto de desarrollo
+EXPOSE 4200
+
+# Comando por defecto
+CMD ["npm", "run", "start", "--", "--host", "0.0.0.0", "--poll"]
+
+# Etapa de construcción
+FROM node:20-alpine as build
+
+WORKDIR /app
+
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --only=production
+
 COPY . .
 RUN npm run build
 
-# Production stage
-FROM nginx:alpine AS production
-COPY --from=builder /app/dist/frontend/browser /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/nginx.conf
+# Etapa de producción
+FROM nginx:alpine as production
+
+COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
+
 EXPOSE 80
+
 CMD ["nginx", "-g", "daemon off;"]

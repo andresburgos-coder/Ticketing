@@ -54,3 +54,9 @@ export const RESERVATION_REPOSITORY = Symbol('IReservationRepository');
  * Used to inject the Payment gateway implementation
  */
 export const PAYMENT_GATEWAY = Symbol('IPaymentGateway');
+
+/**
+ * Token for IUserRepository injection
+ * Used to inject the User repository implementation
+ */
+export const USER_REPOSITORY = Symbol('IUserRepository');

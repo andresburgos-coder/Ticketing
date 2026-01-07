@@ -242,7 +242,7 @@ stateDiagram-v2
 
 #### Acceptance Criteria
 
-1. WHEN un comprador paga una reserva activa THEN el sistema SHALL procesar el pago con el monto total calculado
+1. GIVEN un comprador paga una reserva activa WHEN el sistema SHALL procesar el pago con el monto total calculado
 2. WHEN el pago es exitoso THEN el sistema SHALL actualizar el estado del pago a "Completado"
 3. WHEN el pago es exitoso THEN el sistema SHALL cambiar el estado de la reserva a "Confirmada"
 4. WHEN el pago es exitoso THEN el sistema SHALL generar los tickets con código único, evento, tipo y datos del comprador

@@ -216,4 +216,145 @@ describe('CreateReservationUseCase', () => {
       expect(result.id.length).toBeGreaterThan(0);
     });
   });
+
+  describe('validation', () => {
+    it('should reject if event not found', async () => {
+      // Arrange
+      const input = {
+        eventId: 'non-existent-event',
+        ticketType: TicketType.VIP,
+        quantity: 1,
+        buyerEmail: 'buyer@example.com',
+      };
+
+      mockEventRepository.findById.mockResolvedValue(null);
+
+      // Act & Assert
+      await expect(useCase.execute(input)).rejects.toThrow('not found');
+    });
+
+    it('should reject if ticket configuration not found', async () => {
+      // Arrange
+      const eventId = 'event-123';
+      const event = new Event(
+        eventId,
+        'Concierto de Rock',
+        new Date('2025-03-15T20:00:00Z'),
+        'Estadio Nacional',
+        [
+          new TicketConfiguration(
+            TicketType.VIP,
+            Money.create(150000, 'COP'),
+            100,
+            100
+          ),
+        ]
+      );
+
+      const input = {
+        eventId,
+        ticketType: TicketType.GENERAL, // Not configured for this event
+        quantity: 1,
+        buyerEmail: 'buyer@example.com',
+      };
+
+      mockEventRepository.findById.mockResolvedValue(event);
+
+      // Act & Assert
+      await expect(useCase.execute(input)).rejects.toThrow('not found');
+    });
+
+    it('should reject invalid email', async () => {
+      // Arrange
+      const eventId = 'event-123';
+      const event = new Event(
+        eventId,
+        'Concierto de Rock',
+        new Date('2025-03-15T20:00:00Z'),
+        'Estadio Nacional',
+        [
+          new TicketConfiguration(
+            TicketType.VIP,
+            Money.create(150000, 'COP'),
+            100,
+            100
+          ),
+        ]
+      );
+
+      const input = {
+        eventId,
+        ticketType: TicketType.VIP,
+        quantity: 1,
+        buyerEmail: 'invalid-email',
+      };
+
+      mockEventRepository.findById.mockResolvedValue(event);
+
+      // Act & Assert
+      await expect(useCase.execute(input)).rejects.toThrow();
+    });
+
+    it('should reject invalid quantity (zero)', async () => {
+      // Arrange
+      const eventId = 'event-123';
+      const event = new Event(
+        eventId,
+        'Concierto de Rock',
+        new Date('2025-03-15T20:00:00Z'),
+        'Estadio Nacional',
+        [
+          new TicketConfiguration(
+            TicketType.VIP,
+            Money.create(150000, 'COP'),
+            100,
+            100
+          ),
+        ]
+      );
+
+      const input = {
+        eventId,
+        ticketType: TicketType.VIP,
+        quantity: 0,
+        buyerEmail: 'buyer@example.com',
+      };
+
+      mockEventRepository.findById.mockResolvedValue(event);
+
+      // Act & Assert
+      await expect(useCase.execute(input)).rejects.toThrow();
+    });
+
+    it('should reject invalid quantity (exceeds max)', async () => {
+      // Arrange
+      const eventId = 'event-123';
+      const event = new Event(
+        eventId,
+        'Concierto de Rock',
+        new Date('2025-03-15T20:00:00Z'),
+        'Estadio Nacional',
+        [
+          new TicketConfiguration(
+            TicketType.VIP,
+            Money.create(150000, 'COP'),
+            100,
+            100
+          ),
+        ]
+      );
+
+      const input = {
+        eventId,
+        ticketType: TicketType.VIP,
+        quantity: 11, // Max is 10
+        buyerEmail: 'buyer@example.com',
+      };
+
+      mockEventRepository.findById.mockResolvedValue(event);
+
+      // Act & Assert
+      await expect(useCase.execute(input)).rejects.toThrow();
+    });
+  });
 });

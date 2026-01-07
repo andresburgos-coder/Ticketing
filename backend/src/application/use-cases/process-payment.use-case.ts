@@ -38,6 +38,7 @@ export interface ProcessPaymentOutput {
 @Injectable()
 export class ProcessPaymentUseCase {
   constructor(
+    @Inject('IPaymentGateway')
     private readonly paymentGateway: IPaymentGateway,
     @Inject(RESERVATION_REPOSITORY)
     private readonly reservationRepository: IReservationRepository,

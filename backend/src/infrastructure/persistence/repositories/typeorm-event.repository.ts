@@ -77,4 +77,17 @@ export class TypeOrmEventRepository implements IEventRepository {
     const updatedOrmEntity = await this.repository.save(ormEntity);
     return EventMapper.toDomain(updatedOrmEntity);
   }
+
+  /**
+   * Deletes an event from the database
+   * @param id - The ID of the event to delete
+   * @returns Promise resolving to void
+   * @throws Error if event not found or delete fails
+   */
+  async delete(id: string): Promise<void> {
+    const result = await this.repository.delete(id);
+    if (result.affected === 0) {
+      throw new Error('Event not found');
+    }
+  }
 }

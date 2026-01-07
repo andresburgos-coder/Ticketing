@@ -64,7 +64,7 @@ export class EventMapper {
     
     return new TicketConfiguration(
       ormConfig.type,
-      Money.create(price, 'COP'),
+      Money.create(price, ormConfig.currency || 'USD'),
       ormConfig.totalQuantity,
       ormConfig.availableQuantity
     );
@@ -81,6 +81,7 @@ export class EventMapper {
     const ormConfig = new TicketConfigurationOrmEntity();
     ormConfig.type = domainConfig.type;
     ormConfig.price = domainConfig.price.amount;
+    ormConfig.currency = domainConfig.price.currency;
     ormConfig.totalQuantity = domainConfig.totalQuantity;
     ormConfig.availableQuantity = domainConfig.availableQuantity;
 

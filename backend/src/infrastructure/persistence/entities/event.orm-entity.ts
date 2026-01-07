@@ -29,6 +29,9 @@ export class EventOrmEntity {
   @Column({ length: 500 })
   location!: string;
 
+  @Column({ type: 'text', nullable: true })
+  imageUrl?: string;
+
   @OneToMany(
     () => TicketConfigurationOrmEntity,
     (config) => config.event,

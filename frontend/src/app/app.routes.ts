@@ -1,5 +1,18 @@
 import { Routes } from '@angular/router';
+import { EventList } from './components/event-list/event-list';
+import { EventDetail } from './components/event-detail/event-detail';
+import { EventForm } from './components/event-form/event-form';
+import { Checkout } from './components/checkout/checkout';
+import { Confirmation } from './components/confirmation/confirmation';
+import { authGuard } from './core/guards/auth.guard';
+import { checkoutGuard } from './core/guards/checkout.guard';
 
 export const routes: Routes = [
-  // Routes will be added as features are implemented
+    { path: '', component: EventList },
+    { path: 'event/:id', component: EventDetail },
+    { path: 'event/:id/edit', component: EventForm },
+    { path: 'create-event', component: EventForm },
+    { path: 'checkout', component: Checkout, canActivate: [checkoutGuard] },
+    { path: 'confirmation', component: Confirmation },
+    { path: '**', redirectTo: '' }
 ];

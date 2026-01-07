@@ -32,6 +32,9 @@ export class TicketConfigurationOrmEntity {
   @Column('decimal', { precision: 10, scale: 2 })
   price!: number;
 
+  @Column({ length: 3, default: 'USD' })
+  currency!: string;
+
   @Column()
   totalQuantity!: number;
 
