@@ -48,3 +48,9 @@ export const TICKET_REPOSITORY = Symbol('ITicketRepository');
  * Used to inject the Reservation repository implementation
  */
 export const RESERVATION_REPOSITORY = Symbol('IReservationRepository');
+
+/**
+ * Token for IPaymentGateway injection
+ * Used to inject the Payment gateway implementation
+ */
+export const PAYMENT_GATEWAY = Symbol('IPaymentGateway');

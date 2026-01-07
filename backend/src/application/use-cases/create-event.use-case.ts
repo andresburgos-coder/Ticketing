@@ -1,0 +1,116 @@
+import { Injectable, Inject } from '@nestjs/common';
+import { Event } from '../../domain/entities/event.entity';
+import { TicketConfiguration } from '../../domain/entities/ticket-configuration.entity';
+import { TicketType } from '../../domain/value-objects/ticket-type.vo';
+import { Money } from '../../domain/value-objects/money.vo';
+import { IEventRepository } from '../../domain/interfaces/event-repository.interface';
+import { EVENT_REPOSITORY } from '../../domain/interfaces/repository-tokens';
+import { v4 as uuidv4 } from 'uuid';
+
+/**
+ * CreateEventUseCase
+ * 
+ * Use case for creating new events with ticket configurations.
+ * Follows the Single Responsibility Principle - only responsible for event creation logic.
+ * 
+ * Requirements: 1.1, 1.2
+ * - 1.1: Persist event and return unique identifier
+ * - 1.2: Store ticket configuration with price and quantity
+ */
+export interface CreateEventInput {
+  name: string;
+  date: Date;
+  location: string;
+  ticketConfigurations: Array<{
+    type: TicketType;
+    price: number;
+    quantity: number;
+  }>;
+}
+
+@Injectable()
+export class CreateEventUseCase {
+  constructor(
+    @Inject(EVENT_REPOSITORY)
+    private readonly eventRepository: IEventRepository,
+  ) {}
+
+  /**
+   * Executes the use case to create a new event.
+   * 
+   * @param input - The input data for creating an event
+   * @returns Promise resolving to the created Event with ID
+   * @throws Error if input validation fails or repository operation fails
+   */
+  async execute(input: CreateEventInput): Promise<Event> {
+    // Validate input
+    this.validateInput(input);
+
+    // Create ticket configurations
+    const ticketConfigurations = input.ticketConfigurations.map(
+      config => new TicketConfiguration(
+        config.type,
+        Money.create(config.price, 'COP'),
+        config.quantity,
+        config.quantity // Initially, all tickets are available
+      )
+    );
+
+    // Create event entity
+    const event = new Event(
+      uuidv4(),
+      input.name,
+      input.date,
+      input.location,
+      ticketConfigurations
+    );
+
+    // Persist event
+    const savedEvent = await this.eventRepository.save(event);
+
+    return savedEvent;
+  }
+
+  /**
+   * Validates the input data for event creation.
+   * 
+   * @param input - The input to validate
+   * @throws Error if validation fails
+   */
+  private validateInput(input: CreateEventInput): void {
+    if (!input.name || input.name.trim().length === 0) {
+      throw new Error('Event name is required and cannot be empty');
+    }
+
+    if (!input.date) {
+      throw new Error('Event date is required');
+    }
+
+    if (input.date < new Date()) {
+      throw new Error('Event date cannot be in the past');
+    }
+
+    if (!input.location || input.location.trim().length === 0) {
+      throw new Error('Event location is required and cannot be empty');
+    }
+
+    if (!input.ticketConfigurations || input.ticketConfigurations.length === 0) {
+      throw new Error('At least one ticket configuration is required');
+    }
+
+    // Validate each ticket configuration
+    input.ticketConfigurations.forEach((config, index) => {
+      if (!config.type) {
+        throw new Error(`Ticket configuration ${index} is missing type`);
+      }
+
+      if (config.price < 0) {
+        throw new Error(`Ticket configuration ${index} has invalid price`);
+      }
+
+      if (config.quantity <= 0) {
+        throw new Error(`Ticket configuration ${index} has invalid quantity`);
+      }
+    });
+  }
+}
