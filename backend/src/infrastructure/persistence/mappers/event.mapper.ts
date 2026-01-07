@@ -57,9 +57,14 @@ export class EventMapper {
   private static ticketConfigToDomain(
     ormConfig: TicketConfigurationOrmEntity
   ): TicketConfiguration {
+    // Handle decimal values that may come as strings from the database
+    const price = typeof ormConfig.price === 'string' 
+      ? parseFloat(ormConfig.price) 
+      : ormConfig.price;
+    
     return new TicketConfiguration(
       ormConfig.type,
-      Money.create(ormConfig.price, 'COP'),
+      Money.create(price, 'COP'),
       ormConfig.totalQuantity,
       ormConfig.availableQuantity
     );
