@@ -1,4 +1,5 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 import { Event } from '../../src/domain/entities/event.entity';
 import { TicketConfiguration } from '../../src/domain/entities/ticket-configuration.entity';
 import { TicketType } from '../../src/domain/value-objects/ticket-type.vo';
@@ -53,6 +54,7 @@ describe('TypeOrmEventRepository Integration Tests', () => {
   describe('save', () => {
     it('should persist event and return with ID', async () => {
       // Arrange
+      const eventId = uuidv4();
       const ticketConfigs = [
         new TicketConfiguration(
           TicketType.VIP,
@@ -69,7 +71,7 @@ describe('TypeOrmEventRepository Integration Tests', () => {
       ];
 
       const event = new Event(
-        'event-123',
+        eventId,
         'Concierto de Rock',
         new Date('2025-03-15T20:00:00Z'),
         'Estadio Nacional',
@@ -80,7 +82,7 @@ describe('TypeOrmEventRepository Integration Tests', () => {
       const savedEvent = await repository.save(event);
 
       // Assert
-      expect(savedEvent.id).toBe('event-123');
+      expect(savedEvent.id).toBe(eventId);
       expect(savedEvent.name).toBe('Concierto de Rock');
       expect(savedEvent.ticketConfigurations).toHaveLength(2);
       expect(savedEvent.location).toBe('Estadio Nacional');
@@ -90,6 +92,7 @@ describe('TypeOrmEventRepository Integration Tests', () => {
   describe('findById', () => {
     it('should return event when it exists', async () => {
       // Arrange
+      const eventId = uuidv4();
       const ticketConfigs = [
         new TicketConfiguration(
           TicketType.VIP,
@@ -100,7 +103,7 @@ describe('TypeOrmEventRepository Integration Tests', () => {
       ];
 
       const event = new Event(
-        'event-456',
+        eventId,
         'Festival de Música',
         new Date('2025-04-20T18:00:00Z'),
         'Parque Central',
@@ -111,7 +114,7 @@ describe('TypeOrmEventRepository Integration Tests', () => {
       await repository.save(event);
 
       // Act
-      const foundEvent = await repository.findById('event-456');
+      const foundEvent = await repository.findById(eventId);
 
       // Assert
       expect(foundEvent).not.toBeNull();
@@ -122,7 +125,7 @@ describe('TypeOrmEventRepository Integration Tests', () => {
 
     it('should return null when event does not exist', async () => {
       // Act
-      const foundEvent = await repository.findById('non-existent-id');
+      const foundEvent = await repository.findById(uuidv4());
 
       // Assert
       expect(foundEvent).toBeNull();
