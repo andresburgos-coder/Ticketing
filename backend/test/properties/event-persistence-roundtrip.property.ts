@@ -139,6 +139,10 @@ describe('Event Persistence Round-Trip Property Test', () => {
           const originalConfig = originalEvent.ticketConfigurations[i];
           const retrievedConfig = retrievedEvent!.ticketConfigurations[i];
 
+          if (!originalConfig || !retrievedConfig) {
+            throw new Error(`Missing configuration at index ${i}`);
+          }
+
           expect(retrievedConfig.type).toBe(originalConfig.type);
           expect(retrievedConfig.price.amount).toBe(originalConfig.price.amount);
           expect(retrievedConfig.price.currency).toBe(originalConfig.price.currency);
