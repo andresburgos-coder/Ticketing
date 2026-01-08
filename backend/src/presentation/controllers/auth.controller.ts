@@ -1,6 +1,9 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, Headers, BadRequestException, Res } from '@nestjs/common';
+import { Response } from 'express';
+import { Throttle } from '@nestjs/throttler';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { AuthService, AuthResponse } from '../../application/services/auth.service';
+import { CsrfService } from '../../infrastructure/external/csrf.service';
 import { LoginDto } from '../../application/dto/login.dto';
 import { RegisterDto } from '../../application/dto/register.dto';
 import { RefreshTokenDto } from '../../application/dto/refresh-token.dto';
@@ -8,7 +11,7 @@ import { RefreshTokenDto } from '../../application/dto/refresh-token.dto';
 /**
  * AuthController
  * Handles authentication endpoints: register, login, and token refresh
- * 
+ *
  * Requirements: 9.1, 9.2, 9.3, 9.4
  * - 9.1: User registration with email and password
  * - 9.2: JWT token generation and validation
@@ -18,29 +21,33 @@ import { RefreshTokenDto } from '../../application/dto/refresh-token.dto';
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly csrfService: CsrfService
+  ) {}
 
   /**
    * Register a new user
    * POST /auth/register
-   * 
+   *
    * @param registerDto - Registration data (email, password, firstName, lastName)
    * @returns AuthResponse with tokens and user data
    * @throws ConflictException if user already exists
    * @throws BadRequestException if validation fails
    */
   @Post('register')
+  @Throttle({ auth: { limit: 5, ttl: 3600000 } }) // 5 registrations per hour per IP
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Register a new user',
     description: 'Creates a new user account with email, password, and personal information'
   })
-  @ApiBody({ 
+  @ApiBody({
     type: RegisterDto,
     description: 'User registration data'
   })
-  @ApiResponse({ 
-    status: 201, 
+  @ApiResponse({
+    status: 201,
     description: 'User successfully registered',
     schema: {
       type: 'object',
@@ -60,8 +67,8 @@ export class AuthController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 400, 
+  @ApiResponse({
+    status: 400,
     description: 'Bad request - validation failed',
     schema: {
       type: 'object',
@@ -72,8 +79,8 @@ export class AuthController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 409, 
+  @ApiResponse({
+    status: 409,
     description: 'Conflict - user already exists',
     schema: {
       type: 'object',
@@ -84,36 +91,68 @@ export class AuthController {
       }
     }
   })
-  async register(@Body() registerDto: RegisterDto): Promise<AuthResponse> {
-    return this.authService.register(
+  async register(
+    @Body() registerDto: RegisterDto,
+    @Headers('x-csrf-token') csrfToken: string,
+    @Res() res: Response
+  ): Promise<void> {
+    // Validate CSRF token
+    if (!csrfToken || !this.csrfService.validateToken(csrfToken)) {
+      throw new BadRequestException('Invalid or missing CSRF token');
+    }
+
+    const result = await this.authService.register(
       registerDto.email,
       registerDto.password,
       registerDto.firstName,
       registerDto.lastName
     );
+
+    // Set secure HttpOnly cookies with tokens
+    res.cookie('accessToken', result.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000, // 15 minutes
+      path: '/',
+    });
+
+    res.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/',
+    });
+
+    res.status(201).json({
+      user: result.user,
+      message: 'Registration successful',
+    });
   }
 
   /**
    * Login user with email and password
    * POST /auth/login
-   * 
+   *
    * @param loginDto - Login credentials (email, password)
    * @returns AuthResponse with tokens and user data
    * @throws UnauthorizedException if credentials are invalid
    * @throws BadRequestException if validation fails
    */
   @Post('login')
+  @Throttle({ auth: { limit: 5, ttl: 60000 } }) // 5 login attempts per minute per IP
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Login user',
     description: 'Authenticates user with email and password, returns JWT tokens'
   })
-  @ApiBody({ 
+  @ApiBody({
     type: LoginDto,
     description: 'User login credentials'
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'User successfully authenticated',
     schema: {
       type: 'object',
@@ -133,8 +172,8 @@ export class AuthController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 400, 
+  @ApiResponse({
+    status: 400,
     description: 'Bad request - validation failed',
     schema: {
       type: 'object',
@@ -145,8 +184,8 @@ export class AuthController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 401, 
+  @ApiResponse({
+    status: 401,
     description: 'Unauthorized - invalid credentials',
     schema: {
       type: 'object',
@@ -157,31 +196,64 @@ export class AuthController {
       }
     }
   })
-  async login(@Body() loginDto: LoginDto): Promise<AuthResponse> {
-    return this.authService.login(loginDto.email, loginDto.password);
+  async login(
+    @Body() loginDto: LoginDto,
+    @Headers('x-csrf-token') csrfToken: string,
+    @Res() res: Response
+  ): Promise<void> {
+    // Validate CSRF token
+    if (!csrfToken || !this.csrfService.validateToken(csrfToken)) {
+      throw new BadRequestException('Invalid or missing CSRF token');
+    }
+
+    const result = await this.authService.login(loginDto.email, loginDto.password);
+
+    // Set secure HttpOnly cookie with token
+    res.cookie('accessToken', result.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000, // 15 minutes
+      path: '/',
+    });
+
+    res.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/',
+    });
+
+    // Return user data (token is in HttpOnly cookie)
+    res.json({
+      user: result.user,
+      message: 'Login successful',
+    });
   }
 
   /**
    * Refresh access token using refresh token
    * POST /auth/refresh
-   * 
+   *
    * @param refreshTokenDto - Refresh token
    * @returns Object with new accessToken
    * @throws UnauthorizedException if refresh token is invalid
    * @throws BadRequestException if validation fails
    */
   @Post('refresh')
+  @Throttle({ auth: { limit: 10, ttl: 60000 } }) // 10 refresh attempts per minute per IP
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Refresh access token',
     description: 'Generates a new access token using a valid refresh token'
   })
-  @ApiBody({ 
+  @ApiBody({
     type: RefreshTokenDto,
     description: 'Refresh token data'
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'New access token generated',
     schema: {
       type: 'object',
@@ -190,8 +262,8 @@ export class AuthController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 400, 
+  @ApiResponse({
+    status: 400,
     description: 'Bad request - validation failed',
     schema: {
       type: 'object',
@@ -202,8 +274,8 @@ export class AuthController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 401, 
+  @ApiResponse({
+    status: 401,
     description: 'Unauthorized - invalid refresh token',
     schema: {
       type: 'object',
@@ -215,8 +287,28 @@ export class AuthController {
     }
   })
   async refresh(
-    @Body() refreshTokenDto: RefreshTokenDto
-  ): Promise<{ accessToken: string }> {
-    return this.authService.refreshToken(refreshTokenDto.refreshToken);
+    @Body() refreshTokenDto: RefreshTokenDto,
+    @Headers('x-csrf-token') csrfToken: string,
+    @Res() res: Response
+  ): Promise<void> {
+    // Validate CSRF token
+    if (!csrfToken || !this.csrfService.validateToken(csrfToken)) {
+      throw new BadRequestException('Invalid or missing CSRF token');
+    }
+
+    const result = await this.authService.refreshToken(refreshTokenDto.refreshToken);
+
+    // Update accessToken cookie
+    res.cookie('accessToken', result.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000, // 15 minutes
+      path: '/',
+    });
+
+    res.json({
+      message: 'Token refreshed successfully',
+    });
   }
 }

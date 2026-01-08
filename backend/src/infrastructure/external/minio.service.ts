@@ -100,15 +100,86 @@ export class MinioService {
   }
 
   /**
-   * Generates a public URL for a file in MinIO
+   * Generates a presigned URL that's accessible from the browser
    * @param objectPath - The path of the object in the bucket
-   * @returns The URL to access the file
+   * @param expiresIn - Expiration time in seconds (default: 24 hours)
+   * @returns The presigned URL to access the file
+   */
+  async getPresignedUrl(objectPath: string, expiresIn: number = 86400): Promise<string> {
+    try {
+      const presignedUrl = await this.client.presignedGetObject(
+        this.bucketName,
+        objectPath,
+        expiresIn,
+      );
+      
+      // Replace internal endpoint with external endpoint for browser access
+      // Convert from: http://minio:9000/... to http://127.0.0.1:9001/...
+      let url = presignedUrl;
+      
+      const internalEndpoint = process.env.MINIO_ENDPOINT || 'localhost';
+      const internalPort = process.env.MINIO_PORT || '9000';
+      const externalUrl = process.env.MINIO_EXTERNAL_URL || `http://127.0.0.1:9001`;
+      
+      // Replace the internal URL with the external URL
+      url = url.replace(
+        `http://${internalEndpoint}:${internalPort}`,
+        externalUrl
+      );
+      
+      this.logger.log(`Presigned URL generated for: ${objectPath}`);
+      return url;
+    } catch (error) {
+      this.logger.error(`Error generating presigned URL for ${objectPath}`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generates a public URL for a file in MinIO
+   * This returns a URL that points to the backend's file serving endpoint
+   * instead of directly to MinIO, which avoids CORS issues
+   * @param objectPath - The path of the object in the bucket
+   * @returns The URL to access the file through the backend
    */
   private generateFileUrl(objectPath: string): string {
-    const endpoint = process.env.MINIO_ENDPOINT || 'localhost';
-    const port = process.env.MINIO_PORT || '9000';
-    const protocol = process.env.MINIO_USE_SSL === 'true' ? 'https' : 'http';
-    return `${protocol}://${endpoint}:${port}/${this.bucketName}/${objectPath}`;
+    // Extract just the filename from the path (event-images/uuid-timestamp-name.jpg)
+    const filename = objectPath.split('/').pop() || objectPath;
+    
+    // Return a URL that goes through the backend's file endpoint
+    // This will be served from http://127.0.0.1:3000/events/file/:filename
+    // The frontend should construct the full URL using the API base URL
+    return filename;
+  }
+
+  /**
+   * Gets a file stream from MinIO
+   * @param objectPath - The path of the object in the bucket
+   * @returns A readable stream of the file
+   */
+  async getFileStream(objectPath: string): Promise<any> {
+    try {
+      const stream = await this.client.getObject(this.bucketName, objectPath);
+      return stream;
+    } catch (error) {
+      this.logger.error(`Error getting file stream from MinIO: ${objectPath}`, error);
+      throw new Error(`Failed to get file: ${error}`);
+    }
+  }
+
+  /**
+   * Gets file metadata from MinIO
+   * @param objectPath - The path of the object in the bucket
+   * @returns File metadata including content type and size
+   */
+  async getFileMetadata(objectPath: string): Promise<any> {
+    try {
+      const stat = await this.client.statObject(this.bucketName, objectPath);
+      return stat;
+    } catch (error) {
+      this.logger.error(`Error getting file metadata from MinIO: ${objectPath}`, error);
+      throw new Error(`Failed to get file metadata: ${error}`);
+    }
   }
 
   /**

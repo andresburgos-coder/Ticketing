@@ -29,7 +29,10 @@ export class TicketMapper {
       ormEntity.type,
       Email.create(ormEntity.buyerEmail),
       Money.create(price, ormEntity.currency),
-      ormEntity.purchaseDate
+      ormEntity.purchaseDate,
+      ormEntity.qrToken,
+      ormEntity.status,
+      ormEntity.usedAt
     );
   }
 
@@ -48,6 +51,9 @@ export class TicketMapper {
     ormEntity.price = domainTicket.price.amount;
     ormEntity.currency = domainTicket.price.currency;
     ormEntity.purchaseDate = domainTicket.purchaseDate;
+    ormEntity.qrToken = domainTicket.qrToken;
+    ormEntity.status = domainTicket.status;
+    ormEntity.usedAt = domainTicket.usedAt;
 
     return ormEntity;
   }

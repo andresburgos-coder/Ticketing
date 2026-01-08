@@ -1,0 +1,170 @@
+<!-- Page Container -->
+<div class="min-h-screen bg-gray-50">
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Page Heading -->
+    <div class="mb-8">
+      <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-gray-900 mb-2">My Tickets</h1>
+      <p class="text-gray-600 text-lg">Manage your upcoming and past event entries.</p>
+    </div>
+
+    <!-- Controls: Tabs & Search -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 border-b border-gray-200 pb-1">
+      <!-- Tabs -->
+      <div class="flex gap-8 px-2">
+        <button
+          (click)="setActiveTab('upcoming')"
+          [class]="activeTab() === 'upcoming'
+            ? 'border-blue-600 text-blue-600'
+            : 'border-transparent text-gray-500 hover:text-gray-700'"
+          class="pb-4 border-b-[3px] transition-colors">
+          <span class="text-sm font-bold tracking-wide">Upcoming</span>
+        </button>
+        <button
+          (click)="setActiveTab('history')"
+          [class]="activeTab() === 'history'
+            ? 'border-blue-600 text-blue-600'
+            : 'border-transparent text-gray-500 hover:text-gray-700'"
+          class="pb-4 border-b-[3px] transition-colors">
+          <span class="text-sm font-bold tracking-wide">History</span>
+        </button>
+      </div>
+
+      <!-- Search -->
+      <div class="w-full md:w-auto pb-3 md:pb-0">
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+          <input
+            type="text"
+            (input)="onSearchChange($event)"
+            class="block w-full md:w-80 rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-sm"
+            placeholder="Search by event or venue..." />
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    @if (isLoading()) {
+      <div class="flex justify-center items-center py-20">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    }
+
+    <!-- Empty State -->
+    @if (!isLoading() && filteredTickets().length === 0) {
+      <div class="text-center py-20">
+        <svg class="mx-auto h-24 w-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path>
+        </svg>
+        <h3 class="mt-4 text-lg font-semibold text-gray-900">No tickets found</h3>
+        <p class="mt-2 text-gray-600">
+          @if (activeTab() === 'upcoming') {
+            You don't have any upcoming events. Browse events to get started!
+          } @else {
+            You don't have any past tickets yet.
+          }
+        </p>
+        @if (activeTab() === 'upcoming') {
+          <a [routerLink]="['/']" class="mt-6 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
+            Browse Events
+          </a>
+        }
+      </div>
+    }
+
+    <!-- Tickets Grid -->
+    @if (!isLoading() && filteredTickets().length > 0) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (ticket of filteredTickets(); track ticket.id) {
+          <div class="group relative flex flex-col bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md border border-gray-200 transition-all duration-300">
+            <!-- Event Image -->
+            <div class="relative h-48 w-full bg-gray-200 overflow-hidden">
+              @if (ticket.eventImageUrl) {
+                <img [src]="ticket.eventImageUrl" [alt]="ticket.eventName" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              } @else {
+                <div class="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                  <svg class="w-20 h-20 text-white opacity-50" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path>
+                  </svg>
+                </div>
+              }
+              <!-- Status Badge -->
+              <div class="absolute top-3 right-3">
+                <span [class]="getStatusColor(ticket.status)" class="px-3 py-1 text-xs font-bold rounded-full capitalize">
+                  {{ ticket.status }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Ticket Details -->
+            <div class="flex-1 p-6 flex flex-col gap-4">
+              <!-- Event Name -->
+              <h3 class="text-lg font-bold text-gray-900 line-clamp-2">{{ ticket.eventName }}</h3>
+
+              <!-- Meta Information -->
+              <div class="flex flex-col gap-2 text-sm text-gray-600">
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                  <span>{{ formatDate(ticket.eventDate) }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <span>{{ formatTime(ticket.eventTime) }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  </svg>
+                  <span>{{ ticket.venue }}</span>
+                </div>
+              </div>
+
+              <!-- Ticket Type & Price -->
+              <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                <div>
+                  <p class="text-xs text-gray-500">Ticket Type</p>
+                  <p class="text-sm font-bold text-gray-900">{{ ticket.ticketType }}</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-xs text-gray-500">Price</p>
+                  <p class="text-sm font-bold text-gray-900">${{ ticket.price.toFixed(2) }}</p>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex gap-2 pt-2">
+                @if (ticket.status === 'upcoming') {
+                  <button
+                    (click)="downloadTicket(ticket.id)"
+                    class="flex-1 px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+                    View Ticket
+                  </button>
+                  <button
+                    (click)="cancelTicket(ticket.id)"
+                    class="px-4 py-2 text-sm font-semibold text-red-600 border border-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                    Cancel
+                  </button>
+                } @else {
+                  <button
+                    (click)="downloadTicket(ticket.id)"
+                    class="flex-1 px-4 py-2 text-sm font-semibold text-gray-700 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors">
+                    Download
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </main>
+</div>

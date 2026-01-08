@@ -13,7 +13,10 @@ import {
   Inject,
   UseInterceptors,
   UploadedFile,
+  Res,
+  StreamableFile,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { CreateEventUseCase } from '../../application/use-cases/create-event.use-case';
@@ -134,31 +137,66 @@ export class EventController {
     }
   })
   async create(
-    @Body() createEventDto: CreateEventDto,
+    @Body() body: any,
     @UploadedFile() file?: Express.Multer.File,
   ): Promise<EventResponse> {
     try {
-      // Convert ISO string to Date
-      const eventDate = new Date(createEventDto.date);
+      // Parse and validate data (handles both JSON and form-data)
+      const name = body.name;
+      const date = body.date;
+      const location = body.location;
+      
+      if (!name || !date || !location) {
+        throw new BadRequestException('name, date, and location are required');
+      }
 
-      // Parse ticket configurations if it's a string (from form-data)
-      const ticketConfigurations =
-        typeof createEventDto.ticketConfigurations === 'string'
-          ? JSON.parse(createEventDto.ticketConfigurations)
-          : createEventDto.ticketConfigurations;
+      // Convert ISO string to Date
+      const eventDate = new Date(date);
+      if (isNaN(eventDate.getTime())) {
+        throw new BadRequestException('Invalid date format. Use ISO 8601 format');
+      }
+
+      // Parse ticket configurations
+      let ticketConfigurations;
+      try {
+        ticketConfigurations =
+          typeof body.ticketConfigurations === 'string'
+            ? JSON.parse(body.ticketConfigurations)
+            : body.ticketConfigurations;
+      } catch (error) {
+        throw new BadRequestException('Invalid ticketConfigurations JSON format');
+      }
+
+      if (!Array.isArray(ticketConfigurations) || ticketConfigurations.length === 0) {
+        throw new BadRequestException('At least one ticket configuration is required');
+      }
+
+      // Validate each ticket configuration
+      for (const config of ticketConfigurations) {
+        if (!config.type || !config.price || !config.currency || !config.quantity) {
+          throw new BadRequestException('Each ticket configuration must have type, price, currency, and quantity');
+        }
+        if (typeof config.price !== 'number' || config.price < 0) {
+          throw new BadRequestException('Price must be a positive number');
+        }
+        if (typeof config.quantity !== 'number' || config.quantity < 1) {
+          throw new BadRequestException('Quantity must be at least 1');
+        }
+      }
 
       // Upload image if provided
       let imageUrl: string | undefined;
       if (file) {
+        
         // Validate file type
         const allowedMimes = ['image/jpeg', 'image/png', 'image/gif'];
         if (!allowedMimes.includes(file.mimetype)) {
-          throw new Error('Only JPEG, PNG, and GIF images are allowed');
+          throw new BadRequestException('Only JPEG, PNG, and GIF images are allowed');
         }
 
         // Validate file size (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
-          throw new Error('Image file size cannot exceed 5MB');
+          throw new BadRequestException('Image file size cannot exceed 5MB');
         }
 
         // Upload to MinIO
@@ -167,16 +205,18 @@ export class EventController {
 
       // Execute use case
       const event = await this.createEventUseCase.execute({
-        name: createEventDto.name,
+        name,
         date: eventDate,
-        location: createEventDto.location,
+        location,
         imageUrl,
         ticketConfigurations,
       });
-
-      // Return formatted response
+      
       return this.formatEventResponse(event);
     } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
       if (error instanceof Error) {
         throw new BadRequestException(error.message);
       }
@@ -469,6 +509,48 @@ export class EventController {
   async findAll(): Promise<EventResponse[]> {
     const events = await this.getAllEventsUseCase.execute();
     return events.map(event => this.formatEventResponse(event));
+  }
+
+  /**
+   * GET /events/file/:filename
+   * Serves a file from MinIO storage by streaming it directly
+   * This endpoint acts as a proxy to avoid CORS issues with MinIO
+   */
+  @Get('file/:filename')
+  @ApiOperation({ summary: 'Get a file from storage' })
+  @ApiResponse({ status: 200, description: 'Returns the file' })
+  @ApiResponse({ status: 404, description: 'File not found' })
+  @ApiParam({ name: 'filename', description: 'The filename to retrieve' })
+  async getFile(
+    @Param('filename') filename: string,
+    @Res() res: Response,
+  ): Promise<void> {
+    try {
+      // Security: Validate filename to prevent path traversal attacks (A01:2021 - Broken Access Control)
+      if (!filename || filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+        throw new BadRequestException('Invalid filename');
+      }
+
+      // Construct the object path in MinIO
+      const objectPath = `event-images/${filename}`;
+      
+      // Get file metadata to set proper headers
+      const metadata = await this.minioService.getFileMetadata(objectPath);
+      
+      // Get file stream from MinIO
+      const stream = await this.minioService.getFileStream(objectPath);
+      
+      // Set appropriate headers
+      res.setHeader('Content-Type', metadata.metaData['content-type'] || 'application/octet-stream');
+      res.setHeader('Content-Length', metadata.size);
+      res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 24 hours
+      res.setHeader('Access-Control-Allow-Origin', '*'); // Allow CORS
+      
+      // Pipe the stream to the response
+      stream.pipe(res);
+    } catch (error) {
+      throw new NotFoundException(`File not found: ${filename}`);
+    }
   }
 
   /**

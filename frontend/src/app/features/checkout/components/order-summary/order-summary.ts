@@ -15,7 +15,8 @@ export class OrderSummary {
 
   readonly cart = this.checkoutService.cart;
   readonly subtotal = this.checkoutService.subtotal;
-  readonly tax = this.checkoutService.tax;
+  readonly tax = this.checkoutService.tax; // now used as service fee (5%)
+  readonly processingFee = this.checkoutService.processingFee;
   readonly total = this.checkoutService.total;
 
   removeItem(ticketTypeId: number): void {

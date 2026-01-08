@@ -10,14 +10,14 @@
       <a [routerLink]="['/profile']" (click)="onClose()" class="px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
         Profile
       </a>
-      <button (click)="onClose()" class="px-4 py-3 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+      <button (click)="onLogout()" class="px-4 py-3 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
         Logout
       </button>
     } @else {
-      <a [routerLink]="['/login']" (click)="onClose()" class="px-4 py-3 text-center text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-semibold">
+      <a [routerLink]="['/auth']" (click)="onClose()" class="px-4 py-3 text-center text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-semibold">
         Login
       </a>
-      <a [routerLink]="['/register']" (click)="onClose()" class="px-4 py-3 text-center text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors font-semibold">
+      <a [routerLink]="['/auth']" (click)="onClose()" class="px-4 py-3 text-center text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors font-semibold">
         Sign Up
       </a>
     }

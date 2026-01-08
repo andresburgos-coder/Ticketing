@@ -31,11 +31,16 @@ services:
       DATABASE_USER: ticket_user
       DATABASE_PASSWORD: ticket_pass
       DATABASE_NAME: ticket_sales
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_USE_SSL: false
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin123
+      MINIO_EXTERNAL_URL: http://127.0.0.1:9001
     ports:
       - "3000:3000"
     volumes:
-      - ./backend:/app
-      - /app/node_modules
+      - ./backend/src:/app/src
     depends_on:
       postgres:
         condition: service_healthy

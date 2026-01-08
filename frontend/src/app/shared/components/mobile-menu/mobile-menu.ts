@@ -12,8 +12,14 @@ import { RouterLink } from '@angular/router';
 export class MobileMenu {
   @Input() isAuthenticated = false;
   @Output() close = new EventEmitter<void>();
+  @Output() logout = new EventEmitter<void>();
 
   onClose() {
+    this.close.emit();
+  }
+
+  onLogout() {
+    this.logout.emit();
     this.close.emit();
   }
 }

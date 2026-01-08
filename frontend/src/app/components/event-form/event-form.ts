@@ -5,6 +5,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Events } from '../../services/events';
 import { EventService } from '../../services/event.service';
 import { LoadingSpinner } from '../../shared/components/loading-spinner/loading-spinner';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-event-form',
@@ -17,7 +18,7 @@ export class EventForm implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly eventsService = inject(Events);
   private readonly eventService = inject(EventService);
-  private readonly router = inject(Router);
+  protected readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
   form!: FormGroup;
@@ -57,7 +58,7 @@ export class EventForm implements OnInit {
 
   private loadEvent(): void {
     if (!this.eventId) return;
-    
+
     this.isLoading = true;
     this.eventsService.getEvent(this.eventId).subscribe({
       next: (event) => {
@@ -68,7 +69,18 @@ export class EventForm implements OnInit {
           ticketConfigurations: event.ticketConfigurations || []
         });
         if (event.imageUrl) {
-          this.previewUrl = event.imageUrl;
+          // Construct full URL for display
+          if (event.imageUrl.startsWith('http') && !event.imageUrl.includes('minio')) {
+            // External URL, use as-is
+            this.previewUrl = event.imageUrl;
+          } else {
+            // Filename or old MinIO URL - extract filename if needed
+            let filename = event.imageUrl;
+            if (filename.includes('/')) {
+              filename = filename.split('/').pop() || filename;
+            }
+            this.previewUrl = `${environment.baseUrl}/events/file/${filename}`;
+          }
         }
         this.isLoading = false;
       },
@@ -83,22 +95,22 @@ export class EventForm implements OnInit {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
-      
+
       // Validate file type
       const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
       if (!allowedTypes.includes(file.type)) {
         alert('Only JPEG, PNG, and GIF images are allowed');
         return;
       }
-      
+
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         alert('Image file size cannot exceed 5MB');
         return;
       }
-      
+
       this.selectedFile = file;
-      
+
       // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -116,7 +128,7 @@ export class EventForm implements OnInit {
 
     this.isLoading = true;
     const formData = new FormData();
-    
+
     // Add form fields
     formData.append('name', this.form.get('name')?.value);
     formData.append('date', new Date(this.form.get('date')?.value).toISOString());
@@ -125,7 +137,7 @@ export class EventForm implements OnInit {
       'ticketConfigurations',
       JSON.stringify(this.form.get('ticketConfigurations')?.value)
     );
-    
+
     // Add image if selected
     if (this.selectedFile) {
       formData.append('image', this.selectedFile, this.selectedFile.name);

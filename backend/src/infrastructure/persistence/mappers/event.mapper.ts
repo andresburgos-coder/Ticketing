@@ -27,7 +27,8 @@ export class EventMapper {
       ormEntity.name,
       ormEntity.date,
       ormEntity.location,
-      ticketConfigurations
+      ticketConfigurations,
+      ormEntity.imageUrl
     );
   }
 
@@ -42,6 +43,7 @@ export class EventMapper {
     ormEntity.name = domainEvent.name;
     ormEntity.date = domainEvent.date;
     ormEntity.location = domainEvent.location;
+    ormEntity.imageUrl = domainEvent.imageUrl;
     ormEntity.ticketConfigurations = domainEvent.ticketConfigurations.map((config) =>
       this.ticketConfigToPersistence(config)
     );

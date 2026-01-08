@@ -1,13 +1,50 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { DomainExceptionFilter } from './infrastructure/common/domain-exception.filter';
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: true,
+    rawBody: false,
+  });
 
   app.useGlobalFilters(new DomainExceptionFilter());
+
+  // Security: Add Helmet middleware for HTTP security headers
+  // A05:2021 - Security Misconfiguration
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", 'data:', 'https:'],
+        connectSrc: ["'self'"],
+        fontSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        mediaSrc: ["'self'"],
+        frameSrc: ["'none'"],
+      },
+    },
+    crossOriginEmbedderPolicy: true,
+    crossOriginOpenerPolicy: true,
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    dnsPrefetchControl: true,
+    frameguard: { action: 'deny' },
+    hidePoweredBy: true,
+    hsts: {
+      maxAge: 31536000, // 1 year
+      includeSubDomains: true,
+      preload: true,
+    },
+    ieNoOpen: true,
+    noSniff: true,
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+    xssFilter: true,
+  }));
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -17,7 +54,16 @@ async function bootstrap(): Promise<void> {
     }),
   );
 
-  app.enableCors();
+  app.enableCors({
+    origin: [
+      'http://localhost:4200',
+      'http://127.0.0.1:4200',
+      ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [])
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
+  });
 
   // Swagger Configuration
   const config = new DocumentBuilder()

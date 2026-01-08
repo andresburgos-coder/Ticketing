@@ -1,7 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MobileMenu } from '../mobile-menu/mobile-menu';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -11,7 +12,11 @@ import { MobileMenu } from '../mobile-menu/mobile-menu';
   styleUrl: './header.css'
 })
 export class Header {
-  protected readonly isAuthenticated = signal(false);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+
+  protected readonly isAuthenticated = this.authService.isAuthenticated;
+  protected readonly currentUser = this.authService.currentUser;
   protected readonly mobileMenuOpen = signal(false);
 
   toggleMobileMenu() {
@@ -19,7 +24,8 @@ export class Header {
   }
 
   logout() {
-    // TODO: Implement with AuthService when available
-    this.isAuthenticated.set(false);
+    this.authService.logout();
+    this.router.navigate(['/']);
   }
 }
+

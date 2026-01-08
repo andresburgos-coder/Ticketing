@@ -76,3 +76,5 @@ temp/
 
 # NestJS
 .nest/
+
+docs/

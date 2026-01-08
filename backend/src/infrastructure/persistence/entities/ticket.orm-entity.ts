@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
 } from 'typeorm';
 import { TicketType } from '../../../domain/value-objects/ticket-type.vo';
+import { TicketStatus } from '../../../domain/entities/ticket.entity';
 
 /**
  * Ticket ORM Entity
@@ -41,4 +42,17 @@ export class TicketOrmEntity {
 
   @CreateDateColumn()
   purchaseDate!: Date;
+
+  @Column('uuid', { unique: true })
+  qrToken!: string;
+
+  @Column({ 
+    type: 'enum', 
+    enum: TicketStatus,
+    default: TicketStatus.PAID 
+  })
+  status!: TicketStatus;
+
+  @Column({ type: 'timestamp', nullable: true })
+  usedAt!: Date | null;
 }

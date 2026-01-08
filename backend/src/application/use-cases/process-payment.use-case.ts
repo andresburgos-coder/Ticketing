@@ -217,7 +217,8 @@ export class ProcessPaymentUseCase {
         reservation.ticketType,
         reservation.buyerEmail,
         ticketConfig.price,
-        new Date()
+        new Date(),
+        uuidv4() // QR token
       );
       tickets.push(ticket);
     }

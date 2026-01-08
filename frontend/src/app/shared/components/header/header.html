@@ -6,13 +6,13 @@
         <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 48 48">
           <path d="M6 6H42L36 24L42 42H6L12 24L6 6Z"></path>
         </svg>
-        <h1 class="text-xl font-bold">TicketMastery</h1>
+        <h1  [routerLink]="['/']" class="text-xl font-bold">TicketMastery</h1>
       </a>
     </div>
 
     <!-- Desktop Navigation -->
     <nav class="hidden md:flex items-center gap-6">
-      <a [routerLink]="['/']" class="text-gray-700 hover:text-blue-600 transition-colors">Events</a>
+
       @if (isAuthenticated()) {
         <a [routerLink]="['/my-tickets']" class="text-gray-700 hover:text-blue-600 transition-colors">My Tickets</a>
         <a [routerLink]="['/profile']" class="text-gray-700 hover:text-blue-600 transition-colors">Profile</a>
@@ -22,10 +22,10 @@
     <!-- Auth Buttons Desktop -->
     <div class="hidden md:flex items-center gap-2">
       @if (!isAuthenticated()) {
-        <a [routerLink]="['/login']" class="px-4 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+        <a [routerLink]="['/auth']" class="px-4 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
           Login
         </a>
-        <a [routerLink]="['/register']" class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+        <a [routerLink]="['/auth']" class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
           Sign Up
         </a>
       } @else {
@@ -49,6 +49,10 @@
 
   <!-- Mobile Menu -->
   @if (mobileMenuOpen()) {
-    <app-mobile-menu [isAuthenticated]="isAuthenticated()" (close)="toggleMobileMenu()"></app-mobile-menu>
+    <app-mobile-menu
+      [isAuthenticated]="isAuthenticated()"
+      (close)="toggleMobileMenu()"
+      (logout)="logout()">
+    </app-mobile-menu>
   }
 </header>

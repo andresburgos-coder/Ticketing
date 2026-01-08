@@ -77,4 +77,31 @@ export class TypeOrmTicketRepository implements ITicketRepository {
 
     return ormEntities.map((ormEntity) => TicketMapper.toDomain(ormEntity));
   }
+
+  /**
+   * Finds a ticket by its QR token
+   * Used for ticket validation at event entrance
+   * @param qrToken - The unique QR token (UUID)
+   * @returns Promise resolving to the Ticket or null if not found
+   */
+  async findByQRToken(qrToken: string): Promise<Ticket | null> {
+    const ormEntity = await this.repository.findOne({
+      where: { qrToken },
+    });
+
+    return ormEntity ? TicketMapper.toDomain(ormEntity) : null;
+  }
+
+  /**
+   * Finds a ticket by its ID
+   * @param id - The ticket ID
+   * @returns Promise resolving to the Ticket or null if not found
+   */
+  async findById(id: string): Promise<Ticket | null> {
+    const ormEntity = await this.repository.findOne({
+      where: { id },
+    });
+
+    return ormEntity ? TicketMapper.toDomain(ormEntity) : null;
+  }
 }

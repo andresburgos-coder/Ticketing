@@ -4,28 +4,10 @@
             <app-loading-spinner size="lg" message="Loading event details..."></app-loading-spinner>
         </div>
     } @else if (event()) {
-    <!-- Top Navigation -->
-    <header class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#f0f0f4] dark:border-b-[#2a2a35] px-4 md:px-10 py-3 bg-white dark:bg-[#101022]">
-        <div class="flex items-center gap-4 md:gap-8">
-            <div class="flex items-center gap-4 text-[#111118] dark:text-white">
-                <div class="size-6 text-primary">
-                    <span class="material-symbols-outlined !text-2xl">confirmation_number</span>
-                </div>
-                <h2 class="text-[#111118] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">TicketMastery</h2>
-            </div>
-        </div>
-        <div class="flex items-center justify-end gap-4 md:gap-8">
-            <div class="hidden md:flex items-center gap-6">
-                <a class="text-[#111118] dark:text-white text-sm font-medium leading-normal hover:text-primary transition-colors" href="/">Events</a>
-            </div>
-        </div>
-    </header>
-
-    <main class="relative flex flex-col min-h-screen">
-        <!-- Hero Section with Background Image -->
+    <!-- Hero Section with Background Image -->
         <div class="relative w-full h-[400px] md:h-[480px]">
             <div class="absolute inset-0 bg-cover bg-center"
-                [style.backgroundImage]="'linear-gradient(rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.7) 100%), url(' + (event()?.imageUrl || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBdX0ORt3oDTckbcZm16R0Ry13cdxFGeTB4nvNJdrKj3cjIwp6gp5xrHCQbSYoWx7AIgqr_HS1ziiC_QlBfU0WnAYxoDnDSWxg4QEm98wIDgfStLgi1k_dyX-550xTZEciAG6FpJFJ2bidK1IcfWSwMng1uM02GnEolGh2ZizOi1GkQCiWxHusJ_2-nfJQ3Va5T2324Eje8gnj1Vj4oL1VLBMkiQ4bw5ULisBO8yV8Ryfr7by6ynWcE9wl2ZC5uKBMU-dHj-sSaAw3S') + ')'">
+                [style.backgroundImage]="'linear-gradient(rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.7) 100%), url(' + getEventImage() + ')'">
             </div>
             <div class="absolute inset-0 flex flex-col justify-end pb-12 px-4 md:px-10 lg:px-40 layout-content-container max-w-[1440px] mx-auto w-full">
                 <span class="inline-block px-3 py-1 mb-4 text-xs font-bold tracking-wide text-white uppercase bg-primary rounded-full w-fit">
@@ -236,10 +218,12 @@
                                     <span class="text-sm font-medium text-[#616189] dark:text-gray-400">Total</span>
                                     <span class="text-2xl font-black text-[#111118] dark:text-white">{{ getTotal() | currencyFormat }}</span>
                                 </div>
-                                <button (click)="checkout()" [disabled]="getTotal() === 0"
-                                    class="w-full flex cursor-pointer items-center justify-center rounded-lg h-12 px-5 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
-                                    Checkout
-                                </button>
+                                                                <checkout-button
+                                                                    [items]="getSelectedItems()"
+                                                                    [eventId]="event()!.id"
+                                                                    [eventName]="event()!.name"
+                                                                    [disabled]="getTotal() === 0">
+                                                                </checkout-button>
                                 <div class="flex items-center justify-center gap-2 mt-3 text-[#616189] dark:text-gray-500">
                                     <span class="material-symbols-outlined text-sm">lock</span>
                                     <span class="text-xs">Secure checkout powered by Stripe</span>
@@ -257,26 +241,6 @@
                 </div>
             </div>
         </div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-white dark:bg-[#101022] border-t border-[#f0f0f4] dark:border-[#2a2a35] py-10 px-4 md:px-10 lg:px-40">
-        <div class="layout-content-container max-w-[1440px] mx-auto w-full flex flex-col md:flex-row justify-between items-center gap-6">
-            <div class="flex items-center gap-2 text-[#111118] dark:text-white">
-                <span class="material-symbols-outlined text-primary">confirmation_number</span>
-                <span class="font-bold text-lg">TicketMastery</span>
-            </div>
-            <div class="flex gap-8 text-sm font-medium text-[#616189] dark:text-gray-400">
-                <a class="hover:text-primary" href="#">About</a>
-                <a class="hover:text-primary" href="#">Privacy</a>
-                <a class="hover:text-primary" href="#">Terms</a>
-                <a class="hover:text-primary" href="#">Support</a>
-            </div>
-            <div class="text-sm text-[#616189] dark:text-gray-500">
-                © 2024 TicketMastery Inc.
-            </div>
-        </div>
-    </footer>
     } @else {
         <div class="flex justify-center items-center min-h-screen">
             <p class="text-gray-500">Event not found.</p>
