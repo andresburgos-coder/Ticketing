@@ -8,6 +8,7 @@ import { HealthController } from './presentation/controllers/health.controller';
 import { EventModule } from './modules/event.module';
 import { AuthModule } from './modules/auth.module';
 import { TicketModule } from './modules/ticket.module';
+import { AdminModule } from './modules/admin.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { TicketModule } from './modules/ticket.module';
     EventModule,
     AuthModule,
     TicketModule,
+    AdminModule,
   ],
   controllers: [HealthController],
   providers: [],

@@ -1,0 +1,20 @@
+export enum EventCategory {
+  CUALQUIER_CATEGORIA = 'Cualquier categoría',
+  ACCION_EXTREMO = 'Acción Extremo',
+  CIRCO = 'Circo',
+  COMEDIA = 'Comedia',
+  COMFAMA = 'Comfama',
+  CONCIERTO = 'Concierto',
+  CULTURAL = 'Cultural',
+  DEPORTES = 'Deportes',
+  FERIA = 'Feria',
+  FESTIVAL = 'Festival',
+  INMERSIONES_CENTROS_EXPERIENCIAS = 'Inmersiones a los centros de experiencias',
+  INSCRIPCION_COSMO_SCHOOLS = 'Inscripción a proceso de admisión en Cosmo Schools',
+  MUSICAL = 'Musical',
+  PODCAST = 'Podcast',
+  RECREATIVO = 'Recreativo',
+  STAND_UP_COMEDY = 'Stand-Up Comedy',
+  TEATRO = 'Teatro',
+  TURISMO = 'Turismo'
+}

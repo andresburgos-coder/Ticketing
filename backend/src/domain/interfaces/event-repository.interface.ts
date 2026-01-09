@@ -46,4 +46,14 @@ export interface IEventRepository {
    * @throws Error if event not found or delete fails
    */
   delete(id: string): Promise<void>;
+
+  // Admin methods for statistics and management
+  count(): Promise<number>;
+  findRecent(limit: number): Promise<Event[]>;
+  findUpcoming(limit: number): Promise<Event[]>;
+  findPast(limit: number): Promise<Event[]>;
+  
+  getEventsByCategory(): Promise<Array<{ category: string; count: number }>>;
+  getEventsByMonth(): Promise<Array<{ month: string; count: number }>>;
 }
+export const EVENT_REPOSITORY = Symbol('EVENT_REPOSITORY');

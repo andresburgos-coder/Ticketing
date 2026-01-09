@@ -1,10 +1,6 @@
 import * as bcrypt from 'bcrypt';
 import { Email } from '../value-objects/email.vo';
-
-/**
- * User role type - defines the role of a user in the system
- */
-export type UserRole = 'BUYER' | 'ORGANIZER' | 'ADMIN';
+import { UserRole } from '../enums/user-role.enum';
 
 /**
  * User Entity - Represents a user in the system.
@@ -16,7 +12,7 @@ export class User {
 
   constructor(
     public readonly id: string,
-    public readonly email: Email,
+    public readonly email: Email | string,
     public readonly passwordHash: string,
     public readonly firstName: string,
     public readonly lastName: string,

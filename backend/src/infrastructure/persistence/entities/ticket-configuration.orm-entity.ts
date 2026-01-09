@@ -26,6 +26,9 @@ export class TicketConfigurationOrmEntity {
   @JoinColumn({ name: 'event_id' })
   event!: EventOrmEntity;
 
+  @Column('varchar', { length: 12, name: 'event_id' })
+  eventId!: string;
+
   @Column({ type: 'enum', enum: TicketType })
   type!: TicketType;
 
@@ -35,9 +38,9 @@ export class TicketConfigurationOrmEntity {
   @Column({ length: 3, default: 'USD' })
   currency!: string;
 
-  @Column()
+  @Column({ name: 'totalquantity' })
   totalQuantity!: number;
 
-  @Column()
+  @Column({ name: 'availablequantity' })
   availableQuantity!: number;
 }
