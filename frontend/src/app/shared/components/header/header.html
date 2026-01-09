@@ -14,8 +14,8 @@
     <nav class="hidden md:flex items-center gap-6">
 
       @if (isAuthenticated()) {
-        <a [routerLink]="['/my-tickets']" class="text-gray-700 hover:text-blue-600 transition-colors">My Tickets</a>
-        <a [routerLink]="['/profile']" class="text-gray-700 hover:text-blue-600 transition-colors">Profile</a>
+        <a [routerLink]="['/my-tickets']" class="text-gray-700 hover:text-blue-600 transition-colors">Mis Entradas</a>
+        <a [routerLink]="['/profile']" class="text-gray-700 hover:text-blue-600 transition-colors">Perfil</a>
       }
     </nav>
 
@@ -23,21 +23,27 @@
     <div class="hidden md:flex items-center gap-2">
       @if (!isAuthenticated()) {
         <a [routerLink]="['/auth']" class="px-4 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-          Login
+          Iniciar sesión
         </a>
         <a [routerLink]="['/auth']" class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
-          Sign Up
+          Crear cuenta
         </a>
       } @else {
         <button (click)="logout()" class="px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-          Logout
+          Cerrar sesión
         </button>
       }
     </div>
 
     <!-- Mobile Menu Button -->
-    <button (click)="toggleMobileMenu()" class="md:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-lg">
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <button
+      (click)="toggleMobileMenu()"
+      (keydown.enter)="toggleMobileMenu()"
+      (keydown.space)="$event.preventDefault(); toggleMobileMenu()"
+      [attr.aria-expanded]="mobileMenuOpen()"
+      [attr.aria-label]="mobileMenuOpen() ? 'Cerrar men\u00fa' : 'Abrir men\u00fa'"
+      class="md:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
         @if (!mobileMenuOpen()) {
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
         } @else {

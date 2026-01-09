@@ -23,6 +23,25 @@ export class EventCard {
     return Math.min(...this.event.ticketTypes.map(t => Number(t.price)));
   }
 
+  getTotalAvailableTickets(): number {
+    if (!this.event.ticketTypes || this.event.ticketTypes.length === 0) {
+      return 0;
+    }
+    // Si ticketTypes tiene totalQuantity, sumarlo
+    const fromTicketTypes = this.event.ticketTypes.reduce((sum, t) => {
+      return sum + (t.totalQuantity || 0);
+    }, 0);
+
+    // Si tiene ticketConfigurations, usar availableQuantity de ahí
+    if (this.event.ticketConfigurations && this.event.ticketConfigurations.length > 0) {
+      return this.event.ticketConfigurations.reduce((sum, config) => {
+        return sum + (config.availableQuantity || 0);
+      }, 0);
+    }
+
+    return fromTicketTypes;
+  }
+
   getEventImage(): string {
     if (!this.event.imageUrl) {
       // Use default placeholder if no image

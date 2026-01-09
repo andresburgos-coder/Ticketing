@@ -63,4 +63,11 @@ export class PaymentForm {
   formatCVV(value: string): void {
     this.formData.cvv = value.replace(/\D/g, '').slice(0, 4);
   }
+
+  getFormData(): PaymentFormData & { expiryDate: string } {
+    return {
+      ...this.formData,
+      expiryDate: `${this.formData.expiryMonth}/${this.formData.expiryYear}`
+    };
+  }
 }

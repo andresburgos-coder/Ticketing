@@ -2,12 +2,12 @@
   <main class="w-full max-w-[1200px] mx-auto px-4 md:px-8 py-6 md:py-10">
     <!-- Breadcrumbs -->
     <div class="flex flex-wrap gap-2 mb-8 items-center text-sm md:text-base">
-      <a routerLink="/" class="text-[#616189] font-medium hover:text-primary transition-colors flex items-center gap-1">
+      <a routerLink="/" class="text-[#616189] font-medium hover:text-primary-600 transition-colors flex items-center gap-1">
         <span class="material-symbols-outlined text-lg">shopping_cart</span>
         Cart
       </a>
       <span class="text-[#616189] font-medium">/</span>
-      <span class="text-primary font-bold flex items-center gap-1">
+      <span class="text-primary-600 font-bold flex items-center gap-1">
         <span class="material-symbols-outlined text-lg filled">payment</span>
         Checkout
       </span>
@@ -54,7 +54,7 @@
             </button>
             <button
               (click)="nextStep()"
-              class="px-6 py-3 rounded-lg bg-primary text-white font-semibold hover:bg-blue-700 transition-colors">
+              class="px-6 py-3 rounded-lg bg-primary-600 text-white font-semibold hover:bg-primary-700 transition-colors">
               {{ step === 'payment' ? 'Confirm & Pay' : 'Next →' }}
             </button>
           </div>

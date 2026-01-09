@@ -31,6 +31,7 @@ services:
       DATABASE_USER: ticket_user
       DATABASE_PASSWORD: ticket_pass
       DATABASE_NAME: ticket_sales
+      JWT_SECRET: your-secret-key-change-in-production
       MINIO_ENDPOINT: minio
       MINIO_PORT: 9000
       MINIO_USE_SSL: false

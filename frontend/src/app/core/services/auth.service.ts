@@ -18,6 +18,7 @@ export interface RegisterRequest {
 
 export interface AuthResponse {
   accessToken: string;
+  refreshToken: string;
   user: User;
 }
 
@@ -52,11 +53,12 @@ export class AuthService {
   }
 
   login(credentials: LoginRequest): Observable<AuthResponse> {
+    console.log('[AuthService.login] ===== LOGIN START =====');
+    console.log('[AuthService.login] Email:', credentials.email);
     this._isLoading.set(true);
-    // First, get CSRF token
     return this.http.get<{ csrfToken: string }>(`${environment.baseUrl}/csrf/token`).pipe(
       switchMap(({ csrfToken }) => {
-        // Then, login with CSRF token in header
+        console.log('[AuthService.login] CSRF token received, posting to /auth/login');
         return this.http.post<AuthResponse>(
           `${environment.baseUrl}/auth/login`,
           credentials,
@@ -68,8 +70,23 @@ export class AuthService {
         );
       }),
       tap(response => {
+        console.log('[AuthService.login] 📨 RESPONSE RECEIVED:', { email: response.user?.email, tokenLength: response.accessToken?.length });
         this._currentUser.set(response.user);
-        // Token is now in HttpOnly cookie, don't store it
+        console.log('[AuthService.login] ✓ User set in signal');
+        this._accessToken.set(response.accessToken);
+        console.log('[AuthService.login] ✓ AccessToken set in signal');
+        localStorage.setItem('user', JSON.stringify(response.user));
+        console.log('[AuthService.login] ✓ User saved to localStorage');
+        sessionStorage.setItem('accessToken', response.accessToken);
+        console.log('[AuthService.login] ✓ AccessToken saved to sessionStorage');
+        if (response.refreshToken) {
+          sessionStorage.setItem('refreshToken', response.refreshToken);
+          console.log('[AuthService.login] ✓ RefreshToken saved to sessionStorage');
+        }
+        const storedToken = sessionStorage.getItem('accessToken');
+        console.log('[AuthService.login] 🔍 VERIFICATION: Token in storage?', !!storedToken, storedToken?.substring(0, 30) + '...');
+        console.log('[AuthService.login] 🔍 isAuthenticated():', this.isAuthenticated());
+        console.log('[AuthService.login] ===== LOGIN SUCCESS =====\n');
         this._isLoading.set(false);
       }),
       catchError(error => {
@@ -96,8 +113,15 @@ export class AuthService {
         );
       }),
       tap(response => {
+        console.log('[AuthService.register] Response:', { email: response.user?.email, hasToken: !!response.accessToken });
         this._currentUser.set(response.user);
-        // Token is now in HttpOnly cookie, don't store it
+        this._accessToken.set(response.accessToken);
+        localStorage.setItem('user', JSON.stringify(response.user));
+        sessionStorage.setItem('accessToken', response.accessToken);
+        if (response.refreshToken) {
+          sessionStorage.setItem('refreshToken', response.refreshToken);
+        }
+        console.log('[AuthService.register] Saved token. Verify:', sessionStorage.getItem('accessToken')?.substring(0, 20) + '...');
         this._isLoading.set(false);
       }),
       catchError(error => {
@@ -153,23 +177,56 @@ export class AuthService {
   }
 
   private loadFromStorage(): void {
-    // Load user info from localStorage (tokens are in HttpOnly cookies)
+    // Load user info from localStorage (tokens are in sessionStorage for security)
     const userStr = localStorage.getItem('user');
+    const accessToken = sessionStorage.getItem('accessToken');
+
+    console.log('[AuthService] Loading from storage:', { hasUser: !!userStr, hasToken: !!accessToken });
 
     if (userStr) {
       try {
         const user = JSON.parse(userStr);
         this._currentUser.set(user);
-        // Set a flag indicating user is authenticated (token is in cookie)
-        this._accessToken.set('authenticated');
+        console.log('[AuthService] User loaded:', user.email);
       } catch (e) {
         console.error('Failed to parse stored user', e);
         localStorage.removeItem('user');
       }
     }
+
+    if (accessToken) {
+      this._accessToken.set(accessToken);
+      console.log('[AuthService] Token loaded from sessionStorage');
+    }
   }
 
   getToken(): string | null {
-    return this._accessToken();
+    // Always try to get fresh token from sessionStorage first
+    const storedToken = sessionStorage.getItem('accessToken');
+    console.log('[AuthService.getToken] Checking sessionStorage:', {
+      hasStoredToken: !!storedToken,
+      tokenLength: storedToken ? storedToken.length : 0,
+      tokenPreview: storedToken ? storedToken.substring(0, 30) + '...' : 'null'
+    });
+
+    if (storedToken) {
+      console.log('[AuthService.getToken] ✓ Token found in sessionStorage');
+      return storedToken;
+    }
+
+    // Fallback to signal value
+    const signalToken = this._accessToken();
+    console.log('[AuthService.getToken] Checking signal:', {
+      hasSignalToken: !!signalToken,
+      tokenLength: signalToken ? signalToken.length : 0
+    });
+
+    if (signalToken) {
+      console.log('[AuthService.getToken] ✓ Token found in signal');
+      return signalToken;
+    }
+
+    console.log('[AuthService.getToken] ✗ No token found anywhere');
+    return null;
   }
 }

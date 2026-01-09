@@ -21,6 +21,7 @@ export interface CreateEventInput {
   name: string;
   date: Date;
   location: string;
+  venueName: string;
   imageUrl?: string;
   ticketConfigurations: Array<{
     type: TicketType;
@@ -28,6 +29,7 @@ export interface CreateEventInput {
     currency: string;
     quantity: number;
   }>;
+  eventDetails?: any[];
 }
 
 @Injectable()
@@ -64,8 +66,10 @@ export class CreateEventUseCase {
       input.name,
       input.date,
       input.location,
+      input.venueName,
       ticketConfigurations,
-      input.imageUrl
+      input.imageUrl,
+      input.eventDetails || []
     );
 
     // Persist event
@@ -97,6 +101,10 @@ export class CreateEventUseCase {
       throw new Error('Event location is required and cannot be empty');
     }
 
+
+    if (!input.venueName || input.venueName.trim().length === 0) {
+      throw new Error('Venue name is required and cannot be empty');
+    }
     if (!input.ticketConfigurations || input.ticketConfigurations.length === 0) {
       throw new Error('At least one ticket configuration is required');
     }

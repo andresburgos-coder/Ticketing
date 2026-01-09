@@ -16,6 +16,7 @@ import { EventOrmEntity } from '../../src/infrastructure/persistence/entities/ev
 import { TicketConfigurationOrmEntity } from '../../src/infrastructure/persistence/entities/ticket-configuration.orm-entity';
 import { ReservationOrmEntity } from '../../src/infrastructure/persistence/entities/reservation.orm-entity';
 import { TicketOrmEntity } from '../../src/infrastructure/persistence/entities/ticket.orm-entity';
+import { EventDetailsOrmEntity } from '../../src/infrastructure/persistence/entities/event-details.orm-entity';
 import { TicketType } from '../../src/domain/value-objects/ticket-type.vo';
 import { EVENT_REPOSITORY, RESERVATION_REPOSITORY, TICKET_REPOSITORY } from '../../src/domain/interfaces/repository-tokens';
 import { IPaymentGateway, PaymentResult, PaymentData } from '../../src/domain/interfaces/payment-gateway.interface';
@@ -62,6 +63,7 @@ class MockPaymentGateway implements IPaymentGateway {
         TicketConfigurationOrmEntity,
         ReservationOrmEntity,
         TicketOrmEntity,
+        EventDetailsOrmEntity,
       ],
       synchronize: true,
       dropSchema: true,
@@ -71,6 +73,7 @@ class MockPaymentGateway implements IPaymentGateway {
       TicketConfigurationOrmEntity,
       ReservationOrmEntity,
       TicketOrmEntity,
+      EventDetailsOrmEntity,
     ]),
   ],
   controllers: [ReservationController, EventController],

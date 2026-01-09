@@ -6,11 +6,40 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { EventController } from '../../src/presentation/controllers/event.controller';
 import { CreateEventUseCase } from '../../src/application/use-cases/create-event.use-case';
+import { GetAllEventsUseCase } from '../../src/application/use-cases/get-all-events.use-case';
+import { UpdateEventUseCase } from '../../src/application/use-cases/update-event.use-case';
+import { DeleteEventUseCase } from '../../src/application/use-cases/delete-event.use-case';
 import { TypeOrmEventRepository } from '../../src/infrastructure/persistence/repositories/typeorm-event.repository';
 import { EventOrmEntity } from '../../src/infrastructure/persistence/entities/event.orm-entity';
 import { TicketConfigurationOrmEntity } from '../../src/infrastructure/persistence/entities/ticket-configuration.orm-entity';
+import { EventDetailsOrmEntity } from '../../src/infrastructure/persistence/entities/event-details.orm-entity';
 import { TicketType } from '../../src/domain/value-objects/ticket-type.vo';
 import { EVENT_REPOSITORY } from '../../src/domain/interfaces/repository-tokens';
+import { MinioService } from '../../src/infrastructure/external/minio.service';
+
+// Mock MinioService for testing
+class MockMinioService {
+  async uploadFile(file: Express.Multer.File): Promise<string> {
+    return `http://localhost:9000/events/test-${file.originalname}`;
+  }
+
+  async getFileMetadata(objectPath: string) {
+    return {
+      size: 1024,
+      metaData: { 'content-type': 'image/jpeg' }
+    };
+  }
+
+  async getFileStream(objectPath: string) {
+    const { Readable } = require('stream');
+    return new Readable({
+      read() {
+        this.push('test data');
+        this.push(null);
+      }
+    });
+  }
+}
 
 @Module({
   imports: [
@@ -21,18 +50,25 @@ import { EVENT_REPOSITORY } from '../../src/domain/interfaces/repository-tokens'
       username: 'test_user',
       password: 'test_pass',
       database: 'ticket_sales_test',
-      entities: [EventOrmEntity, TicketConfigurationOrmEntity],
+      entities: [EventOrmEntity, TicketConfigurationOrmEntity, EventDetailsOrmEntity],
       synchronize: true,
       dropSchema: true,
     }),
-    TypeOrmModule.forFeature([EventOrmEntity, TicketConfigurationOrmEntity]),
+    TypeOrmModule.forFeature([EventOrmEntity, TicketConfigurationOrmEntity, EventDetailsOrmEntity]),
   ],
   controllers: [EventController],
   providers: [
     CreateEventUseCase,
+    GetAllEventsUseCase,
+    UpdateEventUseCase,
+    DeleteEventUseCase,
     {
       provide: EVENT_REPOSITORY,
       useClass: TypeOrmEventRepository,
+    },
+    {
+      provide: MinioService,
+      useClass: MockMinioService,
     },
   ],
 })
@@ -78,15 +114,18 @@ describe('EventController Integration Tests', () => {
         name: 'Concierto de Rock',
         date: futureDate.toISOString(),
         location: 'Estadio Nacional',
+        venueName: 'Estadio Nacional',
         ticketConfigurations: [
           {
             type: TicketType.VIP,
             price: 150000,
+            currency: 'CLP',
             quantity: 100,
           },
           {
             type: TicketType.GENERAL,
             price: 100000,
+            currency: 'CLP',
             quantity: 200,
           },
         ],
@@ -118,10 +157,12 @@ describe('EventController Integration Tests', () => {
       const createEventDto = {
         date: futureDate.toISOString(),
         location: 'Estadio Nacional',
+        venueName: 'Estadio Nacional',
         ticketConfigurations: [
           {
             type: TicketType.VIP,
             price: 150000,
+            currency: 'CLP',
             quantity: 100,
           },
         ],
@@ -141,6 +182,7 @@ describe('EventController Integration Tests', () => {
         name: 'Concierto de Rock',
         date: futureDate.toISOString(),
         location: 'Estadio Nacional',
+        venueName: 'Estadio Nacional',
         ticketConfigurations: [],
       };
 
@@ -160,10 +202,12 @@ describe('EventController Integration Tests', () => {
         name: 'Festival de Música',
         date: futureDate.toISOString(),
         location: 'Parque Central',
+        venueName: 'Parque Central',
         ticketConfigurations: [
           {
             type: TicketType.VIP,
             price: 150000,
+            currency: 'CLP',
             quantity: 100,
           },
         ],

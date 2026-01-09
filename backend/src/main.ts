@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
+import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { DomainExceptionFilter } from './infrastructure/common/domain-exception.filter';
 
@@ -12,6 +13,10 @@ async function bootstrap(): Promise<void> {
   });
 
   app.useGlobalFilters(new DomainExceptionFilter());
+
+  // Cookie Parser: Parse cookies from requests
+  // MUST be added before CORS and guards to ensure cookies are available
+  app.use(cookieParser());
 
   // Security: Add Helmet middleware for HTTP security headers
   // A05:2021 - Security Misconfiguration

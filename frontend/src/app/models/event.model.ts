@@ -14,6 +14,17 @@ export interface TicketType {
     tickets?: any[];
 }
 
+
+export interface EventDetails {
+    category?: string;
+    minAge?: number;
+    seating?: string;
+    capacity?: number;
+    foodSales?: boolean;
+    liquorSales?: boolean;
+    accessibility?: string;
+}
+
 export interface Event {
     id: string | number;
     name: string;
@@ -28,4 +39,5 @@ export interface Event {
     tags?: string[];
     ticketTypes?: TicketType[];
     ticketConfigurations?: TicketConfiguration[];
+    eventDetails?: EventDetails;
 }

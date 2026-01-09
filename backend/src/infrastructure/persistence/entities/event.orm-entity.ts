@@ -20,14 +20,21 @@ export class EventOrmEntity {
   @PrimaryColumn('uuid')
   id!: string;
 
+  @OneToMany('EventDetailsOrmEntity', 'event', { cascade: true, eager: true })
+  details!: any[];
+
   @Column({ length: 255 })
   name!: string;
 
   @Column('timestamp')
   date!: Date;
 
+
   @Column({ length: 500 })
   location!: string;
+
+  @Column({ length: 255, name: 'venuename' })
+  venueName!: string;
 
   @Column({ type: 'text', nullable: true })
   imageUrl?: string;

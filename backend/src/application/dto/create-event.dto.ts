@@ -1,3 +1,4 @@
+import { EventDetailsDto } from './event-details.dto';
 import {
   IsString,
   IsNotEmpty,
@@ -44,7 +45,12 @@ export class TicketConfigurationDto {
  * Validates all required fields for event creation
  * Requirements: 1.1, 1.2
  */
+
 export class CreateEventDto {
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => EventDetailsDto)
+    eventDetails!: EventDetailsDto[];
   @IsString({ message: 'Event name must be a string' })
   @IsNotEmpty({ message: 'Event name is required' })
   name!: string;
@@ -56,6 +62,10 @@ export class CreateEventDto {
   @IsString({ message: 'Event location must be a string' })
   @IsNotEmpty({ message: 'Event location is required' })
   location!: string;
+
+  @IsString({ message: 'Venue name must be a string' })
+  @IsNotEmpty({ message: 'Venue name is required' })
+  venueName!: string;
 
   @IsArray({ message: 'Ticket configurations must be an array' })
   @ArrayMinSize(1, { message: 'At least one ticket configuration is required' })

@@ -5,18 +5,21 @@ import {
   Body,
   Param,
   Query,
+  Req,
   HttpCode,
   HttpStatus,
   BadRequestException,
   NotFoundException,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { GetBuyerTicketsUseCase } from '../../application/use-cases/get-buyer-tickets.use-case';
 import { PurchaseTicketUseCase } from '../../application/use-cases/purchase-ticket.use-case';
 import { ValidateQRUseCase } from '../../application/use-cases/validate-qr.use-case';
 import { Ticket, TicketStatus } from '../../domain/entities/ticket.entity';
 import { PurchaseTicketDto } from '../../application/dto/purchase-ticket.dto';
 import { ValidateQRDto, ValidateQRResponse } from '../../application/dto/validate-qr.dto';
+import { JwtAuthGuard } from '../../application/services/jwt-auth.guard';
 
 /**
  * TicketController
@@ -31,7 +34,51 @@ export class TicketController {
     private readonly getBuyerTicketsUseCase: GetBuyerTicketsUseCase,
     private readonly purchaseTicketUseCase: PurchaseTicketUseCase,
     private readonly validateQRUseCase: ValidateQRUseCase,
-  ) {}
+  ) { }
+
+  /**
+   * GET /tickets/user OR /tickets/me
+   * Get all tickets for the authenticated user
+   * 
+   * @param req - Request with user info from JWT
+   * @returns Array of tickets for the authenticated user
+   */
+  @Get(['user', 'me'])
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get tickets for authenticated user',
+    description: 'Retrieve all tickets purchased by the currently authenticated user (supports /tickets/user or /tickets/me)'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of tickets for the authenticated user'
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized - invalid or missing token' })
+  async findUserTickets(@Req() req: any): Promise<TicketResponse[]> {
+    try {
+      // Get email from the authenticated user (from JWT)
+      const userEmail = req.user?.email;
+      if (!userEmail) {
+        throw new BadRequestException('User email not found in token');
+      }
+
+      // Execute use case to retrieve tickets
+      const tickets = await this.getBuyerTicketsUseCase.execute(userEmail);
+
+      // Format and return tickets with event info
+      return tickets.map(ticket => this.formatTicketResponse(ticket));
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      if (error instanceof Error) {
+        throw new BadRequestException(error.message);
+      }
+      throw error;
+    }
+  }
 
   /**
    * POST /tickets/purchase
@@ -43,13 +90,13 @@ export class TicketController {
    */
   @Post('purchase')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Purchase tickets',
     description: 'Purchase tickets for an event with automatic QR generation'
   })
   @ApiBody({ type: PurchaseTicketDto })
-  @ApiResponse({ 
-    status: 201, 
+  @ApiResponse({
+    status: 201,
     description: 'Tickets purchased successfully',
     schema: {
       type: 'array',
@@ -73,10 +120,20 @@ export class TicketController {
   @ApiResponse({ status: 400, description: 'Bad request - validation failed or insufficient tickets' })
   async purchase(@Body() purchaseTicketDto: PurchaseTicketDto): Promise<TicketResponse[]> {
     try {
+      console.log('📨 [TicketController] POST /tickets/purchase recibido');
+      console.log('📨 DTO recibido:', JSON.stringify(purchaseTicketDto, null, 2));
+
       const tickets = await this.purchaseTicketUseCase.execute(purchaseTicketDto);
-      return tickets.map(ticket => this.formatTicketResponse(ticket));
+      console.log('✅ [TicketController] Tickets generados:', tickets.length);
+      console.log('✅ Tickets:', tickets.map(t => ({ id: t.id, code: t.code, status: t.status })));
+
+      const response = tickets.map(ticket => this.formatTicketResponse(ticket));
+      console.log('✅ Response formateada:', response);
+      return response;
     } catch (error) {
+      console.error('❌ [TicketController] Error en purchase:', error);
       if (error instanceof Error) {
+        console.error('❌ Error message:', error.message);
         throw new BadRequestException(error.message);
       }
       throw error;
@@ -92,13 +149,13 @@ export class TicketController {
    */
   @Post('validate-qr')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Validate QR code',
     description: 'Validate a ticket QR code and mark as used'
   })
   @ApiBody({ type: ValidateQRDto })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'QR validation result',
     schema: {
       type: 'object',
@@ -136,18 +193,18 @@ export class TicketController {
    */
   @Get()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get tickets by buyer email',
     description: 'Retrieve all tickets purchased by a specific buyer'
   })
-  @ApiQuery({ 
-    name: 'email', 
-    required: true, 
+  @ApiQuery({
+    name: 'email',
+    required: true,
     description: 'Buyer email address',
     example: 'buyer@example.com'
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'List of tickets for the buyer',
     schema: {
       type: 'array',

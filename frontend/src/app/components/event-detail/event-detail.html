@@ -1,7 +1,7 @@
 <div class="bg-background-light dark:bg-background-dark text-[#111118] dark:text-white font-display">
     @if (isLoading()) {
         <div class="flex justify-center items-center min-h-screen">
-            <app-loading-spinner size="lg" message="Loading event details..."></app-loading-spinner>
+            <app-loading-spinner size="lg" message="Cargando detalles del evento..."></app-loading-spinner>
         </div>
     } @else if (event()) {
     <!-- Hero Section with Background Image -->
@@ -10,8 +10,8 @@
                 [style.backgroundImage]="'linear-gradient(rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.7) 100%), url(' + getEventImage() + ')'">
             </div>
             <div class="absolute inset-0 flex flex-col justify-end pb-12 px-4 md:px-10 lg:px-40 layout-content-container max-w-[1440px] mx-auto w-full">
-                <span class="inline-block px-3 py-1 mb-4 text-xs font-bold tracking-wide text-white uppercase bg-primary rounded-full w-fit">
-                    Verified Event
+                <span class="inline-block px-3 py-1 mb-4 text-xs font-bold tracking-wide text-white uppercase bg-primary-600 rounded-full w-fit">
+                    Evento verificado
                 </span>
                 <h1 class="text-white text-3xl md:text-5xl font-black leading-tight tracking-[-0.033em] mb-4">
                     {{ event()!.name }}
@@ -39,22 +39,22 @@
                             <img alt="Organizer" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqnsi021ryoTifgO-gyc5QXe-9hIe2OQwSFbTu_l7SrJrvruQKfVNuwqoPBB9iFbu0O8wAmTd24u7Gpkx2taF5CexGmuOCkbDlXkD7ByNxg20p3_rHVkC7b9nk9q0dC-0s3BUoQfuuPSysjDDyvGSHRSvydss8wJZgYzKH1pCRPk7ZGAMOUiUaBskqGCAd-x-6Yvb9_IRHdBCcLYYn-3RG2YOkVI7MP79ja86eqaqTNKWYbY45BkgKMHA31d9s6Yw8hbKZhavP03zg"/>
                         </div>
                         <div>
-                            <p class="text-sm text-[#616189] dark:text-gray-400 font-medium">Hosted by</p>
-                            <a class="text-base font-bold text-[#111118] dark:text-white hover:text-primary flex items-center gap-1" href="#">
+                            <p class="text-sm text-[#616189] dark:text-gray-400 font-medium">Organizado por</p>
+                            <a class="text-base font-bold text-[#111118] dark:text-white hover:text-primary-600 flex items-center gap-1" href="#">
                                 {{ event()!.organizer || 'Event Organizer' }}
                                 <span class="material-symbols-outlined text-blue-500 text-[18px]">verified</span>
                             </a>
                         </div>
-                        <button class="ml-auto text-sm font-semibold text-primary border border-primary px-4 py-2 rounded-lg hover:bg-primary/5 transition-colors">
-                            Follow
+                        <button class="ml-auto text-sm font-semibold text-primary-600 border border-primary-600 px-4 py-2 rounded-lg hover:bg-primary-600 hover:text-white hover:border-primary-600 transition-colors">
+                            Seguir
                         </button>
                     </div>
 
                     <!-- Description -->
                     <div class="flex flex-col gap-4">
-                        <h3 class="text-xl font-bold text-[#111118] dark:text-white">About the event</h3>
+                        <h3 class="text-xl font-bold text-[#111118] dark:text-white">Acerca del evento</h3>
                         <p class="text-[#111118] dark:text-gray-300 text-base leading-relaxed">
-                            {{ event()!.description || 'Join us for an unforgettable event experience.' }}
+                            {{ event()!.description || 'Únete a nosotros para una experiencia inolvidable.' }}
                         </p>
                     </div>
 
@@ -66,10 +66,10 @@
                                     <span class="material-symbols-outlined">calendar_today</span>
                                 </div>
                                 <div>
-                                    <h4 class="font-bold text-[#111118] dark:text-white">Date &amp; Time</h4>
+                                    <h4 class="font-bold text-[#111118] dark:text-white">Fecha y hora</h4>
                                     <p class="text-[#616189] dark:text-gray-400 text-sm mt-1">{{ event()!.date | dateFormat:'long' }}</p>
                                     <p class="text-[#616189] dark:text-gray-400 text-sm">{{ event()!.startTime || '9:00 AM' }} - {{ event()!.endTime || '6:00 PM' }}</p>
-                                    <a class="text-primary text-sm font-semibold mt-2 inline-block" href="#">Add to Calendar</a>
+                                    <a class="text-primary-600 text-sm font-semibold mt-2 inline-block" href="#">Agregar al calendario</a>
                                 </div>
                             </div>
                             <div class="flex gap-4 items-start">
@@ -77,23 +77,61 @@
                                     <span class="material-symbols-outlined">map</span>
                                 </div>
                                 <div>
-                                    <h4 class="font-bold text-[#111118] dark:text-white">Location</h4>
+                                    <h4 class="font-bold text-[#111118] dark:text-white">Ubicación</h4>
                                     <p class="text-[#616189] dark:text-gray-400 text-sm mt-1">{{ event()!.venueName || 'Venue' }}</p>
                                     <p class="text-[#616189] dark:text-gray-400 text-sm">{{ event()!.location }}</p>
-                                    <a class="text-primary text-sm font-semibold mt-2 inline-block" href="#">View Map</a>
+                                    <a class="text-primary-600 text-sm font-semibold mt-2 inline-block" href="#">Ver mapa</a>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Map Placeholder -->
-                    <div class="rounded-xl overflow-hidden h-64 w-full bg-gray-100 dark:bg-[#1e1e2d] border border-[#dbdbe6] dark:border-[#2a2a35] relative">
-                        <div class="absolute inset-0 bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAIac4MIpA5sDqQLAJzaMuYvTnIkYKRstzsKCkx3OUFms_oV0smanlqzK7fEaKA0WgGyLLh3Adx2_YtP12qlgds-5cOGuOC6yj6yocUnc_lPiAtejTp-20FWGERG-NAW1m3Kvk1WJ6YA1R_88gQ7LNAv-B6ED9QOjffbtsu8Piw4XmV5l7-pglYcebYgDYZY-nWsVwuQxZfw4yd5_9lI_OBKeqpA_l4Q8e2bTcBhTfroLRjnRZFqM9OAl5NpIPVrd3-xs4qvybyGtr6");'></div>
-                        <div class="absolute inset-0 bg-black/10 flex items-center justify-center">
-                            <button class="bg-white dark:bg-[#1e1e2d] text-[#111118] dark:text-white px-4 py-2 rounded-lg font-bold shadow-lg flex items-center gap-2 hover:scale-105 transition-transform">
-                                <span class="material-symbols-outlined text-primary">near_me</span>
-                                Get Directions
-                            </button>
+
+                    <!-- Map Section: Embedded Google Maps -->
+                    <div class="rounded-xl overflow-hidden h-64 w-full bg-gray-100 dark:bg-[#1e1e2d] border border-[#dbdbe6] dark:border-[#2a2a35] relative mb-6">
+                        <iframe
+                            width="100%"
+                            height="100%"
+                            style="border:0; min-height: 256px;"
+                            [attr.src]="getMapUrl()"
+                            allowfullscreen
+                            title="Mapa de ubicación del evento"
+                            aria-label="Mapa de ubicación del evento">
+                        </iframe>
+                    </div>
+
+                    <!-- Event Details Section -->
+                    <div class="rounded-xl overflow-hidden h-auto w-full bg-gray-100 dark:bg-[#1e1e2d] border border-[#dbdbe6] dark:border-[#2a2a35] p-6 mb-6">
+                        <h4 class="text-lg font-bold text-[#111118] dark:text-white mb-4">Detalles del evento</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div *ngIf="event()?.eventDetails?.category">
+                                <span class="font-semibold text-[#616189] dark:text-gray-400">Categoría:</span>
+                                <span class="ml-2 text-[#111118] dark:text-white">{{ event()?.eventDetails?.category }}</span>
+                            </div>
+                            <div *ngIf="event()?.eventDetails?.minAge">
+                                <span class="font-semibold text-[#616189] dark:text-gray-400">Edad mínima:</span>
+                                <span class="ml-2 text-[#111118] dark:text-white">{{ event()?.eventDetails?.minAge }}</span>
+                            </div>
+                            <div *ngIf="event()?.eventDetails?.seating">
+                                <span class="font-semibold text-[#616189] dark:text-gray-400">Asientos:</span>
+                                <span class="ml-2 text-[#111118] dark:text-white">{{ event()?.eventDetails?.seating }}</span>
+                            </div>
+                            <div *ngIf="event()?.eventDetails?.capacity">
+                                <span class="font-semibold text-[#616189] dark:text-gray-400">Capacidad:</span>
+                                <span class="ml-2 text-[#111118] dark:text-white">{{ event()?.eventDetails?.capacity }}</span>
+                            </div>
+                            <div *ngIf="event()?.eventDetails?.foodSales !== undefined">
+                                <span class="font-semibold text-[#616189] dark:text-gray-400">Venta de comida:</span>
+                                <span class="ml-2 text-[#111118] dark:text-white">{{ event()?.eventDetails?.foodSales ? 'Sí' : 'No' }}</span>
+                            </div>
+                            <div *ngIf="event()?.eventDetails?.liquorSales !== undefined">
+                                <span class="font-semibold text-[#616189] dark:text-gray-400">Venta de alcohol:</span>
+                                <span class="ml-2 text-[#111118] dark:text-white">{{ event()?.eventDetails?.liquorSales ? 'Sí' : 'No' }}</span>
+                            </div>
+                            <div *ngIf="event()?.eventDetails?.accessibility">
+                                <span class="font-semibold text-[#616189] dark:text-gray-400">Accesibilidad:</span>
+                                <span class="ml-2 text-[#111118] dark:text-white">{{ event()?.eventDetails?.accessibility }}</span>
+                            </div>
                         </div>
                     </div>
 
@@ -111,8 +149,8 @@
                         <!-- Ticket Selection Card -->
                         <div class="bg-white dark:bg-[#1e1e2d] border border-[#dbdbe6] dark:border-[#2a2a35] rounded-xl shadow-lg overflow-hidden">
                             <div class="p-5 border-b border-[#dbdbe6] dark:border-[#2a2a35] bg-gray-50 dark:bg-[#252536]">
-                                <h3 class="text-lg font-bold text-[#111118] dark:text-white">Select Tickets</h3>
-                                <p class="text-xs text-[#616189] dark:text-gray-400 mt-1">Prices may increase as the date approaches.</p>
+                                <h3 class="text-lg font-bold text-[#111118] dark:text-white">Selecciona entradas</h3>
+                                <p class="text-xs text-[#616189] dark:text-gray-400 mt-1">Los precios pueden aumentar a medida que se acerque la fecha.</p>
                             </div>
                             <div class="p-5 flex flex-col gap-6">
                                 <!-- Handle ticketConfigurations (new format) -->
@@ -147,7 +185,7 @@
                                             </button>
                                             <span class="text-[#111118] dark:text-white font-bold w-4 text-center">{{ selectedQuantities[config.type] || 0 }}</span>
                                             <button (click)="increaseQty(config)"
-                                                class="w-8 h-8 rounded-full border border-primary bg-primary/5 dark:bg-primary/20 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-colors">
+                                                class="w-8 h-8 rounded-full border border-primary-600 bg-primary-100 dark:bg-primary-900 flex items-center justify-center text-primary-600 hover:bg-primary-600 hover:text-white transition-colors">
                                                 <span class="material-symbols-outlined text-sm">add</span>
                                             </button>
                                         </div>
@@ -194,7 +232,7 @@
                                             </button>
                                             <span class="text-[#111118] dark:text-white font-bold w-4 text-center">{{ selectedQuantities[type.id] || 0 }}</span>
                                             <button (click)="increaseQty(type)"
-                                                class="w-8 h-8 rounded-full border border-primary bg-primary/5 dark:bg-primary/20 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-colors">
+                                                class="w-8 h-8 rounded-full border border-primary-600 bg-primary-100 dark:bg-primary-900 flex items-center justify-center text-primary-600 hover:bg-primary-600 hover:text-white transition-colors">
                                                 <span class="material-symbols-outlined text-sm">add</span>
                                             </button>
                                         </div>
@@ -226,16 +264,16 @@
                                                                 </checkout-button>
                                 <div class="flex items-center justify-center gap-2 mt-3 text-[#616189] dark:text-gray-500">
                                     <span class="material-symbols-outlined text-sm">lock</span>
-                                    <span class="text-xs">Secure checkout powered by Stripe</span>
+                                    <span class="text-xs">Pago seguro con Stripe</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Help Card -->
                         <div class="hidden md:flex flex-col gap-2 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30">
-                            <h4 class="text-sm font-bold text-[#111118] dark:text-white">Have questions?</h4>
-                            <p class="text-xs text-[#616189] dark:text-gray-400">Contact the organizer for questions about refunds or accessibility.</p>
-                            <a class="text-xs font-bold text-primary hover:underline" href="#">Contact Organizer</a>
+                            <h4 class="text-sm font-bold text-[#111118] dark:text-white">¿Tienes preguntas?</h4>
+                            <p class="text-xs text-[#616189] dark:text-gray-400">Contacta al organizador para dudas sobre reembolsos o accesibilidad.</p>
+                            <a class="text-xs font-bold text-primary-600 hover:underline" href="#">Contactar al organizador</a>
                         </div>
                     </div>
                 </div>
@@ -243,7 +281,7 @@
         </div>
     } @else {
         <div class="flex justify-center items-center min-h-screen">
-            <p class="text-gray-500">Event not found.</p>
+            <p class="text-gray-500">Evento no encontrado.</p>
         </div>
     }
 </div>

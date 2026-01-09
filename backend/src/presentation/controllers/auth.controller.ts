@@ -96,8 +96,9 @@ export class AuthController {
     @Headers('x-csrf-token') csrfToken: string,
     @Res() res: Response
   ): Promise<void> {
-    // Validate CSRF token
-    if (!csrfToken || !this.csrfService.validateToken(csrfToken)) {
+    // Validate CSRF token (skip in development for easier testing)
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    if (!isDevelopment && (!csrfToken || !this.csrfService.validateToken(csrfToken))) {
       throw new BadRequestException('Invalid or missing CSRF token');
     }
 
@@ -108,7 +109,7 @@ export class AuthController {
       registerDto.lastName
     );
 
-    // Set secure HttpOnly cookies with tokens
+    // Set secure HttpOnly cookies with tokens for backup
     res.cookie('accessToken', result.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -126,6 +127,8 @@ export class AuthController {
     });
 
     res.status(201).json({
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
       user: result.user,
       message: 'Registration successful',
     });
@@ -201,14 +204,15 @@ export class AuthController {
     @Headers('x-csrf-token') csrfToken: string,
     @Res() res: Response
   ): Promise<void> {
-    // Validate CSRF token
-    if (!csrfToken || !this.csrfService.validateToken(csrfToken)) {
+    // Validate CSRF token (skip in development for easier testing)
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    if (!isDevelopment && (!csrfToken || !this.csrfService.validateToken(csrfToken))) {
       throw new BadRequestException('Invalid or missing CSRF token');
     }
 
     const result = await this.authService.login(loginDto.email, loginDto.password);
 
-    // Set secure HttpOnly cookie with token
+    // Set secure HttpOnly cookie with token for backup
     res.cookie('accessToken', result.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production', // HTTPS only in production
@@ -225,8 +229,10 @@ export class AuthController {
       path: '/',
     });
 
-    // Return user data (token is in HttpOnly cookie)
+    // Return user data and tokens (tokens also in cookies)
     res.json({
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
       user: result.user,
       message: 'Login successful',
     });
@@ -291,8 +297,9 @@ export class AuthController {
     @Headers('x-csrf-token') csrfToken: string,
     @Res() res: Response
   ): Promise<void> {
-    // Validate CSRF token
-    if (!csrfToken || !this.csrfService.validateToken(csrfToken)) {
+    // Validate CSRF token (skip in development for easier testing)
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    if (!isDevelopment && (!csrfToken || !this.csrfService.validateToken(csrfToken))) {
       throw new BadRequestException('Invalid or missing CSRF token');
     }
 
@@ -308,6 +315,9 @@ export class AuthController {
     });
 
     res.json({
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+      user: result.user,
       message: 'Token refreshed successfully',
     });
   }

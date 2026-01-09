@@ -1,3 +1,4 @@
+import { EventDetailsDto } from './event-details.dto';
 import {
   IsString,
   IsNotEmpty,
@@ -42,7 +43,13 @@ export class UpdateTicketConfigurationDto {
  * DTO for updating an existing event
  * All fields are optional to support partial updates
  */
+
 export class UpdateEventDto {
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => EventDetailsDto)
+    eventDetails?: EventDetailsDto[];
   @IsOptional()
   @IsString({ message: 'Event name must be a string' })
   @IsNotEmpty({ message: 'Event name cannot be empty' })
@@ -57,6 +64,11 @@ export class UpdateEventDto {
   @IsString({ message: 'Event location must be a string' })
   @IsNotEmpty({ message: 'Event location cannot be empty' })
   location?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Venue name must be a string' })
+  @IsNotEmpty({ message: 'Venue name cannot be empty' })
+  venueName?: string;
 
   @IsOptional()
   @IsArray({ message: 'Ticket configurations must be an array' })

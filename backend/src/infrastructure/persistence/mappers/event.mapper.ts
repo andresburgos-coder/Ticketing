@@ -2,6 +2,7 @@ import { Event } from '../../../domain/entities/event.entity';
 import { TicketConfiguration } from '../../../domain/entities/ticket-configuration.entity';
 import { EventOrmEntity } from '../entities/event.orm-entity';
 import { TicketConfigurationOrmEntity } from '../entities/ticket-configuration.orm-entity';
+import { EventDetailsOrmEntity } from '../entities/event-details.orm-entity';
 import { Money } from '../../../domain/value-objects/money.vo';
 
 /**
@@ -21,14 +22,28 @@ export class EventMapper {
     const ticketConfigurations = ormEntity.ticketConfigurations.map((config) =>
       this.ticketConfigToDomain(config)
     );
+    // Map event details if present
+    const details = ormEntity.details?.map((d: EventDetailsOrmEntity) => ({
+      id: d.id,
+      category: d.category,
+      minAge: d.minAge,
+      seating: d.seating,
+      capacity: d.capacity,
+      foodSale: d.foodSale,
+      liquorSale: d.liquorSale,
+      reducedMobilityAccess: d.reducedMobilityAccess,
+      pregnantAccess: d.pregnantAccess,
+    })) || [];
 
     return new Event(
       ormEntity.id,
       ormEntity.name,
       ormEntity.date,
       ormEntity.location,
+      ormEntity.venueName,
       ticketConfigurations,
-      ormEntity.imageUrl
+      ormEntity.imageUrl,
+      details
     );
   }
 
@@ -43,11 +58,26 @@ export class EventMapper {
     ormEntity.name = domainEvent.name;
     ormEntity.date = domainEvent.date;
     ormEntity.location = domainEvent.location;
+    ormEntity.venueName = domainEvent.venueName;
     ormEntity.imageUrl = domainEvent.imageUrl;
     ormEntity.ticketConfigurations = domainEvent.ticketConfigurations.map((config) =>
       this.ticketConfigToPersistence(config)
     );
-
+    // Map event details if present
+    if (domainEvent.details) {
+      ormEntity.details = domainEvent.details.map((d: any) => {
+        const detail = new EventDetailsOrmEntity();
+        detail.category = d.category;
+        detail.minAge = d.minAge;
+        detail.seating = d.seating;
+        detail.capacity = d.capacity;
+        detail.foodSale = d.foodSale;
+        detail.liquorSale = d.liquorSale;
+        detail.reducedMobilityAccess = d.reducedMobilityAccess;
+        detail.pregnantAccess = d.pregnantAccess;
+        return detail;
+      });
+    }
     return ormEntity;
   }
 

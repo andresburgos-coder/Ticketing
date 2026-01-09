@@ -40,6 +40,9 @@ export class CheckoutButton {
       );
     }
 
+    // Save event info for confirmation page
+    this.checkoutService.setEventInfo(this.eventId, this.eventName);
+
     // Navigate to checkout
     this.router.navigate(['/checkout'], {
       queryParams: {

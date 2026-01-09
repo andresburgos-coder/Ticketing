@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CheckoutService } from '../../features/checkout/services/checkout.service';
 import { OrderSummary } from '../../features/checkout/components/order-summary/order-summary';
@@ -28,6 +28,7 @@ import { LoadingSpinner } from '../../shared/components/loading-spinner/loading-
 export class Checkout implements OnInit, OnDestroy {
   private readonly checkoutService = inject(CheckoutService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   @ViewChild(ContactForm) contactForm?: ContactForm;
   @ViewChild(PaymentForm) paymentForm?: PaymentForm;
@@ -39,11 +40,25 @@ export class Checkout implements OnInit, OnDestroy {
   step: 'contact' | 'payment' | 'confirm' = 'contact';
   errors: string[] = [];
 
+  // Store form data between steps
+  private contactData?: { firstName: string; lastName: string; email: string; phone: string };
+  private paymentData?: { cardNumber: string; expiryDate: string; cvv: string };
+
   ngOnInit(): void {
     // Check if cart is empty
     if (this.checkoutService.cart().length === 0) {
       this.router.navigate(['/']);
+      return;
     }
+
+    // Read event info from query params and set in service
+    this.route.queryParams.subscribe(params => {
+      const eventId = params['eventId'];
+      const eventName = params['eventName'];
+      if (eventId) {
+        this.checkoutService.setEventInfo(eventId, eventName);
+      }
+    });
   }
 
   nextStep(): void {
@@ -51,10 +66,19 @@ export class Checkout implements OnInit, OnDestroy {
 
     if (this.step === 'contact') {
       if (this.contactForm?.validate()) {
+        // Store contact data before moving to next step
+        this.contactData = this.contactForm.getFormData();
         this.step = 'payment';
       }
     } else if (this.step === 'payment') {
       if (this.paymentForm?.validate()) {
+        // Store payment data before confirming
+        const formData = this.paymentForm.getFormData();
+        this.paymentData = {
+          cardNumber: formData.cardNumber,
+          expiryDate: formData.expiryDate,
+          cvv: formData.cvv
+        };
         this.confirmOrder();
       }
     }
@@ -67,7 +91,13 @@ export class Checkout implements OnInit, OnDestroy {
   }
 
   confirmOrder(): void {
-    this.checkoutService.confirmOrder('stripe');
+    // Use stored data from previous steps
+    if (!this.paymentData || !this.contactData) {
+      this.errors = ['Missing payment or contact information'];
+      return;
+    }
+
+    this.checkoutService.confirmOrder('stripe', this.contactData.email, this.paymentData);
     setTimeout(() => {
       this.router.navigate(['/confirmation']);
     }, 1000);

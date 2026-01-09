@@ -6,18 +6,16 @@ import { environment } from '../../../environments/environment';
 
 export interface Ticket {
   id: string;
+  code: string;
   eventId: string;
-  eventName: string;
-  eventImageUrl: string;
-  eventDate: string;
-  eventTime: string;
-  venue: string;
-  ticketType: string;
+  type: string;
+  buyerEmail: string;
   price: number;
-  qrCode: string;
+  currency: string;
   purchaseDate: string;
-  status: 'upcoming' | 'past' | 'cancelled';
-  seatNumber?: string;
+  qrToken: string;
+  status: 'PAID' | 'USED';
+  usedAt: string | null;
 }
 
 export interface TicketPurchase {
@@ -47,7 +45,7 @@ export class TicketsService {
    */
   getUserTickets(): Observable<Ticket[]> {
     this._isLoading.set(true);
-    return this.http.get<Ticket[]>(`${this.baseUrl}/user`).pipe(
+    return this.http.get<Ticket[]>(`${this.baseUrl}/me`).pipe(
       tap(tickets => {
         this._tickets.set(tickets);
         this._isLoading.set(false);
@@ -66,7 +64,7 @@ export class TicketsService {
    * Get tickets filtered by status
    */
   getTicketsByStatus(status: 'upcoming' | 'past'): Observable<Ticket[]> {
-    return this.http.get<Ticket[]>(`${this.baseUrl}/user`, {
+    return this.http.get<Ticket[]>(`${this.baseUrl}/me`, {
       params: { status }
     });
   }

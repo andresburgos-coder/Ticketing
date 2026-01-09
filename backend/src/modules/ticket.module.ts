@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtModule } from '@nestjs/jwt';
 import { TicketController } from '../presentation/controllers/ticket.controller';
 import { ReservationController } from '../presentation/controllers/reservation.controller';
 import { GetBuyerTicketsUseCase } from '../application/use-cases/get-buyer-tickets.use-case';
@@ -38,6 +39,10 @@ import { TICKET_REPOSITORY, RESERVATION_REPOSITORY, EVENT_REPOSITORY } from '../
       EventOrmEntity,
       TicketConfigurationOrmEntity,
     ]),
+    JwtModule.register({
+      secret: process.env.JWT_SECRET ?? 'your-secret-key',
+      signOptions: { expiresIn: '15m' },
+    }),
   ],
   controllers: [TicketController, ReservationController],
   providers: [

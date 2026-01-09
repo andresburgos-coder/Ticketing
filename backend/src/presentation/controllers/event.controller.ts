@@ -145,9 +145,10 @@ export class EventController {
       const name = body.name;
       const date = body.date;
       const location = body.location;
+      const venueName = body.venueName;
       
-      if (!name || !date || !location) {
-        throw new BadRequestException('name, date, and location are required');
+      if (!name || !date || !location || !venueName) {
+        throw new BadRequestException('name, date, location, and venueName are required');
       }
 
       // Convert ISO string to Date
@@ -208,6 +209,7 @@ export class EventController {
         name,
         date: eventDate,
         location,
+        venueName,
         imageUrl,
         ticketConfigurations,
       });
@@ -383,6 +385,7 @@ export class EventController {
       const eventDate = updateEventDto.date ? new Date(updateEventDto.date) : existingEvent.date;
       const name = updateEventDto.name ?? existingEvent.name;
       const location = updateEventDto.location ?? existingEvent.location;
+      const venueName = updateEventDto.venueName ?? existingEvent.venueName;
       const ticketConfigurations = updateEventDto.ticketConfigurations ?? 
         existingEvent.ticketConfigurations.map(config => ({
           type: config.type,
@@ -397,6 +400,7 @@ export class EventController {
         name,
         date: eventDate,
         location,
+        venueName,
         ticketConfigurations,
       });
 
@@ -565,6 +569,7 @@ export class EventController {
       name: event.name,
       date: event.date.toISOString(),
       location: event.location,
+      venueName: event.venueName,
       imageUrl: event.imageUrl || null,
       ticketConfigurations: event.ticketConfigurations.map(config => ({
         type: config.type,
@@ -573,6 +578,7 @@ export class EventController {
         totalQuantity: config.totalQuantity,
         availableQuantity: config.availableQuantity,
       })),
+      eventDetails: event.details || [],
     };
   }
 }
@@ -586,6 +592,7 @@ interface EventResponse {
   name: string;
   date: string;
   location: string;
+  venueName: string;
   imageUrl: string | null;
   ticketConfigurations: Array<{
     type: string;
@@ -594,4 +601,5 @@ interface EventResponse {
     totalQuantity: number;
     availableQuantity: number;
   }>;
+  eventDetails: any[];
 }

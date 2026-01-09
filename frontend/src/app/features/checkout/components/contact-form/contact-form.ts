@@ -51,4 +51,8 @@ export class ContactForm {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   }
+
+  getFormData(): ContactFormData {
+    return { ...this.formData };
+  }
 }

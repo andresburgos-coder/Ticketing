@@ -7,6 +7,7 @@ import { Money } from '../../src/domain/value-objects/money.vo';
 import { TypeOrmEventRepository } from '../../src/infrastructure/persistence/repositories/typeorm-event.repository';
 import { EventOrmEntity } from '../../src/infrastructure/persistence/entities/event.orm-entity';
 import { TicketConfigurationOrmEntity } from '../../src/infrastructure/persistence/entities/ticket-configuration.orm-entity';
+import { EventDetailsOrmEntity } from '../../src/infrastructure/persistence/entities/event-details.orm-entity';
 
 /**
  * Integration tests for TypeOrmEventRepository
@@ -26,7 +27,7 @@ describe('TypeOrmEventRepository Integration Tests', () => {
       username: process.env.TEST_DATABASE_USER ?? 'test_user',
       password: process.env.TEST_DATABASE_PASSWORD ?? 'test_pass',
       database: process.env.TEST_DATABASE_NAME ?? 'ticket_sales_test',
-      entities: [EventOrmEntity, TicketConfigurationOrmEntity],
+      entities: [EventOrmEntity, TicketConfigurationOrmEntity, EventDetailsOrmEntity],
       synchronize: true,
       dropSchema: true,
     };

@@ -13,8 +13,10 @@ export class Event {
     public readonly name: string,
     public readonly date: Date,
     public readonly location: string,
+    public readonly venueName: string,
     private _ticketConfigurations: TicketConfiguration[],
     public readonly imageUrl?: string,
+    public readonly details?: any[], // EventDetails[] (puedes tipar luego)
   ) {}
 
   /**

@@ -38,14 +38,20 @@ export class PurchaseTicketUseCase {
       cvv: string;
     };
   }): Promise<Ticket[]> {
+    console.log('🎫 [PurchaseTicketUseCase] Iniciando compra...');
+    console.log('🎫 Params:', { eventId: params.eventId, ticketType: params.ticketType, quantity: params.quantity, buyerEmail: params.buyerEmail });
+
     // 1. Validate event exists
+    console.log('🔍 Buscando evento:', params.eventId);
     const event = await this.eventRepository.findById(params.eventId);
     if (!event) {
       throw new Error('Event not found');
     }
+    console.log('✅ Evento encontrado:', event.name);
 
     // 2. Check availability
     const availability = event.getAvailability(params.ticketType);
+    console.log(`🎫 Disponibilidad para ${params.ticketType}: ${availability}, solicitados: ${params.quantity}`);
     if (availability < params.quantity) {
       throw new Error(
         `Insufficient tickets available. Requested: ${params.quantity}, Available: ${availability}`
@@ -59,9 +65,11 @@ export class PurchaseTicketUseCase {
     if (!ticketConfig) {
       throw new Error(`Ticket type ${params.ticketType} not found for this event`);
     }
+    console.log('💰 Precio por ticket:', ticketConfig.price.amount, ticketConfig.price.currency);
 
     // 4. Process payment (simplified - in real world would integrate with payment gateway)
     const totalAmount = ticketConfig.price.amount * params.quantity;
+    console.log('💳 Procesando pago:', { totalAmount, currency: ticketConfig.price.currency });
     const paymentSuccessful = await this.processPayment(
       totalAmount,
       ticketConfig.price.currency,
@@ -69,14 +77,19 @@ export class PurchaseTicketUseCase {
     );
 
     if (!paymentSuccessful) {
+      console.error('❌ Pago fallido');
       throw new Error('Payment failed');
     }
+    console.log('✅ Pago procesado exitosamente');
 
     // 5. Reserve tickets
+    console.log('🔐 Reservando tickets...');
     event.reserveTickets(params.ticketType, params.quantity);
     await this.eventRepository.save(event);
+    console.log('✅ Event actualizado en BD');
 
     // 6. Generate tickets
+    console.log('🎫 Generando tickets...');
     const tickets: Ticket[] = [];
     const buyerEmail = Email.create(params.buyerEmail);
     const purchaseDate = new Date();
@@ -96,9 +109,15 @@ export class PurchaseTicketUseCase {
       );
       tickets.push(ticket);
     }
+    console.log(`✅ ${tickets.length} tickets generados`);
 
     // 7. Save tickets
-    return await this.ticketRepository.saveMany(tickets);
+    console.log('💾 Guardando tickets en BD...');
+    const savedTickets = await this.ticketRepository.saveMany(tickets);
+    console.log(`✅ ${savedTickets.length} tickets guardados en BD`);
+    console.log('✅ IDs guardados:', savedTickets.map(t => ({ id: t.id, code: t.code })));
+
+    return savedTickets;
   }
 
   /**

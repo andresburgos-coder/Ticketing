@@ -162,10 +162,10 @@ export class AuthService {
   /**
    * Refresh access token using refresh token
    * @param refreshToken - Valid refresh token
-   * @returns AuthResponse with new access token
+   * @returns AuthResponse with new tokens and user data
    * @throws UnauthorizedException if refresh token is invalid
    */
-  async refreshToken(refreshToken: string): Promise<{ accessToken: string }> {
+  async refreshToken(refreshToken: string): Promise<AuthResponse> {
     try {
       // Verify refresh token
       const payload = this.jwtService.verify<JwtPayload>(refreshToken, {
@@ -178,20 +178,20 @@ export class AuthService {
         throw new UnauthorizedException('User not found');
       }
 
-      // Generate new access token
-      const accessToken = this.jwtService.sign(
-        {
-          sub: user.id,
+      // Generate new tokens
+      const { accessToken, refreshToken: newRefreshToken } = this.generateTokens(user);
+
+      return {
+        accessToken,
+        refreshToken: newRefreshToken,
+        user: {
+          id: user.id,
           email: user.email.value,
+          firstName: user.firstName,
+          lastName: user.lastName,
           role: user.role,
         },
-        {
-          secret: this.JWT_SECRET,
-          expiresIn: this.JWT_EXPIRATION,
-        }
-      );
-
-      return { accessToken };
+      };
     } catch (error) {
       throw new UnauthorizedException('Invalid refresh token');
     }

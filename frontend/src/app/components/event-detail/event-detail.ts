@@ -1,3 +1,6 @@
+
+
+
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -29,6 +32,11 @@ export class EventDetail implements OnInit, OnDestroy {
   readonly event = this.eventService.selectedEvent;
   readonly isLoading = this.eventService.isLoading;
   selectedQuantities: { [key: string]: number } = {};
+
+  getMapUrl(): string {
+    const loc = this.event()?.location || '';
+    return `https://www.google.com/maps?q=${encodeURIComponent(loc)}&output=embed`;
+  }
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');

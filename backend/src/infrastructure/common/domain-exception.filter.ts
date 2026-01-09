@@ -4,6 +4,8 @@ import {
   ArgumentsHost,
   HttpStatus,
   Logger,
+  UnauthorizedException,
+  HttpException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { InsufficientTicketsException } from '../../domain/exceptions/insufficient-tickets.exception';
@@ -43,6 +45,19 @@ export class DomainExceptionFilter implements ExceptionFilter {
 
   private mapExceptionToResponse(exception: unknown): ErrorResponse {
     const timestamp = new Date().toISOString();
+
+    // NestJS built-in HTTP exceptions
+    if (exception instanceof HttpException) {
+      const status = exception.getStatus();
+      const response = exception.getResponse();
+      
+      return {
+        statusCode: status,
+        message: typeof response === 'string' ? response : (response as any).message || exception.message,
+        error: exception.name,
+        timestamp,
+      };
+    }
 
     // Domain validation exceptions (400 Bad Request)
     if (exception instanceof InvalidEmailException) {

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, HttpStatus } from '@nestjs/common';
+import { INestApplication, HttpStatus, UnauthorizedException } from '@nestjs/common';
 import * as request from 'supertest';
 import { Controller, Get, Module } from '@nestjs/common';
 import { DomainExceptionFilter } from './domain-exception.filter';
@@ -45,6 +45,11 @@ class TestController {
   @Get('unknown-error')
   throwUnknownError(): void {
     throw new Error('Some unexpected error');
+  }
+
+  @Get('unauthorized')
+  throwUnauthorized(): void {
+    throw new UnauthorizedException('Invalid token');
   }
 }
 
@@ -161,6 +166,19 @@ describe('DomainExceptionFilter', () => {
       expect(response.body).toHaveProperty('statusCode', HttpStatus.INTERNAL_SERVER_ERROR);
       expect(response.body).toHaveProperty('error', 'Error');
       expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty('timestamp');
+    });
+  });
+
+  describe('UnauthorizedException', () => {
+    it('should return 401 Unauthorized with proper error response', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/test/unauthorized')
+        .expect(HttpStatus.UNAUTHORIZED);
+
+      expect(response.body).toHaveProperty('statusCode', HttpStatus.UNAUTHORIZED);
+      expect(response.body).toHaveProperty('error', 'UnauthorizedException');
+      expect(response.body).toHaveProperty('message', 'Invalid token');
       expect(response.body).toHaveProperty('timestamp');
     });
   });

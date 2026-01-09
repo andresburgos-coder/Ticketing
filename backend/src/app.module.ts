@@ -35,7 +35,7 @@ import { TicketModule } from './modules/ticket.module';
       password: process.env.DATABASE_PASSWORD ?? 'ticket_pass',
       database: process.env.DATABASE_NAME ?? 'ticket_sales',
       autoLoadEntities: true,
-      synchronize: process.env.NODE_ENV !== 'production',
+      synchronize: false,
     }),
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),

@@ -9,6 +9,7 @@ import { DeleteEventUseCase } from '../application/use-cases/delete-event.use-ca
 import { TypeOrmEventRepository } from '../infrastructure/persistence/repositories/typeorm-event.repository';
 import { EventOrmEntity } from '../infrastructure/persistence/entities/event.orm-entity';
 import { TicketConfigurationOrmEntity } from '../infrastructure/persistence/entities/ticket-configuration.orm-entity';
+import { EventDetailsOrmEntity } from '../infrastructure/persistence/entities/event-details.orm-entity';
 import { MinioService } from '../infrastructure/external/minio.service';
 import { EVENT_REPOSITORY } from '../domain/interfaces/repository-tokens';
 
@@ -20,7 +21,7 @@ import { EVENT_REPOSITORY } from '../domain/interfaces/repository-tokens';
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([EventOrmEntity, TicketConfigurationOrmEntity]),
+    TypeOrmModule.forFeature([EventOrmEntity, TicketConfigurationOrmEntity, EventDetailsOrmEntity]),
     MulterModule.register({
       limits: {
         fileSize: 10 * 1024 * 1024, // 10MB
