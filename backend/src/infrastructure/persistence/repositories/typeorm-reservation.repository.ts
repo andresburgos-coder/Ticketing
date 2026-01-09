@@ -75,13 +75,104 @@ export class TypeOrmReservationRepository implements IReservationRepository {
    * Updates an existing reservation in the database
    * Typically used to change reservation status (ACTIVE -> CONFIRMED/EXPIRED/CANCELLED)
    * 
-   * @param reservation - The Reservation entity with updated data
+   * @param id - The reservation ID to update
+   * @param data - Partial reservation data to update
    * @returns Promise resolving to the updated Reservation
    * @throws Error if reservation not found or update fails
    */
-  async update(reservation: Reservation): Promise<Reservation> {
-    const ormEntity = ReservationMapper.toPersistence(reservation);
-    const updatedOrmEntity = await this.repository.save(ormEntity);
-    return ReservationMapper.toDomain(updatedOrmEntity);
+  async update(id: string, data: Partial<Reservation>): Promise<Reservation> {
+    // Convert domain data to ORM format for update
+    const updateData: any = {};
+    
+    if (data.status) {
+      updateData.status = data.status;
+    }
+    
+    if (data.quantity) {
+      updateData.quantity = data.quantity.value;
+    }
+    
+    if (data.totalAmount) {
+      updateData.totalAmount = data.totalAmount.amount;
+      updateData.currency = data.totalAmount.currency;
+    }
+    
+    if (data.buyerEmail) {
+      updateData.buyerEmail = data.buyerEmail.value;
+    }
+    
+    if (data.expiresAt) {
+      updateData.expiresAt = data.expiresAt;
+    }
+
+    await this.repository.update(id, updateData);
+    const updatedEntity = await this.repository.findOne({ where: { id } });
+    if (!updatedEntity) {
+      throw new Error('Reservation not found after update');
+    }
+    return ReservationMapper.toDomain(updatedEntity);
+  }
+
+  /**
+   * Deletes a reservation from the database
+   * @param id - The reservation ID to delete
+   */
+  async delete(id: string): Promise<void> {
+    await this.repository.delete(id);
+  }
+
+  /**
+   * Finds reservations with filters for admin panel
+   * @param filters - Filter criteria
+   * @returns Promise resolving to array of filtered Reservations
+   */
+  async findWithFilters(filters: {
+    status?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<Reservation[]> {
+    const queryBuilder = this.repository.createQueryBuilder('reservation');
+
+    if (filters.status) {
+      queryBuilder.andWhere('reservation.status = :status', { status: filters.status });
+    }
+
+    if (filters.limit) {
+      queryBuilder.limit(filters.limit);
+    }
+
+    if (filters.offset) {
+      queryBuilder.offset(filters.offset);
+    }
+
+    const ormEntities = await queryBuilder.getMany();
+    return ormEntities.map(entity => ReservationMapper.toDomain(entity));
+  }
+
+  /**
+   * Counts reservations with filters
+   * @param filters - Filter criteria
+   * @returns Promise resolving to count
+   */
+  async countWithFilters(filters: {
+    status?: string;
+  }): Promise<number> {
+    const queryBuilder = this.repository.createQueryBuilder('reservation');
+
+    if (filters.status) {
+      queryBuilder.andWhere('reservation.status = :status', { status: filters.status });
+    }
+
+    return await queryBuilder.getCount();
+  }
+
+  /**
+   * Counts active reservations
+   * @returns Promise resolving to count of active reservations
+   */
+  async countActive(): Promise<number> {
+    return await this.repository.count({
+      where: { status: 'ACTIVE' }
+    });
   }
 }

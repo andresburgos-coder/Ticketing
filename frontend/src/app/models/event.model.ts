@@ -23,6 +23,8 @@ export interface EventDetails {
     foodSales?: boolean;
     liquorSales?: boolean;
     accessibility?: string;
+    wheelchairAccess?: boolean;
+    pregnancyAccess?: boolean;
 }
 
 export interface Event {

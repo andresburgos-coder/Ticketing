@@ -27,6 +27,7 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
+  role: string;
 }
 
 @Injectable({
@@ -56,11 +57,11 @@ export class AuthService {
     console.log('[AuthService.login] ===== LOGIN START =====');
     console.log('[AuthService.login] Email:', credentials.email);
     this._isLoading.set(true);
-    return this.http.get<{ csrfToken: string }>(`${environment.baseUrl}/csrf/token`).pipe(
+    return this.http.get<{ csrfToken: string }>(`${environment.apiUrl}/csrf/token`).pipe(
       switchMap(({ csrfToken }) => {
         console.log('[AuthService.login] CSRF token received, posting to /auth/login');
         return this.http.post<AuthResponse>(
-          `${environment.baseUrl}/auth/login`,
+          `${environment.apiUrl}/auth/login`,
           credentials,
           {
             headers: {
@@ -99,11 +100,11 @@ export class AuthService {
   register(data: RegisterRequest): Observable<AuthResponse> {
     this._isLoading.set(true);
     // First, get CSRF token
-    return this.http.get<{ csrfToken: string }>(`${environment.baseUrl}/csrf/token`).pipe(
+    return this.http.get<{ csrfToken: string }>(`${environment.apiUrl}/csrf/token`).pipe(
       switchMap(({ csrfToken }) => {
         // Then, register with CSRF token in header
         return this.http.post<AuthResponse>(
-          `${environment.baseUrl}/auth/register`,
+          `${environment.apiUrl}/auth/register`,
           data,
           {
             headers: {
@@ -144,11 +145,11 @@ export class AuthService {
   refreshToken(): Observable<AuthResponse> {
     this._isLoading.set(true);
     // Get CSRF token first
-    return this.http.get<{ csrfToken: string }>(`${environment.baseUrl}/csrf/token`).pipe(
+    return this.http.get<{ csrfToken: string }>(`${environment.apiUrl}/csrf/token`).pipe(
       switchMap(({ csrfToken }) => {
         // Then refresh with CSRF token
         return this.http.post<AuthResponse>(
-          `${environment.baseUrl}/auth/refresh`,
+          `${environment.apiUrl}/auth/refresh`,
           {},
           {
             headers: {

@@ -105,10 +105,10 @@ export class EventForm implements OnInit {
           minAge: event.eventDetails?.minAge || null,
           seating: event.eventDetails?.seating || '',
           capacity: event.eventDetails?.capacity || null,
-          foodSale: event.eventDetails?.foodSale || false,
-          liquorSale: event.eventDetails?.liquorSale || false,
-          reducedMobilityAccess: event.eventDetails?.reducedMobilityAccess || false,
-          pregnantAccess: event.eventDetails?.pregnantAccess || false,
+          foodSales: event.eventDetails?.foodSales || false,
+          liquorSales: event.eventDetails?.liquorSales || false,
+          wheelchairAccess: event.eventDetails?.wheelchairAccess || false,
+          pregnancyAccess: event.eventDetails?.pregnancyAccess || false,
           ticketConfigurations: event.ticketConfigurations || []
         });
         if (event.imageUrl) {

@@ -1,4 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
+import { Observable } from 'rxjs';
 import { Events } from './events';
 import { Event } from '../models/event.model';
 
@@ -106,5 +107,19 @@ export class EventService {
 
   clearSelectedEvent(): void {
     this._selectedEvent.set(null);
+  }
+
+  deleteEvent(id: string | number): Observable<void> {
+    // TODO: Implement actual delete API call
+    return new Observable(observer => {
+      // Simulate API call
+      setTimeout(() => {
+        const events = this._events();
+        const updatedEvents = events.filter(event => event.id !== id);
+        this._events.set(updatedEvents);
+        observer.next();
+        observer.complete();
+      }, 500);
+    });
   }
 }

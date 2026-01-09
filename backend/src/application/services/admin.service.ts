@@ -7,9 +7,10 @@ import { GetDashboardStatsUseCase } from '../use-cases/get-dashboard-stats.use-c
 import { CreateAdminUserDto } from '../../presentation/dtos/create-admin-user.dto';
 import { UpdateUserDto } from '../../presentation/dtos/update-user.dto';
 import { GetUsersQueryDto } from '../../presentation/dtos/get-users-query.dto';
-import { IUserRepository, USER_REPOSITORY } from '../../domain/interfaces/user-repository.interface';
-import { ITicketRepository, TICKET_REPOSITORY } from '../../domain/interfaces/ticket-repository.interface';
-import { IReservationRepository, RESERVATION_REPOSITORY } from '../../domain/interfaces/reservation-repository.interface';
+import { IUserRepository } from '../../domain/interfaces/user-repository.interface';
+import { ITicketRepository } from '../../domain/interfaces/ticket-repository.interface';
+import { IReservationRepository } from '../../domain/interfaces/reservation-repository.interface';
+import { USER_REPOSITORY, TICKET_REPOSITORY, RESERVATION_REPOSITORY } from '../../domain/interfaces/repository-tokens';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()

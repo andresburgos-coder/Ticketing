@@ -36,7 +36,7 @@ export class AuthController {
    * @throws BadRequestException if validation fails
    */
   @Post('register')
-  @Throttle({ auth: { limit: 5, ttl: 3600000 } }) // 5 registrations per hour per IP
+  @Throttle(5, 3600000) // 5 registrations per hour per IP
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Register a new user',
@@ -144,7 +144,7 @@ export class AuthController {
    * @throws BadRequestException if validation fails
    */
   @Post('login')
-  @Throttle({ auth: { limit: 5, ttl: 60000 } }) // 5 login attempts per minute per IP
+  @Throttle(5, 60000) // 5 login attempts per minute per IP
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Login user',
@@ -248,7 +248,7 @@ export class AuthController {
    * @throws BadRequestException if validation fails
    */
   @Post('refresh')
-  @Throttle({ auth: { limit: 10, ttl: 60000 } }) // 10 refresh attempts per minute per IP
+  @Throttle(10, 60000) // 10 refresh attempts per minute per IP
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Refresh access token',

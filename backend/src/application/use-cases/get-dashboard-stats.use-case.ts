@@ -1,8 +1,9 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IUserRepository, USER_REPOSITORY } from '../../domain/interfaces/user-repository.interface';
-import { IEventRepository, EVENT_REPOSITORY } from '../../domain/interfaces/event-repository.interface';
-import { ITicketRepository, TICKET_REPOSITORY } from '../../domain/interfaces/ticket-repository.interface';
-import { IReservationRepository, RESERVATION_REPOSITORY } from '../../domain/interfaces/reservation-repository.interface';
+import { IUserRepository } from '../../domain/interfaces/user-repository.interface';
+import { IEventRepository } from '../../domain/interfaces/event-repository.interface';
+import { ITicketRepository } from '../../domain/interfaces/ticket-repository.interface';
+import { IReservationRepository } from '../../domain/interfaces/reservation-repository.interface';
+import { USER_REPOSITORY, EVENT_REPOSITORY, TICKET_REPOSITORY, RESERVATION_REPOSITORY } from '../../domain/interfaces/repository-tokens';
 
 @Injectable()
 export class GetDashboardStatsUseCase {

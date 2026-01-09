@@ -16,18 +16,10 @@ import { AdminModule } from './modules/admin.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    ThrottlerModule.forRoot([
-      {
-        name: 'short',
-        ttl: 60000, // 1 minute
-        limit: 10, // 10 requests per minute (default)
-      },
-      {
-        name: 'auth',
-        ttl: 60000, // 1 minute
-        limit: 5, // 5 requests per minute for auth endpoints
-      },
-    ]),
+    ThrottlerModule.forRoot({
+      ttl: 60000, // 1 minute
+      limit: 10, // 10 requests per minute (default)
+    }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DATABASE_HOST ?? 'localhost',

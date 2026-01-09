@@ -1,3 +1,5 @@
+import { Event } from './event.model';
+
 export interface User {
   id: string;
   email: string;
@@ -11,6 +13,27 @@ export enum UserRole {
   BUYER = 'BUYER',
   ORGANIZER = 'ORGANIZER',
   ADMIN = 'ADMIN'
+}
+
+export enum EventCategory {
+  CUALQUIER_CATEGORIA = 'Cualquier categoría',
+  ACCION_EXTREMO = 'Acción Extremo',
+  CIRCO = 'Circo',
+  COMEDIA = 'Comedia',
+  COMFAMA = 'Comfama',
+  CONCIERTO = 'Concierto',
+  CULTURAL = 'Cultural',
+  DEPORTES = 'Deportes',
+  FERIA = 'Feria',
+  FESTIVAL = 'Festival',
+  INMERSIONES = 'Inmersiones a los centros de experiencias',
+  INSCRIPCION_COSMO = 'Inscripción a proceso de admisión en Cosmo Schools',
+  MUSICAL = 'Musical',
+  PODCAST = 'Podcast',
+  RECREATIVO = 'Recreativo',
+  STAND_UP_COMEDY = 'Stand-Up Comedy',
+  TEATRO = 'Teatro',
+  TURISMO = 'Turismo'
 }
 
 export interface CreateUserRequest {

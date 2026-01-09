@@ -1,6 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IEventRepository, EVENT_REPOSITORY } from '../../domain/interfaces/event-repository.interface';
-import { ITicketRepository, TICKET_REPOSITORY } from '../../domain/interfaces/ticket-repository.interface';
+import { IEventRepository } from '../../domain/interfaces/event-repository.interface';
+import { ITicketRepository } from '../../domain/interfaces/ticket-repository.interface';
+import { EVENT_REPOSITORY, TICKET_REPOSITORY } from '../../domain/interfaces/repository-tokens';
 
 @Injectable()
 export class GetEventStatsUseCase {

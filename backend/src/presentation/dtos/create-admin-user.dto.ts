@@ -5,20 +5,20 @@ import { UserRole } from '../../domain/enums/user-role.enum';
 export class CreateAdminUserDto {
   @ApiProperty({ example: 'admin@example.com' })
   @IsEmail()
-  email: string;
+  email!: string;
 
   @ApiProperty({ example: 'SecurePassword123!' })
   @IsString()
   @MinLength(8)
-  password: string;
+  password!: string;
 
   @ApiProperty({ example: 'Admin' })
   @IsString()
-  firstName: string;
+  firstName!: string;
 
   @ApiProperty({ example: 'User' })
   @IsString()
-  lastName: string;
+  lastName!: string;
 
   @ApiProperty({ enum: UserRole, example: UserRole.ADMIN, required: false })
   @IsOptional()

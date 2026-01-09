@@ -340,14 +340,10 @@ export class AdminReservationsComponent implements OnInit {
   }
 
   loadEvents() {
-    this.eventService.getEvents().subscribe({
-      next: (events) => {
-        this.events = events;
-      },
-      error: (error) => {
-        console.error('Error loading events:', error);
-      }
-    });
+    // Load events using signal
+    this.eventService.loadEvents();
+    // Get events from signal
+    this.events = this.eventService.events();
   }
 
   loadReservations() {

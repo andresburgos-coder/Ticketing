@@ -84,10 +84,10 @@ import { EventCategory } from '../../../models/admin.model';
                 </span>
               </td>
               <td class="text-center">
-                <strong>{{ getTicketsSold(event.id) }}</strong>
+                <strong>{{ getTicketsSold(event.id.toString()) }}</strong>
               </td>
               <td class="text-center">
-                <strong class="revenue">\${{ getRevenue(event.id) | number:'1.2-2' }}</strong>
+                <strong class="revenue">\${{ getRevenue(event.id.toString()) | number:'1.2-2' }}</strong>
               </td>
               <td>
                 <div class="actions">
@@ -105,7 +105,7 @@ import { EventCategory } from '../../../models/admin.model';
                   </button>
                   <button 
                     class="btn btn-sm btn-danger" 
-                    (click)="deleteEvent(event.id, event.name)"
+                    (click)="deleteEvent(event.id.toString(), event.name)"
                   >
                     Eliminar
                   </button>
@@ -352,24 +352,19 @@ export class AdminEventsComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    this.eventService.getEvents().subscribe({
-      next: (events) => {
-        this.events = events;
-        this.filteredEvents = events;
-        this.loading = false;
-        this.loadEventStats();
-      },
-      error: (error) => {
-        this.error = error.message || 'Error al cargar los eventos';
-        this.loading = false;
-      }
-    });
+    // Load events using signal
+    this.eventService.loadEvents();
+    // Get events from signal
+    this.events = this.eventService.events();
+    this.filteredEvents = this.events;
+    this.loading = false;
+    this.loadEventStats();
   }
 
   loadEventStats() {
     // Load stats for each event
     this.events.forEach(event => {
-      this.adminService.getTicketStats(event.id).subscribe({
+      this.adminService.getTicketStats(event.id.toString()).subscribe({
         next: (stats) => {
           this.eventStats[event.id] = {
             ticketsSold: stats.totalTicketsSold,

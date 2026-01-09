@@ -73,9 +73,86 @@ export class TypeOrmUserRepository implements IUserRepository {
    * @returns Promise resolving to the updated User
    * @throws Error if user not found or update fails
    */
-  async update(user: User): Promise<User> {
-    const ormEntity = UserMapper.toPersistence(user);
-    const updatedOrmEntity = await this.repository.save(ormEntity);
+  async update(id: string, data: Partial<User>): Promise<User> {
+    const existingUser = await this.repository.findOne({ where: { id } });
+    if (!existingUser) {
+      throw new Error('User not found');
+    }
+
+    Object.assign(existingUser, data);
+    const updatedOrmEntity = await this.repository.save(existingUser);
     return UserMapper.toDomain(updatedOrmEntity);
+  }
+
+  async delete(id: string): Promise<void> {
+    const result = await this.repository.delete(id);
+    if (result.affected === 0) {
+      throw new Error('User not found');
+    }
+  }
+
+  async findWithFilters(filters: {
+    email?: string;
+    role?: any;
+    search?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<User[]> {
+    const queryBuilder = this.repository.createQueryBuilder('user');
+
+    if (filters.email) {
+      queryBuilder.andWhere('user.email ILIKE :email', { email: `%${filters.email}%` });
+    }
+
+    if (filters.role) {
+      queryBuilder.andWhere('user.role = :role', { role: filters.role });
+    }
+
+    if (filters.search) {
+      queryBuilder.andWhere(
+        '(user.firstName ILIKE :search OR user.lastName ILIKE :search OR user.email ILIKE :search)',
+        { search: `%${filters.search}%` }
+      );
+    }
+
+    if (filters.limit) {
+      queryBuilder.take(filters.limit);
+    }
+
+    if (filters.offset) {
+      queryBuilder.skip(filters.offset);
+    }
+
+    const ormEntities = await queryBuilder.getMany();
+    return ormEntities.map(ormEntity => UserMapper.toDomain(ormEntity));
+  }
+
+  async countWithFilters(filters: {
+    email?: string;
+    role?: any;
+    search?: string;
+  }): Promise<number> {
+    const queryBuilder = this.repository.createQueryBuilder('user');
+
+    if (filters.email) {
+      queryBuilder.andWhere('user.email ILIKE :email', { email: `%${filters.email}%` });
+    }
+
+    if (filters.role) {
+      queryBuilder.andWhere('user.role = :role', { role: filters.role });
+    }
+
+    if (filters.search) {
+      queryBuilder.andWhere(
+        '(user.firstName ILIKE :search OR user.lastName ILIKE :search OR user.email ILIKE :search)',
+        { search: `%${filters.search}%` }
+      );
+    }
+
+    return queryBuilder.getCount();
+  }
+
+  async count(): Promise<number> {
+    return this.repository.count();
   }
 }

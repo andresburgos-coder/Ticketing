@@ -4,6 +4,7 @@ import { IUserRepository } from '../../domain/interfaces/user-repository.interfa
 import { USER_REPOSITORY } from '../../domain/interfaces/repository-tokens';
 import { User } from '../../domain/entities/user.entity';
 import { Email } from '../../domain/value-objects/email.vo';
+import { UserRole } from '../../domain/enums/user-role.enum';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -87,7 +88,7 @@ export class AuthService {
       '', // placeholder, will be hashed
       firstName,
       lastName,
-      'BUYER' // default role
+      UserRole.BUYER // default role
     );
 
     // Hash password
@@ -100,7 +101,7 @@ export class AuthService {
       hashedPassword,
       firstName,
       lastName,
-      'BUYER'
+      UserRole.BUYER
     );
 
     // Save user
@@ -113,7 +114,7 @@ export class AuthService {
       ...tokens,
       user: {
         id: savedUser.id,
-        email: savedUser.email.value,
+        email: typeof savedUser.email === 'string' ? savedUser.email : savedUser.email.value,
         firstName: savedUser.firstName,
         lastName: savedUser.lastName,
         role: savedUser.role,
@@ -151,7 +152,7 @@ export class AuthService {
       ...tokens,
       user: {
         id: user.id,
-        email: user.email.value,
+        email: typeof user.email === 'string' ? user.email : user.email.value,
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
@@ -186,7 +187,7 @@ export class AuthService {
         refreshToken: newRefreshToken,
         user: {
           id: user.id,
-          email: user.email.value,
+          email: typeof user.email === 'string' ? user.email : user.email.value,
           firstName: user.firstName,
           lastName: user.lastName,
           role: user.role,
@@ -205,7 +206,7 @@ export class AuthService {
   private generateTokens(user: User): { accessToken: string; refreshToken: string } {
     const payload: JwtPayload = {
       sub: user.id,
-      email: user.email.value,
+      email: typeof user.email === 'string' ? user.email : user.email.value,
       role: user.role,
     };
 

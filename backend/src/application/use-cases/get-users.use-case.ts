@@ -1,5 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IUserRepository, USER_REPOSITORY } from '../../domain/interfaces/user-repository.interface';
+import { IUserRepository } from '../../domain/interfaces/user-repository.interface';
+import { USER_REPOSITORY } from '../../domain/interfaces/repository-tokens';
 import { GetUsersQueryDto } from '../../presentation/dtos/get-users-query.dto';
 
 @Injectable()

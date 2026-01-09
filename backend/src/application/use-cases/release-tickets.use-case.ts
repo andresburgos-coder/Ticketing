@@ -101,7 +101,7 @@ export class ReleaseTicketsUseCase {
       event.releaseTickets(reservation.ticketType, ticketsToRelease);
 
       // Update reservation status in repository
-      await this.reservationRepository.update(reservation);
+      await this.reservationRepository.update(reservation.id, { status: 'CANCELLED' });
 
       // Update event with released tickets
       await this.eventRepository.update(event);

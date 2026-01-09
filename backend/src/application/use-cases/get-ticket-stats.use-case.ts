@@ -1,5 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { ITicketRepository, TICKET_REPOSITORY } from '../../domain/interfaces/ticket-repository.interface';
+import { ITicketRepository } from '../../domain/interfaces/ticket-repository.interface';
+import { TICKET_REPOSITORY } from '../../domain/interfaces/repository-tokens';
 
 @Injectable()
 export class GetTicketStatsUseCase {

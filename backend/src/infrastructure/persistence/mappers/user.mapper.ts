@@ -1,6 +1,7 @@
 import { User } from '../../../domain/entities/user.entity';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { UserOrmEntity } from '../entities/user.orm-entity';
+import { UserRole } from '../../../domain/enums/user-role.enum';
 
 /**
  * UserMapper
@@ -18,7 +19,7 @@ export class UserMapper {
   static toPersistence(user: User): UserOrmEntity {
     const ormEntity = new UserOrmEntity();
     ormEntity.id = user.id;
-    ormEntity.email = user.email.value;
+    ormEntity.email = typeof user.email === 'string' ? user.email : user.email.value;
     ormEntity.passwordHash = user.passwordHash;
     ormEntity.firstName = user.firstName;
     ormEntity.lastName = user.lastName;
@@ -39,7 +40,7 @@ export class UserMapper {
       ormEntity.passwordHash,
       ormEntity.firstName,
       ormEntity.lastName,
-      ormEntity.role as 'BUYER' | 'ORGANIZER' | 'ADMIN',
+      ormEntity.role,
       ormEntity.createdAt
     );
   }
