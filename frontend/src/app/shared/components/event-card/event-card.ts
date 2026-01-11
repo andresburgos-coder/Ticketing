@@ -60,7 +60,7 @@ export class EventCard {
       filename = filename.split('/').pop() || filename;
     }
 
-    return `${environment.baseUrl}/events/file/${filename}`;
+    return `${environment.apiUrl}/events/file/${filename}`;
   }
 
   getBackgroundImageUrl(): string {

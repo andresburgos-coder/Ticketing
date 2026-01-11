@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import {
   User,
@@ -56,7 +57,14 @@ export class AdminService {
 
   // Dashboard Statistics
   getDashboardStats(): Observable<DashboardStats> {
-    return this.http.get<DashboardStats>(`${this.apiUrl}/dashboard/stats`);
+    console.log('[AdminService] Calling getDashboardStats from:', `${this.apiUrl}/dashboard/stats`);
+    return this.http.get<DashboardStats>(`${this.apiUrl}/dashboard/stats`).pipe(
+      tap(data => console.log('[AdminService] Dashboard stats received:', data)),
+      catchError(error => {
+        console.error('[AdminService] Error getting dashboard stats:', error);
+        throw error;
+      })
+    );
   }
 
   getEventStats(eventId?: string): Observable<EventStats> {

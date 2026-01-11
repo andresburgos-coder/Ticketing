@@ -30,7 +30,7 @@ export interface TicketPurchase {
 })
 export class TicketsService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = `${environment.baseUrl}/tickets`;
+  private readonly baseUrl = `${environment.apiUrl}/tickets`;
 
   // Signals
   private readonly _tickets = signal<Ticket[]>([]);

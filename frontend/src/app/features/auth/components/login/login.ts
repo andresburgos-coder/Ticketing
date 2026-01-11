@@ -132,10 +132,14 @@ export class LoginComponent {
   onSubmit(): void {
     if (this.loginForm.valid) {
       this.errorMessage.set(null);
-
       this.authService.login(this.loginForm.value).subscribe({
         next: () => {
-          this.router.navigate(['/']);
+          const user = this.authService.currentUser();
+          if (user?.role === 'ADMIN') {
+            this.router.navigate(['/admin/dashboard']);
+          } else {
+            this.router.navigate(['/']);
+          }
         },
         error: (error: any) => {
           console.error('Login error:', error);

@@ -15,14 +15,11 @@ export class AdminGuard implements CanActivate {
 
   canActivate(): Observable<boolean> {
     const user = this.authService.currentUser();
-    console.log('[AdminGuard] Checking user:', user);
-    console.log('[AdminGuard] User role:', user?.role);
-    console.log('[AdminGuard] Is admin?', user?.role === 'ADMIN');
-    
+
     if (user && user.role === 'ADMIN') {
       return of(true);
     } else {
-      console.log('[AdminGuard] Access denied, redirecting to auth');
+      console.warn('[AdminGuard] Access denied');
       this.router.navigate(['/auth']);
       return of(false);
     }

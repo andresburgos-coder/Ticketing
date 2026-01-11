@@ -1,0 +1,106 @@
+<div class="admin-tickets">
+  <div class="header">
+    <h2>Gestión de Tickets</h2>
+  </div>
+
+  <div class="filters">
+    <div class="filter-group">
+      <label for="event">Evento:</label>
+      <select id="event" [(ngModel)]="filters.eventId" (change)="loadTickets()">
+        <option value="">Todos los eventos</option>
+        <option *ngFor="let event of events" [value]="event.id">
+          {{ event.name }}
+        </option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="status">Estado:</label>
+      <select id="status" [(ngModel)]="filters.status" (change)="loadTickets()">
+        <option value="">Todos los estados</option>
+        <option value="PAID">Pagado</option>
+        <option value="USED">Usado</option>
+        <option value="CANCELLED">Cancelado</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="tickets-table" *ngIf="!loading">
+    <table>
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Evento</th>
+          <th>Tipo</th>
+          <th>Comprador</th>
+          <th>Precio</th>
+          <th>Fecha de Compra</th>
+          <th>Estado</th>
+          <th>Fecha de Uso</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let ticket of tickets">
+          <td>
+            <code>{{ ticket.code }}</code>
+          </td>
+          <td>
+            <div class="event-info">
+              <strong>{{ ticket.eventName || 'Evento no encontrado' }}</strong>
+              <small>{{ ticket.eventId }}</small>
+            </div>
+          </td>
+          <td>
+            <span class="ticket-type">{{ ticket.type }}</span>
+          </td>
+          <td>{{ ticket.buyerEmail }}</td>
+          <td class="price">${{ ticket.price | number:'1.2-2' }} {{ ticket.currency }}</td>
+          <td>{{ ticket.purchaseDate | date:'short' }}</td>
+          <td>
+            <span class="status-badge" [class]="'status-' + ticket.status.toLowerCase()">
+              {{ ticket.status }}
+            </span>
+          </td>
+          <td>
+            {{ ticket.usedAt ? (ticket.usedAt | date:'short') : '-' }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pagination" *ngIf="pagination">
+      <button
+        class="btn btn-sm"
+        [disabled]="pagination.page <= 1"
+        (click)="changePage(pagination.page - 1)"
+      >
+        Anterior
+      </button>
+
+      <span class="page-info">
+        Página {{ pagination.page }} de {{ pagination.totalPages }}
+        ({{ pagination.total }} tickets)
+      </span>
+
+      <button
+        class="btn btn-sm"
+        [disabled]="pagination.page >= pagination.totalPages"
+        (click)="changePage(pagination.page + 1)"
+      >
+        Siguiente
+      </button>
+    </div>
+
+    <div class="no-tickets" *ngIf="tickets.length === 0">
+      <p>No se encontraron tickets.</p>
+    </div>
+  </div>
+
+  <div class="loading" *ngIf="loading">
+    <p>Cargando tickets...</p>
+  </div>
+
+  <div class="error" *ngIf="error">
+    <p>Error: {{ error }}</p>
+  </div>
+</div>

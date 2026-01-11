@@ -122,7 +122,7 @@ export class EventForm implements OnInit {
             if (filename.includes('/')) {
               filename = filename.split('/').pop() || filename;
             }
-            this.previewUrl = `${environment.baseUrl}/events/file/${filename}`;
+            this.previewUrl = `${environment.apiUrl}/events/file/${filename}`;
           }
         }
         this.isLoading = false;

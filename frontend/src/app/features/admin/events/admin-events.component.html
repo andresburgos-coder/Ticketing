@@ -1,0 +1,110 @@
+<div class="admin-events">
+  <div class="header">
+    <h2>Gestión de Eventos</h2>
+    <button class="btn btn-primary" routerLink="/admin/events/create">
+      + Crear Evento
+    </button>
+  </div>
+
+  <div class="filters">
+    <div class="filter-group">
+      <label for="category">Categoría:</label>
+      <select id="category" [ngModel]="selectedCategory()" (change)="onCategoryChange($event)" (ngModelChange)="selectedCategory.set($event)">
+        <option value="">Todas las categorías</option>
+        <option *ngFor="let category of categories" [value]="category">
+          {{ category }}
+        </option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="search">Buscar:</label>
+      <input
+        id="search"
+        type="text"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
+        (input)="filterEvents()"
+        placeholder="Buscar por nombre o ubicación..."
+      >
+    </div>
+  </div>
+
+  <div class="events-table" *ngIf="!loading()">
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Fecha</th>
+          <th>Ubicación</th>
+          <th>Categoría</th>
+          <th>Tickets Vendidos</th>
+          <th>Ingresos</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let event of filteredEvents()">
+          <td>
+            <div class="event-name">
+              <strong>{{ event.name }}</strong>
+              <small>ID: {{ event.id }}</small>
+            </div>
+          </td>
+          <td>{{ event.date | date:'short' }}</td>
+          <td>
+            <div class="location">
+              <div>{{ event.location }}</div>
+              <small>{{ event.venueName }}</small>
+            </div>
+          </td>
+          <td>
+            <span class="category-badge">
+              {{ event.eventDetails?.category || 'Sin categoría' }}
+            </span>
+          </td>
+          <td class="text-center">
+            <strong>{{ getTicketsSold(event.id.toString()) }}</strong>
+          </td>
+          <td class="text-center">
+            <strong class="revenue">${{ getRevenue(event.id.toString()) | number:'1.2-2' }}</strong>
+          </td>
+          <td>
+            <div class="actions">
+              <button
+                class="btn btn-sm btn-info"
+                [routerLink]="['/admin/events', event.id]"
+              >
+                Ver
+              </button>
+              <button
+                class="btn btn-sm btn-warning"
+                [routerLink]="['/admin/events', event.id, 'edit']"
+              >
+                Editar
+              </button>
+              <button
+                class="btn btn-sm btn-danger"
+                (click)="deleteEvent(event.id.toString(), event.name)"
+              >
+                Eliminar
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="no-events" *ngIf="filteredEvents().length === 0">
+      <p>No se encontraron eventos.</p>
+    </div>
+  </div>
+
+  <div class="loading" *ngIf="loading()">
+    <p>Cargando eventos...</p>
+  </div>
+
+  <div class="error" *ngIf="error()">
+    <p>Error: {{ error() }}</p>
+  </div>
+</div>

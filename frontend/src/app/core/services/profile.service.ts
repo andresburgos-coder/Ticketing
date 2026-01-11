@@ -59,7 +59,7 @@ export interface PurchaseHistory {
 })
 export class ProfileService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = `${environment.baseUrl}/profile`;
+  private readonly baseUrl = `${environment.apiUrl}/profile`;
 
   // Signals
   private readonly _profile = signal<UserProfile | null>(null);

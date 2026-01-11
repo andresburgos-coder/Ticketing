@@ -1,0 +1,257 @@
+<div class="admin-users">
+  <div class="header">
+    <h2>Gestión de Usuarios</h2>
+    <button class="btn btn-primary" (click)="showCreateModal.set(true)">
+      + Crear Usuario
+    </button>
+  </div>
+
+  <div class="filters">
+    <div class="filter-group">
+      <label for="role-filter">Rol:</label>
+      <select id="role-filter" [(ngModel)]="filters.role" (change)="loadUsers()">
+        <option value="">Todos los roles</option>
+        <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="search-input">Buscar:</label>
+      <input 
+        id="search-input"
+        type="text" 
+        [(ngModel)]="filters.search" 
+        (input)="searchUsers()"
+        placeholder="Buscar por nombre o email..."
+      >
+    </div>
+  </div>
+
+  <div class="users-table" *ngIf="!loading()">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Rol</th>
+          <th>Fecha de Registro</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users()">
+          <td>
+            <small>{{ user.id.substring(0, 8) }}...</small>
+          </td>
+          <td>
+            <strong>{{ user.firstName }} {{ user.lastName }}</strong>
+          </td>
+          <td>{{ user.email }}</td>
+          <td>
+            <span class="role-badge" [class]="'role-' + user.role.toLowerCase()">
+              {{ user.role }}
+            </span>
+          </td>
+          <td>{{ user.createdAt | date:'short' }}</td>
+          <td>
+            <div class="actions">
+              <button 
+                class="btn btn-sm btn-warning" 
+                (click)="editUser(user)"
+              >
+                Editar
+              </button>
+              <button 
+                class="btn btn-sm btn-danger" 
+                (click)="deleteUser(user.id, user.email)"
+                [disabled]="user.role === 'ADMIN'"
+              >
+                Eliminar
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pagination" *ngIf="pagination()">
+      <button 
+        class="btn btn-sm" 
+        [disabled]="pagination().page <= 1"
+        (click)="changePage(pagination().page - 1)"
+      >
+        Anterior
+      </button>
+      
+      <span class="page-info">
+        Página {{ pagination().page }} de {{ pagination().totalPages }}
+        ({{ pagination().total }} usuarios)
+      </span>
+      
+      <button 
+        class="btn btn-sm" 
+        [disabled]="pagination().page >= pagination().totalPages"
+        (click)="changePage(pagination().page + 1)"
+      >
+        Siguiente
+      </button>
+    </div>
+
+    <div class="no-users" *ngIf="users().length === 0">
+      <p>No se encontraron usuarios.</p>
+    </div>
+  </div>
+
+  <div class="loading" *ngIf="loading()">
+    <p>Cargando usuarios...</p>
+  </div>
+
+  <div class="error" *ngIf="error()">
+    <p>Error: {{ error() }}</p>
+  </div>
+</div>
+
+<!-- Create User Modal -->
+<div class="modal" *ngIf="showCreateModal()" (click)="closeModal($event)">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Crear Usuario</h3>
+      <button class="close-btn" (click)="showCreateModal.set(false)">&times;</button>
+    </div>
+    
+    <form (ngSubmit)="createUser()" #createForm="ngForm">
+      <div class="form-group">
+        <label for="email-create">Email:</label>
+        <input 
+          id="email-create"
+          type="email" 
+          [(ngModel)]="newUser.email" 
+          name="email"
+          required 
+          #email="ngModel"
+        >
+        <div class="error-msg" *ngIf="email.invalid && email.touched">
+          Email es requerido
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password-create">Contraseña:</label>
+        <input 
+          id="password-create"
+          type="password" 
+          [(ngModel)]="newUser.password" 
+          name="password"
+          required 
+          minlength="8"
+          #passwordInput="ngModel"
+        >
+        <div class="error-msg" *ngIf="passwordInput.invalid && passwordInput.touched">
+          Contraseña debe tener al menos 8 caracteres
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="firstName-create">Nombre:</label>
+        <input 
+          id="firstName-create"
+          type="text" 
+          [(ngModel)]="newUser.firstName" 
+          name="firstName"
+          required 
+          #firstName="ngModel"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="lastName-create">Apellido:</label>
+        <input 
+          id="lastName-create"
+          type="text" 
+          [(ngModel)]="newUser.lastName" 
+          name="lastName"
+          required 
+          #lastName="ngModel"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="role-create">Rol:</label>
+        <select id="role-create" [(ngModel)]="newUser.role" name="role" required>
+          <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+        </select>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="showCreateModal.set(false)">
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="!createForm.valid || creating()">
+          {{ creating() ? 'Creando...' : 'Crear Usuario' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal" *ngIf="showEditModal()" (click)="closeModal($event)">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Editar Usuario</h3>
+      <button class="close-btn" (click)="showEditModal.set(false)">&times;</button>
+    </div>
+    
+    <form (ngSubmit)="updateUser()" #editForm="ngForm" *ngIf="editingUser">
+      <div class="form-group">
+        <label for="email-edit">Email:</label>
+        <input 
+          id="email-edit"
+          type="email" 
+          [(ngModel)]="editingUser.email" 
+          name="email"
+          required 
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="firstName-edit">Nombre:</label>
+        <input 
+          id="firstName-edit"
+          type="text" 
+          [(ngModel)]="editingUser.firstName" 
+          name="firstName"
+          required 
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="lastName-edit">Apellido:</label>
+        <input 
+          id="lastName-edit"
+          type="text" 
+          [(ngModel)]="editingUser.lastName" 
+          name="lastName"
+          required 
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="role-edit">Rol:</label>
+        <select id="role-edit" [(ngModel)]="editingUser.role" name="role" required>
+          <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+        </select>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="showEditModal.set(false)">
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="!editForm.valid || updating()">
+          {{ updating() ? 'Actualizando...' : 'Actualizar Usuario' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

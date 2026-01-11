@@ -254,6 +254,6 @@ export class EventDetail implements OnInit, OnDestroy {
       filename = filename.split('/').pop() || filename;
     }
 
-    return `${environment.baseUrl}/events/file/${filename}`;
+    return `${environment.apiUrl}/events/file/${filename}`;
   }
 }

@@ -218,7 +218,7 @@ export class CheckoutService {
       };
 
       console.log('📤 Enviando POST /tickets/purchase:', purchaseDto);
-      return this.http.post<any>(`${environment.baseUrl}/tickets/purchase`, purchaseDto).toPromise();
+      return this.http.post<any>(`${environment.apiUrl}/tickets/purchase`, purchaseDto).toPromise();
     });
 
     Promise.all(purchasePromises)
