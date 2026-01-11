@@ -12,7 +12,8 @@ export class TicketConfiguration {
     public readonly type: TicketType,
     public readonly price: Money,
     public readonly totalQuantity: number,
-    private _availableQuantity: number
+    private _availableQuantity: number,
+    public readonly id?: string // Optional ID for persistence
   ) {}
 
   get availableQuantity(): number {

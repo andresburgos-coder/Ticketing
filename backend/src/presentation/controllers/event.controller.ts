@@ -23,6 +23,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiConsumes, ApiBearerAuth } from '@nestjs/swagger';
 import { CreateEventUseCase } from '../../application/use-cases/create-event.use-case';
 import { GetAllEventsUseCase } from '../../application/use-cases/get-all-events.use-case';
+import { TicketConfiguration } from '../../domain/entities/ticket-configuration.entity';
+import { Event as EventEntity } from '../../domain/entities/event.entity';
 import { UpdateEventUseCase } from '../../application/use-cases/update-event.use-case';
 import { DeleteEventUseCase } from '../../application/use-cases/delete-event.use-case';
 import { CreateEventDto } from '../../application/dto/create-event.dto';
@@ -325,7 +327,39 @@ export class EventController {
       throw new NotFoundException('Event not found');
     }
 
-    return await this.formatEventResponse(event);
+    // Calculate real-time availability for this specific event
+    const updatedConfigurations = await Promise.all(
+      event.ticketConfigurations.map(async (config) => {
+        const realAvailability = await this.eventRepository.getRealTimeAvailability(
+          event.id,
+          config.type
+        );
+        
+        // Create new TicketConfiguration with real availability
+        return new TicketConfiguration(
+          config.type,
+          config.price,
+          config.totalQuantity,
+          realAvailability, // Use real-time calculated availability
+          config.id
+        );
+      })
+    );
+
+    // Create new Event with updated configurations
+    const eventWithRealAvailability = new EventEntity(
+      event.id,
+      event.name,
+      event.date,
+      event.location,
+      event.venueName,
+      updatedConfigurations,
+      event.imageUrl,
+      event.details,
+      event.createdBy
+    );
+
+    return await this.formatEventResponse(eventWithRealAvailability);
   }
 
   /**

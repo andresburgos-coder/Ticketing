@@ -46,18 +46,18 @@ export class PurchaseTicketUseCase {
     console.log('🎫 Params:', { eventId: params.eventId, ticketType: params.ticketType, quantity: params.quantity, buyerEmail: params.buyerEmail });
 
     // Use database transaction to ensure atomicity
-    return await this.dataSource.transaction(async (manager) => {
+    const result = await this.dataSource.transaction(async (manager) => {
       console.log('🔒 [PurchaseTicketUseCase] Iniciando transacción...');
 
-      // 1. Validate event exists and lock for update
-      console.log('🔍 Buscando evento con lock:', params.eventId);
-      const event = await this.eventRepository.findById(params.eventId, true);
+      // 1. Validate event exists (without lock for now, we'll add proper locking later)
+      console.log('🔍 Buscando evento:', params.eventId);
+      const event = await this.eventRepository.findById(params.eventId);
       if (!event) {
         throw new Error('Event not found');
       }
       console.log('✅ Evento encontrado:', event.name);
 
-      // 2. Check availability (this will be locked during transaction)
+      // 2. Check availability
       const availability = event.getAvailability(params.ticketType);
       console.log(`🎫 Disponibilidad para ${params.ticketType}: ${availability}, solicitados: ${params.quantity}`);
       if (availability < params.quantity) {
@@ -90,17 +90,17 @@ export class PurchaseTicketUseCase {
       }
       console.log('✅ Pago procesado exitosamente');
 
-      // 5. Reserve tickets (this modifies the event entity)
-      console.log('🔐 Reservando tickets...');
+      // 5. Reserve tickets AFTER successful payment (this modifies the event entity)
+      console.log('🔐 Reservando tickets DESPUÉS del pago exitoso...');
       const availabilityBefore = event.getAvailability(params.ticketType);
       event.reserveTickets(params.ticketType, params.quantity);
       const availabilityAfter = event.getAvailability(params.ticketType);
       console.log(`📊 Disponibilidad: ${availabilityBefore} → ${availabilityAfter}`);
 
-      // 6. Save event with updated availability (within transaction)
-      console.log('💾 Guardando evento actualizado...');
-      await this.eventRepository.save(event);
-      console.log('✅ Event actualizado en BD');
+      // 6. Update availability directly in the database to ensure consistency (within transaction)
+      console.log('💾 Actualizando disponibilidad directamente en BD...');
+      await this.eventRepository.updateTicketAvailability(params.eventId, params.ticketType, availabilityAfter);
+      console.log(`✅ Disponibilidad actualizada directamente en BD: ${availabilityAfter}`);
 
       // 7. Generate tickets
       console.log('🎫 Generando tickets...');
@@ -133,21 +133,26 @@ export class PurchaseTicketUseCase {
 
       console.log('✅ [PurchaseTicketUseCase] Transacción completada exitosamente');
 
-      // 9. Broadcast availability update via WebSocket (after transaction commits)
-      setImmediate(() => {
-        const newAvailability = availabilityAfter;
-        console.log(`📡 Broadcasting availability update: ${newAvailability} remaining for ${params.ticketType}`);
-        this.ticketAvailabilityService.broadcastAvailabilityUpdate({
-          eventId: params.eventId,
-          ticketType: params.ticketType,
-          availableQuantity: newAvailability,
-          totalQuantity: ticketConfig.totalQuantity,
-          timestamp: new Date().toISOString(),
-        });
-      });
-
-      return savedTickets;
+      return { savedTickets, ticketConfig };
     });
+
+    // 9. Broadcast availability update via WebSocket (after transaction commits)
+    // Get real-time availability after the purchase
+    const newAvailability = await this.eventRepository.getRealTimeAvailability(
+      params.eventId, 
+      params.ticketType
+    );
+    
+    console.log(`📡 Broadcasting availability update: ${newAvailability} remaining for ${params.ticketType}`);
+    this.ticketAvailabilityService.broadcastAvailabilityUpdate({
+      eventId: params.eventId,
+      ticketType: params.ticketType,
+      availableQuantity: newAvailability,
+      totalQuantity: result.ticketConfig.totalQuantity,
+      timestamp: new Date().toISOString(),
+    });
+
+    return result.savedTickets;
   }
 
   /**

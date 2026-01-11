@@ -27,10 +27,11 @@ export class WebSocketService {
 
   private connect(): void {
     try {
-      const apiUrl = environment.apiUrl.replace(/\/$/, '');
-      console.log('[WebSocket] Connecting to:', apiUrl);
+      // Use baseUrl instead of apiUrl for Socket.IO connection
+      const baseUrl = environment.baseUrl || environment.apiUrl.replace('/api', '');
+      console.log('[WebSocket] Connecting to:', baseUrl);
 
-      this.socket = io(apiUrl, {
+      this.socket = io(baseUrl, {
         transports: ['websocket', 'polling'],
         reconnection: true,
         reconnectionDelay: 1000,

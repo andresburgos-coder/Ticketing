@@ -56,5 +56,24 @@ export interface IEventRepository {
   
   getEventsByCategory(): Promise<Array<{ category: string; count: number }>>;
   getEventsByMonth(): Promise<Array<{ month: string; count: number }>>;
+  
+  /**
+   * Gets the real-time availability for a specific event and ticket type
+   * Calculates: totalQuantity - soldTickets - activeReservations
+   * @param eventId - The event ID
+   * @param ticketType - The ticket type
+   * @returns Promise resolving to the real available quantity
+   */
+  getRealTimeAvailability(eventId: string, ticketType: string): Promise<number>;
+
+  /**
+   * Updates the available quantity for a specific ticket configuration
+   * This method directly updates the database to ensure consistency
+   * @param eventId - The event ID
+   * @param ticketType - The ticket type
+   * @param newAvailableQuantity - The new available quantity
+   */
+  updateTicketAvailability(eventId: string, ticketType: string, newAvailableQuantity: number): Promise<void>;
 }
+
 export const EVENT_REPOSITORY = Symbol('EVENT_REPOSITORY');

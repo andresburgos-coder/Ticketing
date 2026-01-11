@@ -22,7 +22,7 @@ export class ReservationOrmEntity {
   @PrimaryColumn('uuid')
   id!: string;
 
-  @Column('uuid')
+  @Column('varchar', { length: 50 })
   eventId!: string;
 
   @Column({ type: 'enum', enum: TicketType })

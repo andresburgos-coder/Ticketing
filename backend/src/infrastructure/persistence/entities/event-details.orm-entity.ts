@@ -11,7 +11,7 @@ export class EventDetailsOrmEntity {
   @JoinColumn({ name: 'eventid' })
   event!: EventOrmEntity;
 
-  @Column('uuid', { name: 'eventid' })
+  @Column('varchar', { length: 50, name: 'eventid' })
   eventId!: string;
 
   @Column({ 

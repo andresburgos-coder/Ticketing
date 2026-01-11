@@ -66,8 +66,11 @@ export class CreateReservationUseCase {
     const quantity = TicketQuantity.create(input.quantity);
     const buyerEmail = Email.create(input.buyerEmail);
 
-    // Reserve tickets (this will throw InsufficientTicketsException if not enough available)
-    event.reserveTickets(input.ticketType, quantity.value);
+    // Check availability WITHOUT reserving (we'll reserve only after payment)
+    const currentAvailability = event.getAvailability(input.ticketType);
+    if (currentAvailability < quantity.value) {
+      throw new Error(`Insufficient tickets available. Requested: ${quantity.value}, Available: ${currentAvailability}`);
+    }
 
     // Calculate total amount based on ticket type and quantity
     const ticketConfig = event.ticketConfigurations.find(
@@ -93,11 +96,11 @@ export class CreateReservationUseCase {
       expiresAt
     );
 
-    // Persist reservation
+    // Persist reservation (WITHOUT updating event availability)
     const savedReservation = await this.reservationRepository.save(reservation);
 
-    // Update event with new availability
-    await this.eventRepository.update(event);
+    // NOTE: We don't update event availability here anymore
+    // Availability will be updated only when payment is completed
 
     return savedReservation;
   }

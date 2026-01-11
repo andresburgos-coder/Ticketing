@@ -95,16 +95,14 @@ export class ReleaseTicketsUseCase {
       // Requirements: 5.1 - Cancel reservation
       reservation.cancel();
 
-      // Release tickets back to event availability
-      // Requirements: 5.1 - Increment availability
-      const ticketsToRelease = reservation.quantity.value;
-      event.releaseTickets(reservation.ticketType, ticketsToRelease);
+      // NOTE: No need to release tickets back to event availability
+      // since we don't decrement availability during reservation anymore
+      // Availability is calculated dynamically based on sold tickets
 
       // Update reservation status in repository
       await this.reservationRepository.update(reservation.id, { status: 'CANCELLED' });
 
-      // Update event with released tickets
-      await this.eventRepository.update(event);
+      // NOTE: No need to update event availability
 
       const releasedAt = new Date();
       const elapsedMs = Date.now() - startTime;
@@ -119,7 +117,7 @@ export class ReleaseTicketsUseCase {
       // Requirements: 5.2 - Register release event with timestamp and reason
       return {
         success: true,
-        ticketsReleased: ticketsToRelease,
+        ticketsReleased: reservation.quantity.value,
         reason: input.reason,
         releasedAt,
         retryAttempts: loadAttempts,

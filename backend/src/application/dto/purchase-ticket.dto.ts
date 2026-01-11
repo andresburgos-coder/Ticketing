@@ -9,9 +9,9 @@ import { TicketType } from '../../domain/value-objects/ticket-type.vo';
 export class PurchaseTicketDto {
   @ApiProperty({
     description: 'Event ID for which the ticket is being purchased',
-    example: '123e4567-e89b-12d3-a456-426614174000',
+    example: 'TICK0001-001',
   })
-  @IsUUID()
+  @IsString()
   @IsNotEmpty()
   eventId!: string;
 
