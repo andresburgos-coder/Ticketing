@@ -14,7 +14,9 @@ import { EventDetailsOrmEntity } from '../infrastructure/persistence/entities/ev
 import { MinioService } from '../infrastructure/external/minio.service';
 import { EventIdGeneratorService } from '../application/services/event-id-generator.service';
 import { JwtAuthGuard } from '../application/services/jwt-auth.guard';
-import { EVENT_REPOSITORY } from '../domain/interfaces/repository-tokens';
+import { EVENT_REPOSITORY, USER_REPOSITORY } from '../domain/interfaces/repository-tokens';
+import { TypeOrmUserRepository } from '../infrastructure/persistence/repositories/typeorm-user.repository';
+import { UserOrmEntity } from '../infrastructure/persistence/entities/user.orm-entity';
 
 /**
  * EventModule
@@ -24,7 +26,7 @@ import { EVENT_REPOSITORY } from '../domain/interfaces/repository-tokens';
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([EventOrmEntity, TicketConfigurationOrmEntity, EventDetailsOrmEntity]),
+    TypeOrmModule.forFeature([EventOrmEntity, TicketConfigurationOrmEntity, EventDetailsOrmEntity, UserOrmEntity]),
     MulterModule.register({
       limits: {
         fileSize: 10 * 1024 * 1024, // 10MB
@@ -48,6 +50,10 @@ import { EVENT_REPOSITORY } from '../domain/interfaces/repository-tokens';
     {
       provide: EVENT_REPOSITORY,
       useClass: TypeOrmEventRepository,
+    },
+    {
+      provide: USER_REPOSITORY,
+      useClass: TypeOrmUserRepository,
     },
   ],
   exports: [

@@ -8,6 +8,10 @@
       <p>{{ error }}</p>
     </div>
 
+    <div class="loading" *ngIf="loading">
+      <p>Cargando usuario...</p>
+    </div>
+
     <form (ngSubmit)="onSubmit()" #userFormRef="ngForm" *ngIf="!loading">
       <div class="form-group">
         <label for="email">Email:</label>
@@ -96,9 +100,5 @@
         </button>
       </div>
     </form>
-
-    <div class="loading" *ngIf="loading && !userForm.email">
-      <p>Cargando...</p>
-    </div>
   </div>
 </div>

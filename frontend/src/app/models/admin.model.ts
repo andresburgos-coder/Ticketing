@@ -96,8 +96,10 @@ export interface AdminTicket {
   eventName?: string;
   type: string;
   buyerEmail: string;
-  price: number;
-  currency: string;
+  price: {
+    amount: number;
+    currency: string;
+  };
   purchaseDate: Date;
   status: string;
   usedAt?: Date;

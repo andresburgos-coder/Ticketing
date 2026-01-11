@@ -2,6 +2,7 @@ import { Injectable, signal, computed } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { Events } from './events';
 import { Event } from '../models/event.model';
+import { WebSocketService } from '../core/services/websocket.service';
 
 export interface EventFilters {
   category?: string;
@@ -24,6 +25,9 @@ export class EventService {
   // Observable for components that need to wait for events
   private readonly eventsLoaded$ = new Subject<Event[]>();
   readonly events$ = this.eventsLoaded$.asObservable();
+
+  // Track active WebSocket subscriptions by eventId
+  private wsSubscriptions = new Map<string | number, any>();
 
   // Public read-only signals
   readonly events = this._events.asReadonly();
@@ -71,7 +75,10 @@ export class EventService {
     });
   });
 
-  constructor(private eventsApi: Events) {}
+  constructor(
+    private eventsApi: Events,
+    private wsService: WebSocketService
+  ) {}
 
   loadEvents(): void {
     this._isLoading.set(true);
@@ -103,6 +110,42 @@ export class EventService {
         this._isLoading.set(false);
       }
     });
+
+    // Subscribe to WebSocket updates for this event
+    this.subscribeToEventUpdates(id);
+  }
+
+  /**
+   * Subscribe to real-time availability updates via WebSocket.
+   * When an update arrives, refetch the event to get the latest data.
+   */
+  private subscribeToEventUpdates(eventId: string | number): void {
+    // Skip if already subscribed
+    if (this.wsSubscriptions.has(eventId)) {
+      return;
+    }
+
+    const subscription = this.wsService.subscribeToEvent(eventId).subscribe(
+      (update) => {
+        if (update) {
+          console.log('[EventService] Availability update received, refetching event:', eventId);
+          // Refetch the event to get updated availability
+          this.eventsApi.getEvent(eventId).subscribe({
+            next: (data) => {
+              this._selectedEvent.set(data);
+            },
+            error: (err) => {
+              console.error('Error refetching event after WebSocket update:', err);
+            }
+          });
+        }
+      },
+      (error) => {
+        console.error('[EventService] WebSocket subscription error:', error);
+      }
+    );
+
+    this.wsSubscriptions.set(eventId, subscription);
   }
 
   updateFilters(filters: Partial<EventFilters>): void {
@@ -115,6 +158,12 @@ export class EventService {
 
   clearSelectedEvent(): void {
     this._selectedEvent.set(null);
+    // Cleanup WebSocket subscriptions
+    this.wsSubscriptions.forEach((sub, eventId) => {
+      this.wsService.unsubscribeFromEvent(eventId);
+      sub.unsubscribe();
+    });
+    this.wsSubscriptions.clear();
   }
 
   deleteEvent(id: string | number): Observable<void> {

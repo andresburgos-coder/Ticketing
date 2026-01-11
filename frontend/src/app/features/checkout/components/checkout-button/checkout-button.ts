@@ -2,6 +2,8 @@ import { Component, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CheckoutService, CartItem } from '../../services/checkout.service';
+import { ToastService } from '../../../../core/services/toast.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'checkout-button',
@@ -13,6 +15,8 @@ import { CheckoutService, CartItem } from '../../services/checkout.service';
 export class CheckoutButton {
   private readonly checkoutService = inject(CheckoutService);
   private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
+  private readonly authService = inject(AuthService);
 
   @Input() items: CartItem[] = [];
   @Input() eventId?: string | number;
@@ -23,7 +27,16 @@ export class CheckoutButton {
     // Validate items
     const validItems = (this.items || []).filter(i => i && i.quantity > 0);
     if (validItems.length === 0) {
-      alert('Selecciona al menos una entrada');
+      this.toastService.show('Selecciona al menos una entrada', 'warning');
+      return;
+    }
+
+    // Require authentication before proceeding
+    if (!this.authService.isAuthenticated()) {
+      this.toastService.show('Inicia sesión para continuar con el pago', 'info');
+      // Save intended checkout so we can resume after login
+      this.checkoutService.savePendingCheckout(validItems, this.eventId, this.eventName);
+      this.router.navigate(['/login'], { queryParams: { redirect: '/checkout' } });
       return;
     }
 

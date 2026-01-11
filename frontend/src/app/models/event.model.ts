@@ -11,35 +11,43 @@ export interface TicketType {
     name: string;
     price: number;
     totalQuantity: number;
+    availableQuantity?: number;
     tickets?: any[];
 }
 
 
 export interface EventDetails {
+    id?: string;
     category?: string;
-    minAge?: number;
+    minAge?: number | null;
     seating?: string;
     capacity?: number;
-    foodSales?: boolean;
-    liquorSales?: boolean;
-    accessibility?: string;
-    wheelchairAccess?: boolean;
-    pregnancyAccess?: boolean;
+    foodSale?: boolean;
+    liquorSale?: boolean;
+    reducedMobilityAccess?: boolean;
+    pregnantAccess?: boolean;
 }
 
 export interface Event {
     id: string | number;
+    code?: string;
     name: string;
     date: string;
     location: string;
     imageUrl?: string | null;
     description?: string;
-    organizer?: string;
+    createdBy?: string | null;
+    organizer?: {
+        id: string;
+        firstName: string;
+        lastName: string;
+        email: string;
+    } | null;
     venueName?: string;
     startTime?: string;
     endTime?: string;
     tags?: string[];
     ticketTypes?: TicketType[];
     ticketConfigurations?: TicketConfiguration[];
-    eventDetails?: EventDetails;
+    eventDetails?: EventDetails[];
 }

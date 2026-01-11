@@ -7,6 +7,7 @@ import { AdminService } from '../../../services/admin.service';
 import { Event } from '../../../models/event.model';
 import { EventCategory } from '../../../models/admin.model';
 import { finalize } from 'rxjs/operators';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-admin-events',
@@ -27,6 +28,7 @@ export class AdminEventsComponent implements OnInit {
 
   private readonly eventService = inject(EventService);
   private readonly adminService = inject(AdminService);
+  private readonly toastService = inject(ToastService);
 
   // Mock data for tickets sold and revenue - in real app, this would come from API
   private eventStats: { [eventId: string]: { ticketsSold: number; revenue: number } } = {};
@@ -114,7 +116,7 @@ export class AdminEventsComponent implements OnInit {
   filterEvents() {
     const filtered = this.events().filter(event => {
       const matchesCategory = !this.selectedCategory() ||
-        event.eventDetails?.category === this.selectedCategory();
+        event.eventDetails?.[0]?.category === this.selectedCategory();
 
       const matchesSearch = !this.searchTerm() ||
         event.name.toLowerCase().includes(this.searchTerm().toLowerCase()) ||
@@ -147,7 +149,7 @@ export class AdminEventsComponent implements OnInit {
           this.filterEvents();
         },
         error: (error) => {
-          alert('Error al eliminar el evento: ' + error.message);
+          this.toastService.show('Error al eliminar el evento: ' + (error.message || 'Error desconocido'), 'error');
         }
       });
     }

@@ -13,7 +13,7 @@ import { EventDetailsOrmEntity } from './event-details.orm-entity';
  * Event ORM Entity
  * Represents the database schema for events.
  * Separated from domain Event entity to maintain clean architecture.
- * 
+ *
  * Requirements: 1.1, 1.3, 8.3
  */
 @Entity('events')

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -31,7 +31,8 @@ export class UserFormComponent implements OnInit {
   constructor(
     private adminService: AdminService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -40,32 +41,48 @@ export class UserFormComponent implements OnInit {
 
     if (this.isEditMode && this.userId) {
       this.loadUser(this.userId);
+    } else {
+      // En modo creación, no hay loading
+      this.loading = false;
     }
   }
 
   private loadUser(id: string) {
     this.loading = true;
+    this.error = null;
+    console.log('[UserForm] Loading user:', id);
+    
     this.adminService.getUserById(id).subscribe({
       next: (user) => {
+        console.log('[UserForm] User loaded:', user);
         this.userForm = {
           email: this.extractEmail(user),
           firstName: user.firstName,
           lastName: user.lastName,
           role: user.role
         };
+        console.log('[UserForm] Form populated:', this.userForm);
         this.loading = false;
+        this.cdr.detectChanges();
+        console.log('[UserForm] Loading set to false');
       },
       error: (error) => {
+        console.error('[UserForm] Error loading user:', error);
         this.error = error.error?.message || 'Error al cargar el usuario';
         this.loading = false;
+        console.log('[UserForm] Loading set to false (error)');
       }
     });
   }
 
   private extractEmail(user: User): string {
-    if (typeof user.email === 'object' && user.email.value) {
-      return user.email.value;
+    console.log('[UserForm] Extracting email from user:', user.email);
+    if (typeof user.email === 'object' && user.email !== null) {
+      const emailValue = (user.email as any).value || user.email;
+      console.log('[UserForm] Email extracted (from object):', emailValue);
+      return emailValue;
     }
+    console.log('[UserForm] Email extracted (string):', user.email);
     return user.email as string;
   }
 

@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { CheckoutService } from '../../../checkout/services/checkout.service';
 import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
@@ -116,6 +117,7 @@ export class LoginComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
+  private readonly checkoutService = inject(CheckoutService);
 
   readonly isLoading = this.authService.isLoading;
   readonly errorMessage = signal<string | null>(null);
@@ -135,6 +137,13 @@ export class LoginComponent {
       this.authService.login(this.loginForm.value).subscribe({
         next: () => {
           const user = this.authService.currentUser();
+          // If there is a pending checkout, resume it and go to /checkout
+          if (this.checkoutService.resumePendingCheckout()) {
+            this.router.navigate(['/checkout']);
+            return;
+          }
+
+          // Default navigation by role
           if (user?.role === 'ADMIN') {
             this.router.navigate(['/admin/dashboard']);
           } else {

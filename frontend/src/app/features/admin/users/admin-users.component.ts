@@ -1,10 +1,11 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AdminService } from '../../../services/admin.service';
 import { User, UserRole, UsersQuery } from '../../../models/admin.model';
 import { ChangeDetectionStrategy } from '@angular/core';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-admin-users',
@@ -28,6 +29,7 @@ export class AdminUsersComponent implements OnInit {
     private adminService: AdminService,
     private router: Router
   ) {}
+  private readonly toastService = inject(ToastService);
 
   ngOnInit() {
     this.initializeData();
@@ -113,7 +115,7 @@ export class AdminUsersComponent implements OnInit {
         error: (error) => {
           const errorMsg = error.error?.message || error.message || 'Error desconocido';
           console.warn('[AdminUsers] Error deleting user:', errorMsg);
-          alert('Error al eliminar usuario: ' + errorMsg);
+          this.toastService.show('Error al eliminar usuario: ' + errorMsg, 'error');
         }
       });
     }
