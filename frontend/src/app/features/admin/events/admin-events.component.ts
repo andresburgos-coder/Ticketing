@@ -7,6 +7,7 @@ import { AdminService } from '../../../services/admin.service';
 import { Event } from '../../../models/event.model';
 import { EventCategory } from '../../../models/admin.model';
 import { finalize } from 'rxjs/operators';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-admin-events',
@@ -27,39 +28,54 @@ export class AdminEventsComponent implements OnInit {
 
   private readonly eventService = inject(EventService);
   private readonly adminService = inject(AdminService);
+  private readonly toastService = inject(ToastService);
 
   // Mock data for tickets sold and revenue - in real app, this would come from API
   private eventStats: { [eventId: string]: { ticketsSold: number; revenue: number } } = {};
 
   ngOnInit() {
-    this.loadEvents();
+    this.initializeData();
   }
 
-  loadEvents() {
-    console.log('[AdminEvents] Starting to load events...');
+  private async initializeData() {
     this.loading.set(true);
     this.error.set(null);
 
-    // Subscribe to EventService to wait for actual data
-    this.eventService.events$.subscribe({
-      next: (loadedEvents) => {
-        console.log('[AdminEvents] Events loaded from service:', loadedEvents.length);
-        this.events.set(loadedEvents);
-        this.filteredEvents.set(loadedEvents);
-        this.loadEventStats();
-      },
-      error: (err) => {
-        console.error('[AdminEvents] Error loading events:', err);
-        this.error.set('Error al cargar los eventos. Intenta nuevamente.');
-      },
-      complete: () => {
-        console.log('[AdminEvents] Event loading completed');
-        this.loading.set(false);
-      }
-    });
+    try {
+      await this.loadEventsPromise();
+      this.loadEventStats();
+    } catch (err) {
+      this.error.set('Error al cargar los datos. Intenta nuevamente.');
+      console.warn('[AdminEvents] Error inicializando datos');
+    } finally {
+      this.loading.set(false);
+    }
+  }
 
-    // Trigger the API call
-    this.eventService.loadEvents();
+  private loadEventsPromise(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      console.log('[AdminEvents] Starting to load events...');
+
+      this.eventService.events$.subscribe({
+        next: (loadedEvents) => {
+          console.log('[AdminEvents] Events loaded from service:', loadedEvents.length);
+          this.events.set(loadedEvents);
+          this.filteredEvents.set(loadedEvents);
+          resolve();
+        },
+        error: (err) => {
+          console.warn('[AdminEvents] Error loading events');
+          reject(err);
+        }
+      });
+
+      // Trigger the API call
+      this.eventService.loadEvents();
+    });
+  }
+
+  loadEvents() {
+    this.initializeData();
   }
 
   loadEventStats() {
@@ -67,36 +83,40 @@ export class AdminEventsComponent implements OnInit {
     const events = this.events();
 
     if (events.length === 0) {
-      this.loading.set(false);
       return;
     }
 
-    // Load stats for each event
-    events.forEach(event => {
-      this.adminService.getTicketStats(event.id.toString()).subscribe({
-        next: (stats) => {
-          this.eventStats[event.id] = {
-            ticketsSold: stats.totalTicketsSold,
-            revenue: stats.totalRevenue
-          };
-          console.log(`[AdminEvents] Stats loaded for event ${event.id}`);
-        },
-        error: (error) => {
-          console.error(`Error loading stats for event ${event.id}:`, error);
-        }
-      });
-    });
+    // Load stats for each event with Promise.all for better performance
+    const statsPromises = events.map(event =>
+      new Promise<void>((resolve) => {
+        this.adminService.getTicketStats(event.id.toString()).subscribe({
+          next: (stats) => {
+            this.eventStats[event.id] = {
+              ticketsSold: stats.totalTicketsSold,
+              revenue: stats.totalRevenue
+            };
+            console.log(`[AdminEvents] Stats loaded for event ${event.id}`);
+            resolve();
+          },
+          error: (error) => {
+            console.warn(`Error loading stats for event ${event.id}`);
+            resolve();
+          }
+        });
+      })
+    );
 
-    // Wait a moment for stats to load, then hide loader
-    setTimeout(() => {
-      this.loading.set(false);
-    }, 500);
+    // Wait for all stats to load
+    Promise.all(statsPromises)
+      .then(() => {
+        console.log('[AdminEvents] All stats loaded');
+      });
   }
 
   filterEvents() {
     const filtered = this.events().filter(event => {
       const matchesCategory = !this.selectedCategory() ||
-        event.eventDetails?.category === this.selectedCategory();
+        event.eventDetails?.[0]?.category === this.selectedCategory();
 
       const matchesSearch = !this.searchTerm() ||
         event.name.toLowerCase().includes(this.searchTerm().toLowerCase()) ||
@@ -129,7 +149,7 @@ export class AdminEventsComponent implements OnInit {
           this.filterEvents();
         },
         error: (error) => {
-          alert('Error al eliminar el evento: ' + error.message);
+          this.toastService.show('Error al eliminar el evento: ' + (error.message || 'Error desconocido'), 'error');
         }
       });
     }

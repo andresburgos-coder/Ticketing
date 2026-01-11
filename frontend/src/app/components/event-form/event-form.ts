@@ -20,7 +20,6 @@ export enum EventCategory {
   FERIA = 'Feria',
   FESTIVAL = 'Festival',
   INMERSIONES_CENTROS_EXPERIENCIAS = 'Inmersiones a los centros de experiencias',
-  INSCRIPCION_COSMO_SCHOOLS = 'Inscripción a proceso de admisión en Cosmo Schools',
   MUSICAL = 'Musical',
   PODCAST = 'Podcast',
   RECREATIVO = 'Recreativo',
@@ -28,6 +27,7 @@ export enum EventCategory {
   TEATRO = 'Teatro',
   TURISMO = 'Turismo'
 }
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
   selector: 'app-event-form',
@@ -42,6 +42,7 @@ export class EventForm implements OnInit {
   private readonly eventService = inject(EventService);
   protected readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly toastService = inject(ToastService);
 
   form!: FormGroup;
   isLoading = false;
@@ -49,9 +50,63 @@ export class EventForm implements OnInit {
   selectedFile: File | null = null;
   previewUrl: string | ArrayBuffer | null = null;
   eventId: string | null = null;
-  
-  // Available categories
   categories = Object.values(EventCategory);
+  onSubmit(): void {
+    if (!this.form.valid) {
+      this.toastService.show('Completa todos los campos requeridos', 'warning');
+      return;
+    }
+
+    this.isLoading = true;
+    const formData = new FormData();
+
+    // Add form fields
+    formData.append('name', this.form.get('name')?.value);
+    formData.append('date', new Date(this.form.get('date')?.value).toISOString());
+    formData.append('location', this.form.get('location')?.value);
+    formData.append('venueName', this.form.get('venueName')?.value || '');
+
+    // Add event details
+    const eventDetails = {
+      category: this.form.get('category')?.value,
+      minAge: this.form.get('minAge')?.value,
+      seating: this.form.get('seating')?.value,
+      capacity: this.form.get('capacity')?.value,
+      foodSale: this.form.get('foodSale')?.value,
+      liquorSale: this.form.get('liquorSale')?.value,
+      reducedMobilityAccess: this.form.get('reducedMobilityAccess')?.value,
+      pregnantAccess: this.form.get('pregnantAccess')?.value
+    };
+    formData.append('eventDetails', JSON.stringify(eventDetails));
+
+    formData.append(
+      'ticketConfigurations',
+      JSON.stringify(this.form.get('ticketConfigurations')?.value)
+    );
+
+    // Add image if selected
+    if (this.selectedFile) {
+      formData.append('image', this.selectedFile, this.selectedFile.name);
+    }
+
+    const request = this.isEditing && this.eventId
+      ? this.eventsService.updateEvent(this.eventId, formData)
+      : this.eventsService.createEvent(formData);
+
+    request.subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.toastService.show(this.isEditing ? '¡Evento actualizado exitosamente!' : '¡Evento creado exitosamente!', 'success');
+        this.eventService.loadEvents();
+        this.router.navigate(['/']);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        console.error('Error saving event:', err);
+        this.toastService.show('Error al guardar el evento. Inténtalo nuevamente.', 'error');
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.initializeForm();
@@ -74,8 +129,8 @@ export class EventForm implements OnInit {
       pregnantAccess: [false],
       ticketConfigurations: [
         [
-          { type: 'VIP', price: 100, currency: 'USD', quantity: 50 },
-          { type: 'GENERAL', price: 50, currency: 'USD', quantity: 100 }
+          { type: 'VIP', price: 100, currency: 'COP', quantity: 50 },
+          { type: 'GENERAL', price: 50, currency: 'COP', quantity: 100 }
         ],
         Validators.required
       ]
@@ -101,23 +156,21 @@ export class EventForm implements OnInit {
           date: new Date(event.date).toISOString().slice(0, 16),
           location: event.location,
           venueName: event.venueName || '',
-          category: event.eventDetails?.category || EventCategory.CUALQUIER_CATEGORIA,
-          minAge: event.eventDetails?.minAge || null,
-          seating: event.eventDetails?.seating || '',
-          capacity: event.eventDetails?.capacity || null,
-          foodSales: event.eventDetails?.foodSales || false,
-          liquorSales: event.eventDetails?.liquorSales || false,
-          wheelchairAccess: event.eventDetails?.wheelchairAccess || false,
-          pregnancyAccess: event.eventDetails?.pregnancyAccess || false,
+          category: event.eventDetails?.[0]?.category || EventCategory.CUALQUIER_CATEGORIA,
+          minAge: event.eventDetails?.[0]?.minAge || null,
+          seating: event.eventDetails?.[0]?.seating || '',
+          capacity: event.eventDetails?.[0]?.capacity || null,
+          foodSales: event.eventDetails?.[0]?.foodSale || false,
+          liquorSales: event.eventDetails?.[0]?.liquorSale || false,
+          wheelchairAccess: event.eventDetails?.[0]?.reducedMobilityAccess || false,
+          pregnancyAccess: event.eventDetails?.[0]?.pregnantAccess || false,
           ticketConfigurations: event.ticketConfigurations || []
         });
+
         if (event.imageUrl) {
-          // Construct full URL for display
           if (event.imageUrl.startsWith('http') && !event.imageUrl.includes('minio')) {
-            // External URL, use as-is
             this.previewUrl = event.imageUrl;
           } else {
-            // Filename or old MinIO URL - extract filename if needed
             let filename = event.imageUrl;
             if (filename.includes('/')) {
               filename = filename.split('/').pop() || filename;
@@ -139,85 +192,25 @@ export class EventForm implements OnInit {
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
 
-      // Validate file type
       const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
       if (!allowedTypes.includes(file.type)) {
-        alert('Only JPEG, PNG, and GIF images are allowed');
+        this.toastService.show('Solo se permiten imágenes JPEG, PNG y GIF', 'warning');
         return;
       }
 
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert('Image file size cannot exceed 5MB');
+        this.toastService.show('La imagen no puede superar 5MB', 'warning');
         return;
       }
 
       this.selectedFile = file;
 
-      // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
         this.previewUrl = e.target?.result || null;
       };
       reader.readAsDataURL(file);
     }
-  }
-
-  onSubmit(): void {
-    if (!this.form.valid) {
-      alert('Please fill all required fields');
-      return;
-    }
-
-    this.isLoading = true;
-    const formData = new FormData();
-
-    // Add form fields
-    formData.append('name', this.form.get('name')?.value);
-    formData.append('date', new Date(this.form.get('date')?.value).toISOString());
-    formData.append('location', this.form.get('location')?.value);
-    formData.append('venueName', this.form.get('venueName')?.value || '');
-    
-    // Add event details
-    const eventDetails = {
-      category: this.form.get('category')?.value,
-      minAge: this.form.get('minAge')?.value,
-      seating: this.form.get('seating')?.value,
-      capacity: this.form.get('capacity')?.value,
-      foodSale: this.form.get('foodSale')?.value,
-      liquorSale: this.form.get('liquorSale')?.value,
-      reducedMobilityAccess: this.form.get('reducedMobilityAccess')?.value,
-      pregnantAccess: this.form.get('pregnantAccess')?.value
-    };
-    formData.append('eventDetails', JSON.stringify(eventDetails));
-    
-    formData.append(
-      'ticketConfigurations',
-      JSON.stringify(this.form.get('ticketConfigurations')?.value)
-    );
-
-    // Add image if selected
-    if (this.selectedFile) {
-      formData.append('image', this.selectedFile, this.selectedFile.name);
-    }
-
-    const request = this.isEditing && this.eventId
-      ? this.eventsService.updateEvent(this.eventId, formData)
-      : this.eventsService.createEvent(formData);
-
-    request.subscribe({
-      next: (event) => {
-        this.isLoading = false;
-        alert(this.isEditing ? 'Event updated successfully!' : 'Event created successfully!');
-        this.eventService.loadEvents();
-        this.router.navigate(['/']);
-      },
-      error: (err) => {
-        this.isLoading = false;
-        console.error('Error saving event:', err);
-        alert('Error saving event. Please try again.');
-      }
-    });
   }
 
   removeImage(): void {

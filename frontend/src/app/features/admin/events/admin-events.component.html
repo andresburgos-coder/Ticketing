@@ -60,7 +60,7 @@
           </td>
           <td>
             <span class="category-badge">
-              {{ event.eventDetails?.category || 'Sin categoría' }}
+              {{ event.eventDetails?.[0]?.category || 'Sin categoría' }}
             </span>
           </td>
           <td class="text-center">

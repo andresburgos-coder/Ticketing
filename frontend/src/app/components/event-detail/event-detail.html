@@ -41,13 +41,16 @@
                         <div>
                             <p class="text-sm text-[#616189] dark:text-gray-400 font-medium">Organizado por</p>
                             <a class="text-base font-bold text-[#111118] dark:text-white hover:text-primary-600 flex items-center gap-1" href="#">
-                                {{ event()!.organizer || 'Event Organizer' }}
+                                @if (event()?.organizer?.firstName) {
+                                    {{ event()!.organizer!.firstName }} {{ event()!.organizer!.lastName }}
+                                } @else if (event()?.createdBy) {
+                                    Usuario {{ event()!.createdBy }}
+                                } @else {
+                                    Organizador del evento
+                                }
                                 <span class="material-symbols-outlined text-blue-500 text-[18px]">verified</span>
                             </a>
                         </div>
-                        <button class="ml-auto text-sm font-semibold text-primary-600 border border-primary-600 px-4 py-2 rounded-lg hover:bg-primary-600 hover:text-white hover:border-primary-600 transition-colors">
-                            Seguir
-                        </button>
                     </div>
 
                     <!-- Description -->
@@ -87,51 +90,72 @@
                     </div>
 
 
-                    <!-- Map Section: Embedded Google Maps -->
-                    <div class="rounded-xl overflow-hidden h-64 w-full bg-gray-100 dark:bg-[#1e1e2d] border border-[#dbdbe6] dark:border-[#2a2a35] relative mb-6">
-                        <iframe
-                            width="100%"
-                            height="100%"
-                            style="border:0; min-height: 256px;"
-                            [attr.src]="getMapUrl()"
-                            allowfullscreen
-                            title="Mapa de ubicación del evento"
-                            aria-label="Mapa de ubicación del evento">
-                        </iframe>
+                    <!-- Map Section: Leaflet OpenStreetMap -->
+                    <div class="rounded-xl overflow-hidden w-full bg-gray-100 dark:bg-[#1e1e2d] border border-[#dbdbe6] dark:border-[#2a2a35] relative mb-6" style="min-height: 250px;">
+                        @if (event()?.location) {
+                            <app-map-viewer
+                                [location]="event()!.location"
+                                [venueName]="event()!.venueName">
+                            </app-map-viewer>
+                        } @else {
+                            <div class="w-full h-full flex items-center justify-center">
+                                <p class="text-[#616189] dark:text-gray-400">Ubicación no disponible</p>
+                            </div>
+                        }
                     </div>
 
                     <!-- Event Details Section -->
                     <div class="rounded-xl overflow-hidden h-auto w-full bg-gray-100 dark:bg-[#1e1e2d] border border-[#dbdbe6] dark:border-[#2a2a35] p-6 mb-6">
                         <h4 class="text-lg font-bold text-[#111118] dark:text-white mb-4">Detalles del evento</h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div *ngIf="event()?.eventDetails?.category">
+                            @if (event()?.eventDetails?.[0]?.category) {
+                            <div>
                                 <span class="font-semibold text-[#616189] dark:text-gray-400">Categoría:</span>
-                                <span class="ml-2 text-[#111118] dark:text-white">{{ event()?.eventDetails?.category }}</span>
+                                <span class="ml-2 text-[#111118] dark:text-white">{{ event()!.eventDetails![0].category }}</span>
                             </div>
-                            <div *ngIf="event()?.eventDetails?.minAge">
+                            }
+                            @if (event()?.eventDetails?.[0]?.minAge) {
+                            <div>
                                 <span class="font-semibold text-[#616189] dark:text-gray-400">Edad mínima:</span>
-                                <span class="ml-2 text-[#111118] dark:text-white">{{ event()?.eventDetails?.minAge }}</span>
+                                <span class="ml-2 text-[#111118] dark:text-white">{{ event()!.eventDetails![0].minAge }} años</span>
                             </div>
-                            <div *ngIf="event()?.eventDetails?.seating">
+                            }
+                            @if (event()?.eventDetails?.[0]?.seating) {
+                            <div>
                                 <span class="font-semibold text-[#616189] dark:text-gray-400">Asientos:</span>
-                                <span class="ml-2 text-[#111118] dark:text-white">{{ event()?.eventDetails?.seating }}</span>
+                                <span class="ml-2 text-[#111118] dark:text-white">{{ event()!.eventDetails![0].seating }}</span>
                             </div>
-                            <div *ngIf="event()?.eventDetails?.capacity">
+                            }
+                            @if (event()?.eventDetails?.[0]?.capacity) {
+                            <div>
                                 <span class="font-semibold text-[#616189] dark:text-gray-400">Capacidad:</span>
-                                <span class="ml-2 text-[#111118] dark:text-white">{{ event()?.eventDetails?.capacity }}</span>
+                                <span class="ml-2 text-[#111118] dark:text-white">{{ event()!.eventDetails![0].capacity }} personas</span>
                             </div>
-                            <div *ngIf="event()?.eventDetails?.foodSales !== undefined">
+                            }
+                            @if (event()?.eventDetails?.[0]?.foodSale !== undefined) {
+                            <div>
                                 <span class="font-semibold text-[#616189] dark:text-gray-400">Venta de comida:</span>
-                                <span class="ml-2 text-[#111118] dark:text-white">{{ event()?.eventDetails?.foodSales ? 'Sí' : 'No' }}</span>
+                                <span class="ml-2 text-[#111118] dark:text-white">{{ event()!.eventDetails![0].foodSale ? 'Sí' : 'No' }}</span>
                             </div>
-                            <div *ngIf="event()?.eventDetails?.liquorSales !== undefined">
+                            }
+                            @if (event()?.eventDetails?.[0]?.liquorSale !== undefined) {
+                            <div>
                                 <span class="font-semibold text-[#616189] dark:text-gray-400">Venta de alcohol:</span>
-                                <span class="ml-2 text-[#111118] dark:text-white">{{ event()?.eventDetails?.liquorSales ? 'Sí' : 'No' }}</span>
+                                <span class="ml-2 text-[#111118] dark:text-white">{{ event()!.eventDetails![0].liquorSale ? 'Sí' : 'No' }}</span>
                             </div>
-                            <div *ngIf="event()?.eventDetails?.accessibility">
-                                <span class="font-semibold text-[#616189] dark:text-gray-400">Accesibilidad:</span>
-                                <span class="ml-2 text-[#111118] dark:text-white">{{ event()?.eventDetails?.accessibility }}</span>
+                            }
+                            @if (event()?.eventDetails?.[0]?.reducedMobilityAccess) {
+                            <div>
+                                <span class="font-semibold text-[#616189] dark:text-gray-400">Acceso movilidad reducida:</span>
+                                <span class="ml-2 text-[#111118] dark:text-white">Sí</span>
                             </div>
+                            }
+                            @if (event()?.eventDetails?.[0]?.pregnantAccess) {
+                            <div>
+                                <span class="font-semibold text-[#616189] dark:text-gray-400">Acceso embarazadas:</span>
+                                <span class="ml-2 text-[#111118] dark:text-white">Sí</span>
+                            </div>
+                            }
                         </div>
                     </div>
 
@@ -144,8 +168,8 @@
                 </div>
 
                 <!-- Right Column: Sticky Ticket Sidebar -->
-                <div class="lg:col-span-4 relative">
-                    <div class="lg:sticky lg:top-24 flex flex-col gap-6">
+                <div class="lg:col-span-4">
+                    <div class="sticky top-4 flex flex-col gap-6">
                         <!-- Ticket Selection Card -->
                         <div class="bg-white dark:bg-[#1e1e2d] border border-[#dbdbe6] dark:border-[#2a2a35] rounded-xl shadow-lg overflow-hidden">
                             <div class="p-5 border-b border-[#dbdbe6] dark:border-[#2a2a35] bg-gray-50 dark:bg-[#252536]">
@@ -154,9 +178,8 @@
                             </div>
                             <div class="p-5 flex flex-col gap-6">
                                 <!-- Handle ticketConfigurations (new format) -->
-                                @if (getTicketConfigurations().length > 0) {
-                                @for (config of getTicketConfigurations(); track config.type) {
-                                <div [ngClass]="{'opacity-60': isTicketSoldOut(config)}" class="flex flex-col gap-3 pb-4 border-b border-dashed border-[#dbdbe6] dark:border-[#2a2a35]">
+                                @for (config of ticketConfigurations(); track config.type) {
+                                <div [ngClass]="{'opacity-60': isTicketSoldOut(config)}" class="flex flex-col gap-3 pb-4 border-b border-dashed border-[#dbdbe6] dark:border-[#2a2a35] last:border-b-0">
                                     <div class="flex justify-between items-start">
                                         <div>
                                             <h4 class="font-bold text-[#111118] dark:text-white">{{ getTicketName(config) }}</h4>
@@ -170,7 +193,7 @@
                                                 Low Stock
                                             </span>
                                             }
-                                            @if (getAvailableCount(config) >= 5000) {
+                                            @if (getAvailableCount(config) >= 500) {
                                             <span class="text-[10px] text-green-600 font-bold bg-green-100 dark:bg-green-900/30 px-1.5 py-0.5 rounded">Best Value</span>
                                             }
                                         </div>
@@ -200,10 +223,10 @@
                                     </div>
                                 </div>
                                 }
-                                } @else {
                                 <!-- Handle ticketTypes (old format) -->
-                                @for (type of getTicketTypes(); track type.id) {
-                                <div [ngClass]="{'opacity-60': isTicketSoldOut(type)}" class="flex flex-col gap-3 pb-4 border-b border-dashed border-[#dbdbe6] dark:border-[#2a2a35]">
+                                @for (type of ticketTypes(); track type.id) {
+
+                                <div [ngClass]="{'opacity-60': isTicketSoldOut(type)}" class="flex flex-col gap-3 pb-4 border-b border-dashed border-[#dbdbe6] dark:border-[#2a2a35] last:border-b-0">
                                     <div class="flex justify-between items-start">
                                         <div>
                                             <h4 class="font-bold text-[#111118] dark:text-white">{{ getTicketName(type) }}</h4>
@@ -211,13 +234,13 @@
                                         </div>
                                         <div class="text-right">
                                             <span class="block text-lg font-black text-[#111118] dark:text-white">{{ getTicketPrice(type) | currencyFormat }}</span>
-                                            @if (getAvailableCount(type) < 5 && getAvailableCount(type) > 0) {
+                                            @if (getAvailableCount(type) < 50 && getAvailableCount(type) > 0) {
                                             <span class="text-[10px] text-orange-600 dark:text-orange-400 font-bold bg-orange-100 dark:bg-orange-900/30 px-1.5 py-0.5 rounded flex items-center gap-1 justify-end mt-1">
                                                 <span class="material-symbols-outlined text-[10px]">local_fire_department</span>
                                                 Low Stock
                                             </span>
                                             }
-                                            @if (getAvailableCount(type) >= 5) {
+                                            @if (getAvailableCount(type) >= 50) {
                                             <span class="text-[10px] text-green-600 font-bold bg-green-100 dark:bg-green-900/30 px-1.5 py-0.5 rounded">Best Value</span>
                                             }
                                         </div>
@@ -230,7 +253,7 @@
                                                 class="w-8 h-8 rounded-full border border-[#dbdbe6] dark:border-[#4a4a5a] flex items-center justify-center text-[#616189] hover:bg-gray-100 dark:hover:bg-[#2a2a35] transition-colors">
                                                 <span class="material-symbols-outlined text-sm">remove</span>
                                             </button>
-                                            <span class="text-[#111118] dark:text-white font-bold w-4 text-center">{{ selectedQuantities[type.id] || 0 }}</span>
+                                            <span class="text-[#111118] dark:text-white font-bold w-4 text-center">{{ selectedQuantities[getConfigKey(type)] || 0 }}</span>
                                             <button (click)="increaseQty(type)"
                                                 class="w-8 h-8 rounded-full border border-primary-600 bg-primary-100 dark:bg-primary-900 flex items-center justify-center text-primary-600 hover:bg-primary-600 hover:text-white transition-colors">
                                                 <span class="material-symbols-outlined text-sm">add</span>
@@ -247,7 +270,6 @@
                                     </div>
                                 </div>
                                 }
-                                }
                             </div>
 
                             <!-- Total & Checkout -->
@@ -256,12 +278,12 @@
                                     <span class="text-sm font-medium text-[#616189] dark:text-gray-400">Total</span>
                                     <span class="text-2xl font-black text-[#111118] dark:text-white">{{ getTotal() | currencyFormat }}</span>
                                 </div>
-                                                                <checkout-button
-                                                                    [items]="getSelectedItems()"
-                                                                    [eventId]="event()!.id"
-                                                                    [eventName]="event()!.name"
-                                                                    [disabled]="getTotal() === 0">
-                                                                </checkout-button>
+                                <checkout-button
+                                    [items]="getSelectedItems()"
+                                    [eventId]="event()!.id"
+                                    [eventName]="event()!.name"
+                                    [disabled]="getTotal() === 0">
+                                </checkout-button>
                                 <div class="flex items-center justify-center gap-2 mt-3 text-[#616189] dark:text-gray-500">
                                     <span class="material-symbols-outlined text-sm">lock</span>
                                     <span class="text-xs">Pago seguro con Stripe</span>

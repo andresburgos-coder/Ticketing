@@ -183,7 +183,7 @@
                 <!-- Ticket Count & Price -->
                 <div class="text-right">
                   <p class="text-sm text-gray-600 mb-1">{{ eventGroup.ticketCount }} entrada{{ eventGroup.ticketCount > 1 ? 's' : '' }}</p>
-                  <p class="text-xl font-bold text-gray-900">${{ eventGroup.totalPrice.toFixed(2) }}</p>
+                  <p class="text-xl font-bold text-gray-900">{{ eventGroup.totalPrice | currencyFormat }}</p>
                 </div>
 
                 <!-- Expand Button -->
@@ -299,7 +299,7 @@
                             </div>
                             <div>
                               <p class="text-xs text-gray-500 uppercase mb-1">Precio</p>
-                              <p class="text-gray-900 font-bold">${{ currentTicket.price.toFixed(2) }} USD</p>
+                              <p class="text-gray-900 font-bold">{{ currentTicket.price | currencyFormat }}</p>
                             </div>
                           </div>
                         </div>

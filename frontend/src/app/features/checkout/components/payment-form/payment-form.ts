@@ -32,23 +32,23 @@ export class PaymentForm {
     this.errors = {};
 
     if (!this.formData.cardholderName.trim()) {
-      this.errors['cardholderName'] = 'Cardholder name is required';
+      this.errors['cardholderName'] = 'El nombre del titular es obligatorio';
     }
-    
+
     const cleanCardNumber = this.formData.cardNumber.replace(/\s/g, '');
     if (!cleanCardNumber) {
-      this.errors['cardNumber'] = 'Card number is required';
+      this.errors['cardNumber'] = 'El número de tarjeta es obligatorio';
     } else if (!/^\d{13,19}$/.test(cleanCardNumber)) {
-      this.errors['cardNumber'] = 'Card number must be 13-19 digits';
+      this.errors['cardNumber'] = 'El número de tarjeta debe tener 13-19 dígitos';
     } else if (!this.isValidCardNumber(cleanCardNumber)) {
-      this.errors['cardNumber'] = 'Invalid card number';
+      this.errors['cardNumber'] = 'Número de tarjeta inválido';
     }
-    
+
     if (!this.formData.expiryMonth) {
-      this.errors['expiryMonth'] = 'Expiry month is required';
+      this.errors['expiryMonth'] = 'El mes de vencimiento es obligatorio';
     }
     if (!this.formData.expiryYear) {
-      this.errors['expiryYear'] = 'Expiry year is required';
+      this.errors['expiryYear'] = 'El año de vencimiento es obligatorio';
     } else {
       // Check if the card is not expired
       const currentDate = new Date();
@@ -56,16 +56,16 @@ export class PaymentForm {
       const currentMonth = currentDate.getMonth() + 1;
       const expiryYear = parseInt(this.formData.expiryYear);
       const expiryMonth = parseInt(this.formData.expiryMonth);
-      
+
       if (expiryYear < currentYear || (expiryYear === currentYear && expiryMonth < currentMonth)) {
-        this.errors['expiryYear'] = 'Card has expired';
+        this.errors['expiryYear'] = 'La tarjeta está vencida';
       }
     }
-    
+
     if (!this.formData.cvv) {
-      this.errors['cvv'] = 'CVV is required';
+      this.errors['cvv'] = 'El CVV es obligatorio';
     } else if (!/^\d{3,4}$/.test(this.formData.cvv)) {
-      this.errors['cvv'] = 'CVV must be 3 or 4 digits';
+      this.errors['cvv'] = 'El CVV debe tener 3 o 4 dígitos';
     }
 
     return Object.keys(this.errors).length === 0;
@@ -75,31 +75,31 @@ export class PaymentForm {
     // Luhn algorithm for card number validation
     let sum = 0;
     let isEven = false;
-    
+
     for (let i = cardNumber.length - 1; i >= 0; i--) {
       let digit = parseInt(cardNumber.charAt(i));
-      
+
       if (isEven) {
         digit *= 2;
         if (digit > 9) {
           digit -= 9;
         }
       }
-      
+
       sum += digit;
       isEven = !isEven;
     }
-    
+
     return sum % 10 === 0;
   }
 
   formatCardNumber(value: string): void {
     // Remove all non-digit characters
     const cleaned = value.replace(/\D/g, '');
-    
+
     // Add spaces every 4 digits
     const formatted = cleaned.replace(/(\d{4})(?=\d)/g, '$1 ');
-    
+
     // Limit to 19 characters (16 digits + 3 spaces)
     this.formData.cardNumber = formatted.slice(0, 19);
   }

@@ -3,6 +3,7 @@ import { Orders } from '../../../services/orders';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/services/auth.service';
+import { CacheInvalidationService } from '../../../core/services/cache-invalidation.service';
 
 export interface CartItem {
   ticketTypeId: number;
@@ -49,6 +50,7 @@ export interface CompletedOrder {
 const CART_STORAGE_KEY = 'ticketing_cart';
 const COMPLETED_ORDER_KEY = 'ticketing_completed_order';
 const PURCHASED_TICKETS_KEY = 'ticketing_purchased_tickets';
+const PENDING_CHECKOUT_KEY = 'ticketing_pending_checkout';
 
 @Injectable({
   providedIn: 'root'
@@ -57,6 +59,7 @@ export class CheckoutService {
   private readonly http = inject(HttpClient);
   private readonly ordersService = inject(Orders);
   private readonly authService = inject(AuthService);
+  private readonly cacheInvalidationService = inject(CacheInvalidationService);
 
   // Signals
   private readonly _cart = signal<CartItem[]>(this.loadCart());
@@ -100,6 +103,50 @@ export class CheckoutService {
     effect(() => {
       this.saveCart(this._cart());
     });
+  }
+
+  /**
+   * Save intended checkout payload before authentication.
+   */
+  savePendingCheckout(items: CartItem[], eventId?: string | number, eventName?: string): void {
+    const payload = { items, eventId, eventName };
+    localStorage.setItem(PENDING_CHECKOUT_KEY, JSON.stringify(payload));
+  }
+
+  hasPendingCheckout(): boolean {
+    return !!localStorage.getItem(PENDING_CHECKOUT_KEY);
+  }
+
+  /**
+   * If there is a pending checkout, load it into the cart and set event info.
+   * Returns true if resumed, false otherwise.
+   */
+  resumePendingCheckout(): boolean {
+    const raw = localStorage.getItem(PENDING_CHECKOUT_KEY);
+    if (!raw) return false;
+
+    try {
+      const payload: { items: CartItem[]; eventId?: string | number; eventName?: string } = JSON.parse(raw);
+
+      // Clear current cart and load pending items
+      this.clearCart();
+      (payload.items || []).forEach(item => {
+        if (item && item.quantity > 0) {
+          this.addToCart(item.ticketTypeId, item.ticketTypeName, item.quantity, item.price);
+        }
+      });
+
+      // Set event info
+      this.setEventInfo(payload.eventId, payload.eventName);
+
+      // Remove pending flag
+      localStorage.removeItem(PENDING_CHECKOUT_KEY);
+      return true;
+    } catch {
+      // Invalidate corrupted payload
+      localStorage.removeItem(PENDING_CHECKOUT_KEY);
+      return false;
+    }
   }
 
   setEventInfo(eventId: string | number | undefined, eventName: string | undefined): void {
@@ -295,6 +342,23 @@ export class CheckoutService {
 
     // Also save to purchased tickets history
     this.saveToPurchasedTickets(completedOrder);
+
+    // Invalidate cache for event availability
+    const eventId = this._eventId();
+    if (eventId) {
+      // Invalidate cache for each ticket type purchased
+      cart.forEach(item => {
+        this.cacheInvalidationService.invalidateAfterPurchase(
+          String(eventId), 
+          item.ticketTypeName
+        );
+      });
+      
+      // Also invalidate the general event cache
+      this.cacheInvalidationService.invalidateEvent(String(eventId));
+      
+      console.log('🔄 [CheckoutService] Cache invalidated after purchase for event:', eventId);
+    }
 
     // Clear the cart after saving
     setTimeout(() => {

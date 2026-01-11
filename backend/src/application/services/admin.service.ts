@@ -9,8 +9,10 @@ import { UpdateUserDto } from '../../presentation/dtos/update-user.dto';
 import { GetUsersQueryDto } from '../../presentation/dtos/get-users-query.dto';
 import { IUserRepository } from '../../domain/interfaces/user-repository.interface';
 import { ITicketRepository } from '../../domain/interfaces/ticket-repository.interface';
+import { IEventRepository } from '../../domain/interfaces/event-repository.interface';
 import { IReservationRepository } from '../../domain/interfaces/reservation-repository.interface';
-import { USER_REPOSITORY, TICKET_REPOSITORY, RESERVATION_REPOSITORY } from '../../domain/interfaces/repository-tokens';
+import { Email } from '../../domain/value-objects/email.vo';
+import { USER_REPOSITORY, TICKET_REPOSITORY, RESERVATION_REPOSITORY, EVENT_REPOSITORY } from '../../domain/interfaces/repository-tokens';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -27,9 +29,18 @@ export class AdminService {
     private readonly ticketRepository: ITicketRepository,
     @Inject(RESERVATION_REPOSITORY)
     private readonly reservationRepository: IReservationRepository,
+    @Inject(EVENT_REPOSITORY)
+    private readonly eventRepository: IEventRepository,
   ) {}
 
   async createAdminUser(createAdminUserDto: CreateAdminUserDto) {
+    // Check if email already exists
+    const emailObj = Email.create(createAdminUserDto.email);
+    const existingUser = await this.userRepository.findByEmail(emailObj);
+    if (existingUser) {
+      throw new ConflictException('Email already exists');
+    }
+
     return this.createAdminUserUseCase.execute(createAdminUserDto);
   }
 
@@ -55,8 +66,10 @@ export class AdminService {
     }
 
     // Check if email is being changed and if it already exists
-    if (updateUserDto.email && updateUserDto.email !== user.email) {
-      const existingUser = await this.userRepository.findByEmail(updateUserDto.email);
+    const currentEmailValue = typeof user.email === 'string' ? user.email : user.email.value;
+    if (updateUserDto.email && updateUserDto.email !== currentEmailValue) {
+      const emailObj = Email.create(updateUserDto.email);
+      const existingUser = await this.userRepository.findByEmail(emailObj);
       if (existingUser) {
         throw new ConflictException('Email already exists');
       }
@@ -110,8 +123,36 @@ export class AdminService {
       status,
     });
 
+    // Resolve event names for returned tickets (handles mixed IDs)
+    const uniqueEventIds = Array.from(new Set(tickets.map(t => t.eventId)));
+    const eventNameMap = new Map<string, string>();
+    for (const id of uniqueEventIds) {
+      try {
+        const ev = await this.eventRepository.findById(id);
+        if (ev) {
+          eventNameMap.set(id, ev.name);
+        }
+      } catch {}
+    }
+
+    const enriched = tickets.map(t => ({
+      id: t.id,
+      code: t.code,
+      eventId: t.eventId,
+      eventName: eventNameMap.get(t.eventId) || 'Evento no encontrado',
+      type: t.type,
+      buyerEmail: typeof t.buyerEmail === 'string' ? t.buyerEmail : t.buyerEmail.value,
+      price: {
+        amount: t.price.amount,
+        currency: t.price.currency,
+      },
+      purchaseDate: t.purchaseDate,
+      status: t.status,
+      usedAt: t.usedAt,
+    }));
+
     return {
-      data: tickets,
+      data: enriched,
       pagination: {
         page,
         limit,

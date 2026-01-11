@@ -23,13 +23,17 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiConsumes, ApiBearerAuth } from '@nestjs/swagger';
 import { CreateEventUseCase } from '../../application/use-cases/create-event.use-case';
 import { GetAllEventsUseCase } from '../../application/use-cases/get-all-events.use-case';
+import { TicketConfiguration } from '../../domain/entities/ticket-configuration.entity';
+import { Event as EventEntity } from '../../domain/entities/event.entity';
 import { UpdateEventUseCase } from '../../application/use-cases/update-event.use-case';
 import { DeleteEventUseCase } from '../../application/use-cases/delete-event.use-case';
 import { CreateEventDto } from '../../application/dto/create-event.dto';
 import { UpdateEventDto } from '../../application/dto/update-event.dto';
 import { Event } from '../../domain/entities/event.entity';
 import { IEventRepository } from '../../domain/interfaces/event-repository.interface';
-import { EVENT_REPOSITORY } from '../../domain/interfaces/repository-tokens';
+import { EVENT_REPOSITORY, USER_REPOSITORY } from '../../domain/interfaces/repository-tokens';
+import { IUserRepository } from '../../domain/interfaces/user-repository.interface';
+import { User } from '../../domain/entities/user.entity';
 import { MinioService } from '../../infrastructure/external/minio.service';
 import { JwtAuthGuard } from '../../application/services/jwt-auth.guard';
 
@@ -49,6 +53,8 @@ export class EventController {
     private readonly deleteEventUseCase: DeleteEventUseCase,
     @Inject(EVENT_REPOSITORY)
     private readonly eventRepository: IEventRepository,
+    @Inject(USER_REPOSITORY)
+    private readonly userRepository: IUserRepository,
     private readonly minioService: MinioService,
   ) {}
 
@@ -241,7 +247,7 @@ export class EventController {
         createdBy: req?.user?.id, // Extract user ID from JWT token
       });
       
-      return this.formatEventResponse(event);
+      return await this.formatEventResponse(event);
     } catch (error) {
       if (error instanceof BadRequestException) {
         throw error;
@@ -321,7 +327,39 @@ export class EventController {
       throw new NotFoundException('Event not found');
     }
 
-    return this.formatEventResponse(event);
+    // Calculate real-time availability for this specific event
+    const updatedConfigurations = await Promise.all(
+      event.ticketConfigurations.map(async (config) => {
+        const realAvailability = await this.eventRepository.getRealTimeAvailability(
+          event.id,
+          config.type
+        );
+        
+        // Create new TicketConfiguration with real availability
+        return new TicketConfiguration(
+          config.type,
+          config.price,
+          config.totalQuantity,
+          realAvailability, // Use real-time calculated availability
+          config.id
+        );
+      })
+    );
+
+    // Create new Event with updated configurations
+    const eventWithRealAvailability = new EventEntity(
+      event.id,
+      event.name,
+      event.date,
+      event.location,
+      event.venueName,
+      updatedConfigurations,
+      event.imageUrl,
+      event.details,
+      event.createdBy
+    );
+
+    return await this.formatEventResponse(eventWithRealAvailability);
   }
 
   /**
@@ -432,7 +470,7 @@ export class EventController {
       });
 
       // Return formatted response
-      return this.formatEventResponse(event);
+      return await this.formatEventResponse(event);
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
@@ -539,7 +577,7 @@ export class EventController {
   })
   async findAll(): Promise<EventResponse[]> {
     const events = await this.getAllEventsUseCase.execute();
-    return events.map(event => this.formatEventResponse(event));
+    return await Promise.all(events.map(event => this.formatEventResponse(event)));
   }
 
   /**
@@ -590,7 +628,22 @@ export class EventController {
    * @param event - The Event entity to format
    * @returns Formatted event response
    */
-  private formatEventResponse(event: Event): EventResponse {
+  private async formatEventResponse(event: Event): Promise<EventResponse> {
+    let organizer = null;
+    
+    // Si el evento tiene un createdBy, obtener la información del usuario
+    if (event.createdBy) {
+      const user = await this.userRepository.findById(event.createdBy);
+      if (user) {
+        organizer = {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: typeof user.email === 'string' ? user.email : user.email.value,
+        };
+      }
+    }
+    
     return {
       id: event.id,
       name: event.name,
@@ -599,6 +652,7 @@ export class EventController {
       venueName: event.venueName,
       imageUrl: event.imageUrl || null,
       createdBy: event.createdBy || null,
+      organizer,
       ticketConfigurations: event.ticketConfigurations.map(config => ({
         type: config.type,
         price: config.price.amount,
@@ -623,6 +677,12 @@ interface EventResponse {
   venueName: string;
   imageUrl: string | null;
   createdBy: string | null;
+  organizer: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  } | null;
   ticketConfigurations: Array<{
     type: string;
     price: number;

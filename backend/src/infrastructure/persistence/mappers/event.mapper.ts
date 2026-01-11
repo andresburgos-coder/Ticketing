@@ -62,14 +62,20 @@ export class EventMapper {
     ormEntity.venueName = domainEvent.venueName;
     ormEntity.imageUrl = domainEvent.imageUrl;
     ormEntity.createdBy = domainEvent.createdBy;
-    ormEntity.ticketConfigurations = domainEvent.ticketConfigurations.map((config) =>
-      this.ticketConfigToPersistence(config)
-    );
+    
+    // Create ticket configurations with proper relationships
+    ormEntity.ticketConfigurations = domainEvent.ticketConfigurations.map((config) => {
+      const ormConfig = this.ticketConfigToPersistence(config, domainEvent.id);
+      ormConfig.event = ormEntity; // Set the event relationship
+      return ormConfig;
+    });
+    
     // Map event details if present
     if (domainEvent.details && domainEvent.details.length > 0) {
       ormEntity.details = domainEvent.details.map((d: any) => {
         const detail = new EventDetailsOrmEntity();
-        detail.eventId = domainEvent.id; // Set the eventId
+        detail.eventId = domainEvent.id; // Set the eventId FIRST
+        detail.event = ormEntity; // Set the event relationship
         detail.category = d.category;
         detail.minAge = d.minAge;
         detail.seating = d.seating;
@@ -78,6 +84,10 @@ export class EventMapper {
         detail.liquorSale = d.liquorSale;
         detail.reducedMobilityAccess = d.reducedMobilityAccess;
         detail.pregnantAccess = d.pregnantAccess;
+        // If the detail has an ID, preserve it for updates
+        if (d.id) {
+          detail.id = d.id;
+        }
         return detail;
       });
     }
@@ -101,24 +111,34 @@ export class EventMapper {
       ormConfig.type,
       Money.create(price, ormConfig.currency || 'USD'),
       ormConfig.totalQuantity,
-      ormConfig.availableQuantity
+      ormConfig.availableQuantity,
+      ormConfig.id // Preserve the ID
     );
   }
 
   /**
    * Converts a domain ticket configuration to an ORM ticket configuration
    * @param domainConfig - The domain TicketConfiguration
+   * @param eventId - The event ID to associate with this configuration
    * @returns ORM TicketConfigurationOrmEntity
    */
   private static ticketConfigToPersistence(
-    domainConfig: TicketConfiguration
+    domainConfig: TicketConfiguration,
+    eventId: string
   ): TicketConfigurationOrmEntity {
     const ormConfig = new TicketConfigurationOrmEntity();
+    
+    // Preserve the ID if it exists (for updates)
+    if (domainConfig.id) {
+      ormConfig.id = domainConfig.id;
+    }
+    
     ormConfig.type = domainConfig.type;
     ormConfig.price = domainConfig.price.amount;
     ormConfig.currency = domainConfig.price.currency;
     ormConfig.totalQuantity = domainConfig.totalQuantity;
     ormConfig.availableQuantity = domainConfig.availableQuantity;
+    ormConfig.eventId = eventId; // Set the eventId to establish the relationship
 
     return ormConfig;
   }

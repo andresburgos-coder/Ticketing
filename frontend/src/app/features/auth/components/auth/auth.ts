@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
+import { CheckoutService } from '../../../checkout/services/checkout.service';
 import { AuthService } from '../../../../core/services/auth.service';
 
 type AuthMode = 'login' | 'register';
@@ -17,6 +18,7 @@ export class AuthComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
+  private readonly checkoutService = inject(CheckoutService);
 
   readonly isLoading = this.authService.isLoading;
   readonly errorMessage = signal<string | null>(null);
@@ -76,6 +78,13 @@ export class AuthComponent {
       this.authService.login(credentials).subscribe({
         next: () => {
           const user = this.authService.currentUser();
+          // Resume pending checkout if exists
+          if (this.checkoutService.resumePendingCheckout()) {
+            this.router.navigate(['/checkout']);
+            return;
+          }
+
+          // Default navigation by role
           if (user?.role === 'ADMIN') {
             this.router.navigate(['/admin/dashboard']);
           } else {

@@ -25,7 +25,7 @@ export class TicketOrmEntity {
   @Column({ unique: true, length: 50 })
   code!: string;
 
-  @Column('uuid')
+  @Column('varchar', { length: 50 })
   eventId!: string;
 
   @Column({ type: 'enum', enum: TicketType })

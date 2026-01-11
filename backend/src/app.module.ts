@@ -9,6 +9,7 @@ import { EventModule } from './modules/event.module';
 import { AuthModule } from './modules/auth.module';
 import { TicketModule } from './modules/ticket.module';
 import { AdminModule } from './modules/admin.module';
+import { WebSocketModule } from './modules/websocket.module';
 
 @Module({
   imports: [
@@ -28,10 +29,11 @@ import { AdminModule } from './modules/admin.module';
       password: process.env.DATABASE_PASSWORD ?? 'ticket_pass',
       database: process.env.DATABASE_NAME ?? 'ticket_sales',
       autoLoadEntities: true,
-      synchronize: false,
+      synchronize: true, // Temporarily enable for development
     }),
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
+    WebSocketModule,
     EventModule,
     AuthModule,
     TicketModule,

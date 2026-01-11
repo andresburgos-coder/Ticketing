@@ -18,6 +18,7 @@ import { ReservationOrmEntity } from '../infrastructure/persistence/entities/res
 import { EventOrmEntity } from '../infrastructure/persistence/entities/event.orm-entity';
 import { TicketConfigurationOrmEntity } from '../infrastructure/persistence/entities/ticket-configuration.orm-entity';
 import { TICKET_REPOSITORY, RESERVATION_REPOSITORY, EVENT_REPOSITORY } from '../domain/interfaces/repository-tokens';
+import { WebSocketModule } from './websocket.module';
 
 /**
  * TicketModule
@@ -43,6 +44,7 @@ import { TICKET_REPOSITORY, RESERVATION_REPOSITORY, EVENT_REPOSITORY } from '../
       secret: process.env.JWT_SECRET ?? 'your-secret-key',
       signOptions: { expiresIn: '15m' },
     }),
+    WebSocketModule,
   ],
   controllers: [TicketController, ReservationController],
   providers: [

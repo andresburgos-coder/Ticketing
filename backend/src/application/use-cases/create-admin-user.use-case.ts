@@ -4,6 +4,7 @@ import { User } from '../../domain/entities/user.entity';
 import { UserRole } from '../../domain/enums/user-role.enum';
 import { CreateAdminUserDto } from '../../presentation/dtos/create-admin-user.dto';
 import { USER_REPOSITORY } from '../../domain/interfaces/repository-tokens';
+import { Email } from '../../domain/value-objects/email.vo';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -18,7 +19,8 @@ export class CreateAdminUserUseCase {
     const { email, password, firstName, lastName, role } = createAdminUserDto;
 
     // Check if user already exists
-    const existingUser = await this.userRepository.findByEmail(email);
+    const emailObj = Email.create(email);
+    const existingUser = await this.userRepository.findByEmail(emailObj);
     if (existingUser) {
       throw new ConflictException('User with this email already exists');
     }

@@ -33,7 +33,7 @@ export class AdminService {
 
   getUsers(query: UsersQuery = {}): Observable<PaginatedResponse<User>> {
     let params = new HttpParams();
-    
+
     if (query.page) params = params.set('page', query.page.toString());
     if (query.limit) params = params.set('limit', query.limit.toString());
     if (query.email) params = params.set('email', query.email);
@@ -70,21 +70,21 @@ export class AdminService {
   getEventStats(eventId?: string): Observable<EventStats> {
     let params = new HttpParams();
     if (eventId) params = params.set('eventId', eventId);
-    
+
     return this.http.get<EventStats>(`${this.apiUrl}/events/stats`, { params });
   }
 
   getTicketStats(eventId?: string): Observable<TicketStats> {
     let params = new HttpParams();
     if (eventId) params = params.set('eventId', eventId);
-    
+
     return this.http.get<TicketStats>(`${this.apiUrl}/tickets/stats`, { params });
   }
 
   // Ticket Management
   getTickets(query: TicketsQuery = {}): Observable<PaginatedResponse<AdminTicket>> {
     let params = new HttpParams();
-    
+
     if (query.eventId) params = params.set('eventId', query.eventId);
     if (query.status) params = params.set('status', query.status);
     if (query.page) params = params.set('page', query.page.toString());
@@ -96,11 +96,32 @@ export class AdminService {
   // Reservation Management
   getReservations(query: ReservationsQuery = {}): Observable<PaginatedResponse<AdminReservation>> {
     let params = new HttpParams();
-    
+
     if (query.status) params = params.set('status', query.status);
     if (query.page) params = params.set('page', query.page.toString());
     if (query.limit) params = params.set('limit', query.limit.toString());
 
     return this.http.get<PaginatedResponse<AdminReservation>>(`${this.apiUrl}/reservations`, { params });
+  }
+
+  // Event Management
+  getEvents(): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/events`);
+  }
+
+  getEvent(id: string): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/events/${id}`);
+  }
+
+  createEvent(formData: FormData): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/events`, formData);
+  }
+
+  updateEvent(id: string, formData: FormData): Observable<any> {
+    return this.http.put<any>(`${environment.apiUrl}/events/${id}`, formData);
+  }
+
+  deleteEvent(id: string): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${environment.apiUrl}/events/${id}`);
   }
 }

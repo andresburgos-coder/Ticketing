@@ -97,9 +97,22 @@ export class Checkout implements OnInit, OnDestroy {
       return;
     }
 
+    // Save buyer info to localStorage for confirmation page
+    const buyerInfo = {
+      name: `${this.contactData.firstName} ${this.contactData.lastName}`,
+      email: this.contactData.email
+    };
+    localStorage.setItem('currentBuyerInfo', JSON.stringify(buyerInfo));
+
     this.checkoutService.confirmOrder('stripe', this.contactData.email, this.paymentData);
     setTimeout(() => {
-      this.router.navigate(['/confirmation']);
+      const completed = this.checkoutService.completedOrder();
+      const ids = completed?.tickets?.map(t => t.id) || [];
+      const queryParams: any = {};
+      if (ids.length > 0) {
+        queryParams.t = ids.join(',');
+      }
+      this.router.navigate(['/confirmation'], { queryParams });
     }, 1000);
   }
 

@@ -54,7 +54,7 @@
             <span class="ticket-type">{{ ticket.type }}</span>
           </td>
           <td>{{ ticket.buyerEmail }}</td>
-          <td class="price">${{ ticket.price | number:'1.2-2' }} {{ ticket.currency }}</td>
+          <td class="price">{{ ticket.price.amount | currencyFormat: ticket.price.currency }}</td>
           <td>{{ ticket.purchaseDate | date:'short' }}</td>
           <td>
             <span class="status-badge" [class]="'status-' + ticket.status.toLowerCase()">

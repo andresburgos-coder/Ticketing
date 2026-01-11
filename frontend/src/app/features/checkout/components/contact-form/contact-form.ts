@@ -30,18 +30,18 @@ export class ContactForm {
     this.errors = {};
 
     if (!this.formData.firstName.trim()) {
-      this.errors['firstName'] = 'First name is required';
+      this.errors['firstName'] = 'El nombre es obligatorio';
     }
     if (!this.formData.lastName.trim()) {
-      this.errors['lastName'] = 'Last name is required';
+      this.errors['lastName'] = 'El apellido es obligatorio';
     }
     if (!this.formData.email.trim()) {
-      this.errors['email'] = 'Email is required';
+      this.errors['email'] = 'El correo es obligatorio';
     } else if (!this.isValidEmail(this.formData.email)) {
-      this.errors['email'] = 'Invalid email format';
+      this.errors['email'] = 'Formato de correo inválido';
     }
     if (!this.formData.phone.trim()) {
-      this.errors['phone'] = 'Phone number is required';
+      this.errors['phone'] = 'El teléfono es obligatorio';
     }
 
     return Object.keys(this.errors).length === 0;

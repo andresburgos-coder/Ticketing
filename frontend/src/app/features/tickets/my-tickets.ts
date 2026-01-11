@@ -8,6 +8,7 @@ import { Events } from '../../services/events';
 import { CheckoutService, CompletedOrder, PurchasedTicket } from '../checkout/services/checkout.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { CurrencyFormatPipe } from '../../shared/pipes/currency-format.pipe';
 
 interface DisplayTicket {
   id: string;
@@ -42,7 +43,7 @@ interface EventGroup {
 @Component({
   selector: 'app-my-tickets',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, CurrencyFormatPipe],
   templateUrl: './my-tickets.html',
   styleUrl: './my-tickets.css'
 })
@@ -471,10 +472,11 @@ export class MyTicketsComponent implements OnInit {
 
     ctx.fillStyle = '#1f2937';
     ctx.font = 'bold 12px Arial';
-    ctx.fillText('PRICE', 400, 390);
+    ctx.fillText('PRECIO', 400, 390);
     ctx.fillStyle = '#374151';
     ctx.font = '16px Arial';
-    ctx.fillText('$' + ticket.price.toFixed(2) + ' USD', 400, 410);
+    const formattedPrice = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(Number(ticket.price));
+    ctx.fillText(formattedPrice, 400, 410);
 
     // Important info section
     ctx.fillStyle = '#dbeafe'; // blue-100
@@ -482,13 +484,13 @@ export class MyTicketsComponent implements OnInit {
 
     ctx.fillStyle = '#1e40af'; // blue-800
     ctx.font = 'bold 14px Arial';
-    ctx.fillText('IMPORTANT INFORMATION', 30, 480);
+    ctx.fillText('INFORMACIÓN IMPORTANTE', 30, 480);
 
     ctx.fillStyle = '#1e3a8a'; // blue-900
     ctx.font = '12px Arial';
-    const infoText = 'Please present this ticket at the entrance for validation.';
+    const infoText = 'Por favor, presenta este ticket en la entrada para su validación.';
     ctx.fillText(infoText, 30, 505);
-    ctx.fillText('This ticket is valid for one-time entry only.', 30, 525);
+    ctx.fillText('Este ticket es válido para un ingreso único.', 30, 525);
 
     // Draw QR Code
     const qrImg = new Image();
@@ -502,7 +504,7 @@ export class MyTicketsComponent implements OnInit {
       ctx.fillStyle = '#1f2937';
       ctx.font = 'bold 18px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText('SCAN FOR ENTRY', 750, 180);
+      ctx.fillText('ESCANEAR PARA INGRESAR', 750, 180);
 
       // QR Code white box
       ctx.fillStyle = '#ffffff';

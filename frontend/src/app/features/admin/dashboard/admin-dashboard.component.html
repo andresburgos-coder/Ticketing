@@ -44,7 +44,7 @@
     <div class="stat-card">
       <div class="stat-icon">💰</div>
       <div class="stat-content">
-        <h3>${{ stats()!.overview.totalRevenue | number:'1.2-2' }}</h3>
+        <h3>{{ stats()!.overview.totalRevenue | currencyFormat }}</h3>
         <p>Ingresos Totales</p>
       </div>
     </div>
@@ -79,7 +79,7 @@
           <div class="event-details">
             <h4>{{ event.eventName }}</h4>
             <p>{{ event.ticketsSold }} tickets vendidos</p>
-            <p class="revenue">${{ event.revenue | number:'1.2-2' }}</p>
+            <p class="revenue">{{ event.revenue | currencyFormat }}</p>
           </div>
         </div>
       </div>

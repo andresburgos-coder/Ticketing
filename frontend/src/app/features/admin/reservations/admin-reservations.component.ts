@@ -5,11 +5,12 @@ import { AdminService } from '../../../services/admin.service';
 import { EventService } from '../../../services/event.service';
 import { AdminReservation, ReservationsQuery } from '../../../models/admin.model';
 import { Event } from '../../../models/event.model';
+import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
 
 @Component({
   selector: 'app-admin-reservations',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CurrencyFormatPipe],
   templateUrl: './admin-reservations.component.html',
   styleUrl: './admin-reservations.component.css'
 })
@@ -27,40 +28,77 @@ export class AdminReservationsComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.loadEvents();
-    this.loadReservations();
+    this.initializeData();
   }
 
-  loadEvents() {
-    // Load events using signal
-    this.eventService.loadEvents();
-    // Get events from signal
-    this.events = this.eventService.events();
-  }
-
-  loadReservations() {
+  private async initializeData() {
     this.loading = true;
     this.error = null;
 
-    this.adminService.getReservations(this.filters).subscribe({
-      next: (response) => {
-        this.reservations = response.data.map(reservation => ({
-          ...reservation,
-          eventName: this.getEventName(reservation.eventId)
-        }));
-        this.pagination = response.pagination;
-        this.loading = false;
-      },
-      error: (error) => {
-        this.error = error.message || 'Error al cargar las reservas';
-        this.loading = false;
-      }
+    try {
+      // Esperar a que se carguen los eventos primero
+      await this.loadEventsPromise();
+      // Luego cargar las reservas
+      await this.loadReservationsPromise();
+    } catch (err) {
+      this.error = 'Error al cargar los datos';
+      console.warn('Error cargando datos iniciales');
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  private loadEventsPromise(): Promise<void> {
+    return new Promise((resolve) => {
+      this.eventService.loadEvents();
+      // Pequeño delay para asegurar que el signal se actualice
+      setTimeout(() => {
+        this.events = this.eventService.events();
+        resolve();
+      }, 100);
     });
+  }
+
+  private loadReservationsPromise(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.adminService.getReservations(this.filters).subscribe({
+        next: (response) => {
+          this.reservations = response.data.map(reservation => ({
+            ...reservation,
+            eventName: this.getEventName(reservation.eventId)
+          }));
+          this.pagination = response.pagination;
+          resolve();
+        },
+        error: (error) => {
+          this.error = error.message || 'Error al cargar las reservas';
+          reject(error);
+        }
+      });
+    });
+  }
+
+  loadReservations() {
+    this.filters.page = 1;
+    this.loadPageData();
   }
 
   changePage(page: number) {
     this.filters.page = page;
-    this.loadReservations();
+    this.loadPageData();
+  }
+
+  private loadPageData() {
+    this.loading = true;
+    this.error = null;
+
+    this.loadReservationsPromise()
+      .then(() => {
+        this.loading = false;
+      })
+      .catch(() => {
+        this.loading = false;
+      });
   }
 
   isExpired(expiresAt: Date): boolean {

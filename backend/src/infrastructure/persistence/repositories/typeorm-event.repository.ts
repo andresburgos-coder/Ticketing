@@ -37,15 +37,40 @@ export class TypeOrmEventRepository implements IEventRepository {
   }
 
   /**
-   * Finds an event by its unique identifier
+   * Updates the available quantity for a specific ticket configuration
+   * This method directly updates the database to ensure consistency
+   * @param eventId - The event ID
+   * @param ticketType - The ticket type
+   * @param newAvailableQuantity - The new available quantity
+   */
+  async updateTicketAvailability(eventId: string, ticketType: string, newAvailableQuantity: number): Promise<void> {
+    await this.dataSource.query(`
+      UPDATE ticket_configurations 
+      SET availablequantity = $1 
+      WHERE event_id = $2 AND type::text = $3
+    `, [newAvailableQuantity, eventId, ticketType]);
+    
+    console.log(`📊 Updated availability in DB: ${eventId}/${ticketType} = ${newAvailableQuantity}`);
+  }
+
+  /**
+   * Finds an event by its unique identifier with row-level locking
    * @param id - The event ID to search for
+   * @param lock - Whether to lock the row for update (prevents concurrent modifications)
    * @returns Promise resolving to the Event if found, null otherwise
    */
-  async findById(id: string): Promise<Event | null> {
-    const ormEntity = await this.repository.findOne({
-      where: { id },
-      relations: ['ticketConfigurations', 'details'],
-    });
+  async findById(id: string, lock: boolean = false): Promise<Event | null> {
+    const queryBuilder = this.repository
+      .createQueryBuilder('event')
+      .leftJoinAndSelect('event.ticketConfigurations', 'ticketConfigurations')
+      .leftJoinAndSelect('event.details', 'details')
+      .where('event.id = :id', { id });
+
+    if (lock) {
+      queryBuilder.setLock('pessimistic_write');
+    }
+
+    const ormEntity = await queryBuilder.getOne();
 
     if (!ormEntity) {
       return null;
@@ -145,6 +170,60 @@ export class TypeOrmEventRepository implements IEventRepository {
       category: row.category || 'Sin categoría',
       count: parseInt(row.count, 10),
     }));
+  }
+
+  /**
+   * Gets the real-time availability for a specific event and ticket type
+   * Calculates: totalQuantity - soldTickets - activeReservations
+   * @param eventId - The event ID
+   * @param ticketType - The ticket type
+   * @returns Promise resolving to the real available quantity
+   */
+  async getRealTimeAvailability(eventId: string, ticketType: string): Promise<number> {
+    // Get total quantity from ticket configuration
+    const configResult = await this.dataSource.query(`
+      SELECT totalquantity 
+      FROM ticket_configurations 
+      WHERE event_id = $1 AND type::text = $2
+    `, [eventId, ticketType]);
+
+    if (configResult.length === 0) {
+      return 0;
+    }
+
+    const totalQuantity = configResult[0].totalquantity;
+
+    // Count sold tickets (status = 'PAID' or 'USED')
+    // Note: tickets table uses "eventId" (camelCase) column
+    const soldResult = await this.dataSource.query(`
+      SELECT COUNT(*) as sold_count
+      FROM tickets 
+      WHERE "eventId" = $1 AND type::text = $2 AND status IN ('PAID', 'USED')
+    `, [eventId, ticketType]);
+
+    const soldCount = parseInt(soldResult[0].sold_count, 10);
+
+    // Count active reservations (not expired)
+    // Note: reservations table uses "eventId" (camelCase) column and "ticketType" (camelCase) column
+    const reservedResult = await this.dataSource.query(`
+      SELECT COALESCE(SUM(quantity), 0) as reserved_count
+      FROM reservations 
+      WHERE "eventId" = $1 AND "ticketType"::text = $2 AND "expiresAt" > NOW() AND status = 'PENDING'
+    `, [eventId, ticketType]);
+
+    const reservedCount = parseInt(reservedResult[0].reserved_count, 10);
+
+    // Calculate real availability
+    const realAvailability = totalQuantity - soldCount - reservedCount;
+    
+    console.log(`📊 Real-time availability for ${eventId}/${ticketType}:`, {
+      totalQuantity,
+      soldCount,
+      reservedCount,
+      realAvailability
+    });
+
+    return Math.max(0, realAvailability);
   }
 
   async getEventsByMonth(): Promise<Array<{ month: string; count: number }>> {
