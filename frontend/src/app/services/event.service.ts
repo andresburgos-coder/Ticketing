@@ -102,7 +102,7 @@ export class EventService {
     this._isLoading.set(true);
     this.eventsApi.getEvent(id).subscribe({
       next: (data) => {
-        this._selectedEvent.set(data);
+                this._selectedEvent.set(data);
         this._isLoading.set(false);
       },
       error: (err) => {
@@ -120,22 +120,40 @@ export class EventService {
    * When an update arrives, refetch the event to get the latest data.
    */
   private subscribeToEventUpdates(eventId: string | number): void {
-    // Skip if already subscribed
-    if (this.wsSubscriptions.has(eventId)) {
+    const eventIdStr = String(eventId);
+    
+    // Check if already subscribed with a valid subscription
+    const existingSub = this.wsSubscriptions.get(eventIdStr);
+    if (existingSub && !existingSub.closed) {
+      console.log('[EventService] Already subscribed to event:', eventIdStr);
       return;
     }
 
-    const subscription = this.wsService.subscribeToEvent(eventId).subscribe(
+    // Clean up old subscription if it exists but is closed
+    if (existingSub) {
+      console.log('[EventService] Cleaning up closed subscription for event:', eventIdStr);
+      this.wsSubscriptions.delete(eventIdStr);
+    }
+
+    console.log('%c[EventService] 🔔 Setting up WebSocket subscription for event:', 'color: blue; font-weight: bold;', eventIdStr);
+
+    const subscription = this.wsService.subscribeToEvent(eventIdStr).subscribe(
       (update) => {
         if (update) {
-          console.log('[EventService] Availability update received, refetching event:', eventId);
+          console.log('%c[EventService] 🎫 AVAILABILITY UPDATE RECEIVED!', 'color: green; font-size: 14px; font-weight: bold;');
+          console.log('[EventService] Update details:', update);
+          console.log('[EventService] Refetching event:', eventIdStr);
+          
           // Refetch the event to get updated availability
-          this.eventsApi.getEvent(eventId).subscribe({
+          this.eventsApi.getEvent(eventIdStr).subscribe({
             next: (data) => {
-              this._selectedEvent.set(data);
+              console.log('%c[EventService] ✅ Event refetched successfully', 'color: green; font-weight: bold;');
+              console.log('[EventService] New ticketConfigurations:', data.ticketConfigurations);
+              // Force a new object reference to ensure change detection
+              this._selectedEvent.set({ ...data });
             },
             error: (err) => {
-              console.error('Error refetching event after WebSocket update:', err);
+              console.error('[EventService] Error refetching event after WebSocket update:', err);
             }
           });
         }
@@ -145,7 +163,7 @@ export class EventService {
       }
     );
 
-    this.wsSubscriptions.set(eventId, subscription);
+    this.wsSubscriptions.set(eventIdStr, subscription);
   }
 
   updateFilters(filters: Partial<EventFilters>): void {
@@ -157,11 +175,15 @@ export class EventService {
   }
 
   clearSelectedEvent(): void {
+    console.log('[EventService] Clearing selected event and WebSocket subscriptions');
     this._selectedEvent.set(null);
     // Cleanup WebSocket subscriptions
     this.wsSubscriptions.forEach((sub, eventId) => {
-      this.wsService.unsubscribeFromEvent(eventId);
-      sub.unsubscribe();
+      console.log('[EventService] Unsubscribing from event:', eventId);
+      this.wsService.unsubscribeFromEvent(String(eventId));
+      if (sub && !sub.closed) {
+        sub.unsubscribe();
+      }
     });
     this.wsSubscriptions.clear();
   }

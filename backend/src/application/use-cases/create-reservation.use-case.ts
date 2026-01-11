@@ -6,6 +6,7 @@ import { Email } from '../../domain/value-objects/email.vo';
 import { IEventRepository } from '../../domain/interfaces/event-repository.interface';
 import { IReservationRepository } from '../../domain/interfaces/reservation-repository.interface';
 import { EVENT_REPOSITORY, RESERVATION_REPOSITORY } from '../../domain/interfaces/repository-tokens';
+import { TicketAvailabilityService } from '../../infrastructure/websocket/ticket-availability.service';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -35,6 +36,7 @@ export class CreateReservationUseCase {
     private readonly eventRepository: IEventRepository,
     @Inject(RESERVATION_REPOSITORY)
     private readonly reservationRepository: IReservationRepository,
+    private readonly ticketAvailabilityService: TicketAvailabilityService,
   ) {}
 
   /**
@@ -43,10 +45,10 @@ export class CreateReservationUseCase {
    * Atomic transaction:
    * 1. Validate input
    * 2. Load event from repository
-   * 3. Reserve tickets (decrements availability)
+   * 3. Check availability (using real-time calculation)
    * 4. Create reservation entity
    * 5. Persist reservation
-   * 6. Update event with new availability
+   * 6. Broadcast availability update via WebSocket
    * 
    * @param input - The input data for creating a reservation
    * @returns Promise resolving to the created Reservation with ID
@@ -66,10 +68,14 @@ export class CreateReservationUseCase {
     const quantity = TicketQuantity.create(input.quantity);
     const buyerEmail = Email.create(input.buyerEmail);
 
-    // Check availability WITHOUT reserving (we'll reserve only after payment)
-    const currentAvailability = event.getAvailability(input.ticketType);
-    if (currentAvailability < quantity.value) {
-      throw new Error(`Insufficient tickets available. Requested: ${quantity.value}, Available: ${currentAvailability}`);
+    // Check REAL-TIME availability (considers sold tickets + active reservations)
+    const realTimeAvailability = await this.eventRepository.getRealTimeAvailability(
+      input.eventId,
+      input.ticketType
+    );
+    
+    if (realTimeAvailability < quantity.value) {
+      throw new Error(`Insufficient tickets available. Requested: ${quantity.value}, Available: ${realTimeAvailability}`);
     }
 
     // Calculate total amount based on ticket type and quantity
@@ -96,11 +102,25 @@ export class CreateReservationUseCase {
       expiresAt
     );
 
-    // Persist reservation (WITHOUT updating event availability)
+    // Persist reservation
     const savedReservation = await this.reservationRepository.save(reservation);
+    console.log(`✅ [CreateReservation] Reservation created: ${savedReservation.id}, expires at: ${expiresAt.toISOString()}`);
 
-    // NOTE: We don't update event availability here anymore
-    // Availability will be updated only when payment is completed
+    // Calculate new availability after reservation
+    const newAvailability = await this.eventRepository.getRealTimeAvailability(
+      input.eventId,
+      input.ticketType
+    );
+
+    // Broadcast availability update via WebSocket
+    console.log(`📡 [CreateReservation] Broadcasting availability update: ${newAvailability} remaining for ${input.ticketType}`);
+    this.ticketAvailabilityService.broadcastAvailabilityUpdate({
+      eventId: input.eventId,
+      ticketType: input.ticketType,
+      availableQuantity: newAvailability,
+      totalQuantity: ticketConfig.totalQuantity,
+      timestamp: new Date().toISOString(),
+    });
 
     return savedReservation;
   }

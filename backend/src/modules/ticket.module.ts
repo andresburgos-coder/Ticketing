@@ -19,6 +19,7 @@ import { EventOrmEntity } from '../infrastructure/persistence/entities/event.orm
 import { TicketConfigurationOrmEntity } from '../infrastructure/persistence/entities/ticket-configuration.orm-entity';
 import { TICKET_REPOSITORY, RESERVATION_REPOSITORY, EVENT_REPOSITORY } from '../domain/interfaces/repository-tokens';
 import { WebSocketModule } from './websocket.module';
+import { ReservationExpirationScheduler } from '../infrastructure/schedulers/reservation-expiration.scheduler';
 
 /**
  * TicketModule
@@ -57,6 +58,9 @@ import { WebSocketModule } from './websocket.module';
     CreateReservationUseCase,
     ProcessPaymentUseCase,
     ReleaseTicketsUseCase,
+    
+    // Schedulers
+    ReservationExpirationScheduler,
     
     // Repositories
     {
