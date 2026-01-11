@@ -1,0 +1,87 @@
+<!-- Hero Swiper Section -->
+<app-hero-swiper></app-hero-swiper>
+
+<!-- Main Content Area -->
+<div class="max-w-[1440px] mx-auto w-full px-4 md:px-10 py-8">
+  <div class="flex flex-col lg:flex-row gap-8">
+      <!-- Filters Sidebar (Desktop) -->
+      <aside class="hidden lg:block w-64 shrink-0">
+        <div class="sticky top-24">
+          <app-event-filters></app-event-filters>
+        </div>
+      </aside>
+
+      <!-- Events Grid -->
+      <main class="flex-1">
+        <!-- Mobile Filters Button -->
+        <div class="lg:hidden mb-6">
+          <button
+            (click)="toggleFilters()"
+            (keydown.enter)="toggleFilters()"
+            (keydown.space)="$event.preventDefault(); toggleFilters()"
+            class="btn-primary w-full flex items-center justify-center gap-2"
+            aria-label="Filtros y Búsqueda">
+            <span class="material-symbols-outlined">tune</span>
+            <span>Filtros y Búsqueda</span>
+          </button>
+        </div>
+
+        @if (isLoading()) {
+          <div class="flex justify-center py-20">
+            <app-loading-spinner size="lg" message="Cargando eventos..."></app-loading-spinner>
+          </div>
+        } @else {
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            @for (event of events(); track event.id) {
+              <app-event-card [event]="event"></app-event-card>
+            } @empty {
+            <p class="text-gray-500 col-span-3 text-center py-10">No se encontraron eventos.</p>
+            }
+          </div>
+        }
+      </main>
+    </div>
+</div>
+
+<!-- Mobile Filters Modal -->
+@if (showFilters()) {
+  <dialog class="fixed inset-0 z-50 lg:hidden" aria-labelledby="filters-title">
+    <!-- Backdrop -->
+    <div
+      class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+      (click)="toggleFilters()"
+      aria-hidden="true"
+      (keydown)="toggleFilters()">
+    </div>
+
+    <!-- Panel -->
+    <div class="absolute right-0 top-0 h-full w-full max-w-sm bg-white shadow-xl overflow-y-auto animate-slide-in">
+      <!-- Header -->
+      <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+        <h2 id="filters-title" class="text-lg font-bold text-gray-900">Filtros de Búsqueda</h2>
+        <button
+          (click)="toggleFilters()"
+          (keydown.enter)="toggleFilters()"
+          (keydown.space)="$event.preventDefault(); toggleFilters()"
+          aria-label="Cerrar filtros"
+          class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+          <span class="material-symbols-outlined text-gray-600">close</span>
+        </button>
+      </div>
+
+      <!-- Filters Content -->
+      <div class="p-6">
+        <app-event-filters></app-event-filters>
+      </div>
+
+      <!-- Footer -->
+      <div class="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4">
+        <button
+          (click)="toggleFilters()"
+          class="btn-primary w-full">
+          Ver Resultados
+        </button>
+      </div>
+    </div>
+  </dialog>
+}

@@ -1,0 +1,408 @@
+{
+  "info": {
+    "name": "Events API - Image Upload",
+    "description": "Colección de Postman para testing de eventos con carga de imágenes",
+    "_postman_id": "events-api-images",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "eventId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Crear Evento SIN Imagen",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 201', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test('Response has event data', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('id');",
+              "    pm.expect(jsonData).to.have.property('name');",
+              "    pm.expect(jsonData).to.have.property('date');",
+              "    pm.expect(jsonData).to.have.property('location');",
+              "    pm.expect(jsonData).to.have.property('ticketConfigurations');",
+              "});",
+              "",
+              "pm.test('Save eventId for later use', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.collectionVariables.set('eventId', jsonData.id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Concierto de Rock sin Imagen\",\n  \"date\": \"2026-06-15T20:00:00Z\",\n  \"location\": \"Estadio Nacional\",\n  \"ticketConfigurations\": [\n    {\n      \"type\": \"VIP\",\n      \"price\": 150.00,\n      \"currency\": \"USD\",\n      \"quantity\": 100\n    },\n    {\n      \"type\": \"GENERAL\",\n      \"price\": 50.00,\n      \"currency\": \"USD\",\n      \"quantity\": 500\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/events",
+          "host": ["{{baseUrl}}"],
+          "path": ["events"]
+        },
+        "description": "Crear un evento sin imagen adjunta"
+      },
+      "response": []
+    },
+    {
+      "name": "2. Crear Evento CON Imagen",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 201', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test('Response has event with imageUrl', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('id');",
+              "    pm.expect(jsonData).to.have.property('name');",
+              "    pm.expect(jsonData).to.have.property('imageUrl');",
+              "    if (jsonData.imageUrl) {",
+              "        pm.expect(jsonData.imageUrl).to.be.a('string');",
+              "        console.log('Image URL:', jsonData.imageUrl);",
+              "    }",
+              "});",
+              "",
+              "pm.test('Save eventId for later use', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.collectionVariables.set('eventId', jsonData.id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "name",
+              "value": "Festival de Música 2026",
+              "type": "text"
+            },
+            {
+              "key": "date",
+              "value": "2026-07-20T18:00:00Z",
+              "type": "text"
+            },
+            {
+              "key": "location",
+              "value": "Parque Central",
+              "type": "text"
+            },
+            {
+              "key": "ticketConfigurations",
+              "value": "[{\"type\":\"VIP\",\"price\":200.00,\"currency\":\"USD\",\"quantity\":50},{\"type\":\"GENERAL\",\"price\":80.00,\"currency\":\"USD\",\"quantity\":300}]",
+              "type": "text"
+            },
+            {
+              "key": "image",
+              "type": "file",
+              "src": [],
+              "description": "Selecciona una imagen JPG, PNG o GIF (máx 5MB)"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/events",
+          "host": ["{{baseUrl}}"],
+          "path": ["events"]
+        },
+        "description": "Crear un evento CON imagen. Debes seleccionar un archivo de imagen en el campo 'image' antes de enviar la petición.\n\n**Formatos aceptados:** JPEG, PNG, GIF\n**Tamaño máximo:** 5MB\n\n**Nota:** Asegúrate de que MinIO esté corriendo (puerto 9000-9001)"
+      },
+      "response": []
+    },
+    {
+      "name": "3. Listar Todos los Eventos",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Response is an array', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "});",
+              "",
+              "pm.test('Events have required fields', function () {",
+              "    const jsonData = pm.response.json();",
+              "    if (jsonData.length > 0) {",
+              "        const event = jsonData[0];",
+              "        pm.expect(event).to.have.property('id');",
+              "        pm.expect(event).to.have.property('name');",
+              "        pm.expect(event).to.have.property('date');",
+              "        pm.expect(event).to.have.property('location');",
+              "        pm.expect(event).to.have.property('imageUrl');",
+              "    }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/events",
+          "host": ["{{baseUrl}}"],
+          "path": ["events"]
+        },
+        "description": "Obtener lista de todos los eventos. Verifica si tienen imageUrl."
+      },
+      "response": []
+    },
+    {
+      "name": "4. Obtener Evento por ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Event has complete data', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('id');",
+              "    pm.expect(jsonData).to.have.property('name');",
+              "    pm.expect(jsonData).to.have.property('date');",
+              "    pm.expect(jsonData).to.have.property('location');",
+              "    pm.expect(jsonData).to.have.property('imageUrl');",
+              "    pm.expect(jsonData).to.have.property('ticketConfigurations');",
+              "    ",
+              "    if (jsonData.imageUrl) {",
+              "        console.log('Event Image URL:', jsonData.imageUrl);",
+              "    }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/events/{{eventId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["events", "{{eventId}}"]
+        },
+        "description": "Obtener detalles de un evento específico por su ID. Usa el eventId guardado de las peticiones anteriores."
+      },
+      "response": []
+    },
+    {
+      "name": "5. Verificar Disponibilidad de Tickets",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Availability data is correct', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('eventId');",
+              "    pm.expect(jsonData).to.have.property('availableTickets');",
+              "    pm.expect(jsonData.availableTickets).to.be.an('array');",
+              "    ",
+              "    jsonData.availableTickets.forEach(ticket => {",
+              "        pm.expect(ticket).to.have.property('ticketType');",
+              "        pm.expect(ticket).to.have.property('available');",
+              "        pm.expect(ticket).to.have.property('total');",
+              "    });",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/events/{{eventId}}/availability",
+          "host": ["{{baseUrl}}"],
+          "path": ["events", "{{eventId}}", "availability"]
+        },
+        "description": "Verificar disponibilidad de tickets para un evento"
+      },
+      "response": []
+    },
+    {
+      "name": "6. Crear Evento - Error (Imagen muy grande)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 400 Bad Request', function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "",
+              "pm.test('Error message mentions file size', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('message');",
+              "    // El mensaje debería mencionar el tamaño del archivo",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "name",
+              "value": "Evento con Imagen Grande",
+              "type": "text"
+            },
+            {
+              "key": "date",
+              "value": "2026-08-10T19:00:00Z",
+              "type": "text"
+            },
+            {
+              "key": "location",
+              "value": "Centro de Convenciones",
+              "type": "text"
+            },
+            {
+              "key": "ticketConfigurations",
+              "value": "[{\"type\":\"GENERAL\",\"price\":30.00,\"currency\":\"USD\",\"quantity\":200}]",
+              "type": "text"
+            },
+            {
+              "key": "image",
+              "type": "file",
+              "src": [],
+              "description": "Selecciona una imagen MAYOR a 5MB para probar la validación"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/events",
+          "host": ["{{baseUrl}}"],
+          "path": ["events"]
+        },
+        "description": "Test negativo: Intentar crear evento con imagen mayor a 5MB. Debería fallar con error 400."
+      },
+      "response": []
+    },
+    {
+      "name": "7. Crear Evento - Error (Formato Inválido)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 400 Bad Request', function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "",
+              "pm.test('Error message mentions file format', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('message');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "name",
+              "value": "Evento con Archivo Inválido",
+              "type": "text"
+            },
+            {
+              "key": "date",
+              "value": "2026-09-05T20:00:00Z",
+              "type": "text"
+            },
+            {
+              "key": "location",
+              "value": "Teatro Municipal",
+              "type": "text"
+            },
+            {
+              "key": "ticketConfigurations",
+              "value": "[{\"type\":\"VIP\",\"price\":100.00,\"currency\":\"USD\",\"quantity\":50}]",
+              "type": "text"
+            },
+            {
+              "key": "image",
+              "type": "file",
+              "src": [],
+              "description": "Selecciona un archivo PDF, TXT o cualquier formato que NO sea JPG/PNG/GIF"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/events",
+          "host": ["{{baseUrl}}"],
+          "path": ["events"]
+        },
+        "description": "Test negativo: Intentar crear evento con formato de archivo inválido (no JPG/PNG/GIF). Debería fallar con error 400."
+      },
+      "response": []
+    }
+  ]
+}

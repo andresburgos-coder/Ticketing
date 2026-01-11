@@ -1,0 +1,168 @@
+import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { CheckoutService } from './checkout.service';
+import { Orders } from '../../../services/orders';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+
+describe('CheckoutService', () => {
+  let service: CheckoutService;
+  let ordersService: Partial<Orders>;
+
+  beforeEach(() => {
+    ordersService = {
+      createOrder: vi.fn(),
+      confirmOrder: vi.fn()
+    };
+
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      providers: [
+        CheckoutService,
+        { provide: Orders, useValue: ordersService }
+      ]
+    });
+
+    service = TestBed.inject(CheckoutService);
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('should be created', () => {
+    expect(service).toBeTruthy();
+  });
+
+  describe('cart operations', () => {
+    it('should add item to cart', () => {
+      service.addToCart(1, 'VIP Ticket', 2, 100);
+
+      expect(service.cart().length).toBe(1);
+      expect(service.cart()[0]).toEqual({
+        ticketTypeId: 1,
+        ticketTypeName: 'VIP Ticket',
+        quantity: 2,
+        price: 100
+      });
+    });
+
+    it('should update existing item quantity in cart', () => {
+      service.addToCart(1, 'VIP Ticket', 2, 100);
+      service.addToCart(1, 'VIP Ticket', 3, 100);
+
+      expect(service.cart().length).toBe(1);
+      expect(service.cart()[0].quantity).toBe(5);
+    });
+
+    it('should remove item from cart', () => {
+      service.addToCart(1, 'VIP Ticket', 2, 100);
+      service.addToCart(2, 'General', 1, 50);
+
+      service.removeFromCart(1);
+
+      expect(service.cart().length).toBe(1);
+      expect(service.cart()[0].ticketTypeId).toBe(2);
+    });
+
+    it('should update item quantity', () => {
+      service.addToCart(1, 'VIP Ticket', 2, 100);
+      service.updateQuantity(1, 5);
+
+      expect(service.cart()[0].quantity).toBe(5);
+    });
+
+    it('should remove item when quantity is 0 or less', () => {
+      service.addToCart(1, 'VIP Ticket', 2, 100);
+      service.updateQuantity(1, 0);
+
+      expect(service.cart().length).toBe(0);
+    });
+
+    it('should clear cart', () => {
+      service.addToCart(1, 'VIP Ticket', 2, 100);
+      service.addToCart(2, 'General', 1, 50);
+
+      service.clearCart();
+
+      expect(service.cart().length).toBe(0);
+    });
+  });
+
+  describe('computed values', () => {
+    it('should calculate subtotal correctly', () => {
+      service.addToCart(1, 'VIP Ticket', 2, 100);
+      service.addToCart(2, 'General', 3, 50);
+
+      expect(service.subtotal()).toBe(350); // (2 * 100) + (3 * 50)
+    });
+
+    it('should calculate tax correctly', () => {
+      service.addToCart(1, 'VIP Ticket', 2, 100);
+
+      expect(service.tax()).toBe(20); // 200 * 0.10
+    });
+
+    it('should calculate total correctly', () => {
+      service.addToCart(1, 'VIP Ticket', 2, 100);
+
+      expect(service.total()).toBe(220); // 200 + 20
+    });
+
+    it('should calculate cart item count', () => {
+      service.addToCart(1, 'VIP Ticket', 2, 100);
+      service.addToCart(2, 'General', 3, 50);
+
+      expect(service.cartItemCount()).toBe(5); // 2 + 3
+    });
+  });
+
+  describe('reservation', () => {
+    it('should set reservation with countdown timer', () => {
+      const mockReservation = {
+        id: 1,
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+        tickets: []
+      };
+
+      service.setReservation(mockReservation as any);
+
+      expect(service.reservation()).toBeTruthy();
+      expect(service.reservation()?.id).toBe(1);
+      expect(service.timeRemaining()).toBeGreaterThan(0);
+    });
+
+    it('should update time remaining', () => {
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+      const mockReservation = { id: 1, expiresAt, tickets: [] };
+      service.setReservation(mockReservation as any);
+
+      const initialTime = service.timeRemaining();
+
+      vi.advanceTimersByTime(1000);
+
+      expect(service.timeRemaining()).toBeLessThan(initialTime);
+    });
+
+    it('should clear cart when reservation expires', () => {
+      service.addToCart(1, 'VIP Ticket', 2, 100);
+      const expiresAt = new Date(Date.now() + 5000).toISOString();
+      const mockReservation = { id: 1, expiresAt, tickets: [] };
+      service.setReservation(mockReservation as any);
+
+      vi.advanceTimersByTime(6000);
+
+      expect(service.cart().length).toBe(0);
+      expect(service.timeRemaining()).toBe(0);
+    });
+  });
+
+  describe('confirmOrder', () => {
+    it('should confirm order successfully', () => {
+      service.addToCart(1, 'VIP Ticket', 2, 100);
+      service.confirmOrder('stripe');
+
+      expect(service.isLoading()).toBe(false);
+    });
+  });
+});

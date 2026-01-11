@@ -1,0 +1,47 @@
+<div
+  class="group flex flex-col bg-white rounded-card overflow-hidden shadow-card hover:shadow-card-hover border border-gray-100 transition-all duration-300 hover:-translate-y-1">
+  <div class="relative h-48 overflow-hidden">
+    <div
+      class="absolute top-3 right-3 z-10 bg-white/90 backdrop-blur rounded-md px-2 py-1 text-xs font-bold text-primary-600 shadow-sm">
+      Desde {{ getMinPrice() | currencyFormat }}
+    </div>
+    @if (event.ticketTypes && event.ticketTypes.length > 0) {
+      <div class="absolute top-3 left-3 z-10 bg-white/90 backdrop-blur rounded-md px-2 py-1 text-xs font-bold shadow-sm">
+        @if (getTotalAvailableTickets() > 50) {
+          <span class="text-green-600">● Disponible</span>
+        } @else if (getTotalAvailableTickets() > 0) {
+          <span class="text-orange-600">● Pocas entradas</span>
+        } @else {
+          <span class="text-red-600">● Agotado</span>
+        }
+      </div>
+    }
+    <div
+      class="absolute top-14 left-3 z-10 bg-white/90 backdrop-blur rounded-md size-10 flex flex-col items-center justify-center shadow-sm">
+      <span class="text-[10px] font-bold text-red-500 uppercase">{{ event.date | dateFormat:'short' }}</span>
+      <span class="text-lg font-bold text-gray-900 leading-none">{{ event.date | date:'dd' }}</span>
+    </div>
+    <div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-500"
+      [style.backgroundImage]="getBackgroundImageUrl()">
+    </div>
+  </div>
+  <div class="p-5 flex flex-col flex-1">
+    <h3 class="text-lg font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-primary-600 transition-colors">
+      {{ event.name }}</h3>
+    <p class="text-sm text-gray-500 mb-4 flex items-center gap-1">
+      <span class="material-symbols-outlined text-[16px]">schedule</span>
+      {{ event.date | date:'shortTime' }}
+    </p>
+    <div class="flex items-center gap-2 text-sm text-gray-600 mb-6">
+      <span class="material-symbols-outlined text-[18px] text-gray-400">location_on</span>
+      <span class="truncate">{{ event.location }}</span>
+    </div>
+    <div class="mt-auto">
+      <a [routerLink]="['/event', event.id]"
+        class="btn-primary w-full h-10 flex items-center justify-center gap-2">
+        Ver detalles
+        <span class="material-symbols-outlined text-[16px]" aria-hidden="true">arrow_forward</span>
+      </a>
+    </div>
+  </div>
+</div>

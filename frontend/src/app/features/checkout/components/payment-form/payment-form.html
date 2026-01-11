@@ -1,0 +1,90 @@
+<form class="space-y-4">
+  <h3 class="text-lg font-bold text-gray-900">Payment Information</h3>
+
+  <div>
+    <label for="cardholderName" class="block text-sm font-medium text-gray-700 mb-2">Cardholder Name</label>
+    <input
+      id="cardholderName"
+      type="text"
+      [(ngModel)]="formData.cardholderName"
+      name="cardholderName"
+      placeholder="John Doe"
+      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent outline-none text-sm"
+    />
+    @if (errors['cardholderName']) {
+      <p class="text-xs text-red-600 mt-1">{{ errors['cardholderName'] }}</p>
+    }
+  </div>
+
+  <div>
+    <label for="cardNumber" class="block text-sm font-medium text-gray-700 mb-2">Card Number</label>
+    <input
+      id="cardNumber"
+      type="text"
+      [(ngModel)]="formData.cardNumber"
+      (ngModelChange)="formatCardNumber($event)"
+      name="cardNumber"
+      placeholder="1234 5678 9012 3456"
+      maxlength="19"
+      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent outline-none text-sm"
+    />
+    @if (errors['cardNumber']) {
+      <p class="text-xs text-red-600 mt-1">{{ errors['cardNumber'] }}</p>
+    }
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div>
+      <label for="expiryMonth" class="block text-sm font-medium text-gray-700 mb-2">Month</label>
+      <select
+        id="expiryMonth"
+        [(ngModel)]="formData.expiryMonth"
+        name="expiryMonth"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent outline-none text-sm"
+      >
+        <option value="">Select</option>
+        @for (m of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; track m) {
+          <option [value]="m.toString().padStart(2, '0')">{{ m.toString().padStart(2, '0') }}</option>
+        }
+      </select>
+      @if (errors['expiryMonth']) {
+        <p class="text-xs text-red-600 mt-1">{{ errors['expiryMonth'] }}</p>
+      }
+    </div>
+
+    <div>
+      <label for="expiryYear" class="block text-sm font-medium text-gray-700 mb-2">Year</label>
+      <select
+        id="expiryYear"
+        [(ngModel)]="formData.expiryYear"
+        name="expiryYear"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent outline-none text-sm"
+      >
+        <option value="">Select</option>
+        @for (y of [2026, 2027, 2028, 2029, 2030, 2031]; track y) {
+          <option [value]="y.toString()">{{ y }}</option>
+        }
+      </select>
+      @if (errors['expiryYear']) {
+        <p class="text-xs text-red-600 mt-1">{{ errors['expiryYear'] }}</p>
+      }
+    </div>
+
+    <div>
+      <label for="cvv" class="block text-sm font-medium text-gray-700 mb-2">CVV</label>
+      <input
+        id="cvv"
+        type="text"
+        [(ngModel)]="formData.cvv"
+        (ngModelChange)="formatCVV($event)"
+        name="cvv"
+        placeholder="123"
+        maxlength="4"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent outline-none text-sm"
+      />
+      @if (errors['cvv']) {
+        <p class="text-xs text-red-600 mt-1">{{ errors['cvv'] }}</p>
+      }
+    </div>
+  </div>
+</form>

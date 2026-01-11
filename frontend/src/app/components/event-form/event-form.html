@@ -1,0 +1,187 @@
+<div class="max-w-2xl mx-auto px-4 py-8">
+  @if (isLoading) {
+    <div class="flex justify-center py-20">
+      <app-loading-spinner size="lg" [message]="isEditing ? 'Updating event...' : 'Creating event...'"></app-loading-spinner>
+    </div>
+  } @else {
+    <div class="bg-white dark:bg-[#1e1e2d] rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
+      <h1 class="text-3xl font-bold mb-8 text-gray-900 dark:text-white">
+        {{ isEditing ? 'Edit Event' : 'Create New Event' }}
+      </h1>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6">
+        <!-- Event Name -->
+        <div>
+          <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Event Name *
+          </label>
+          <input
+            type="text"
+            id="name"
+            formControlName="name"
+            placeholder="Enter event name"
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-[#2a2a35] dark:text-white"
+          />
+          @if (form.get('name')?.invalid && form.get('name')?.touched) {
+            <p class="text-red-500 text-sm mt-1">Event name is required (min 3 characters)</p>
+          }
+        </div>
+
+        <!-- Event Date -->
+        <div>
+          <label for="date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Event Date & Time *
+          </label>
+          <input
+            type="datetime-local"
+            id="date"
+            formControlName="date"
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-[#2a2a35] dark:text-white"
+          />
+          @if (form.get('date')?.invalid && form.get('date')?.touched) {
+            <p class="text-red-500 text-sm mt-1">Event date is required</p>
+          }
+        </div>
+
+        <!-- Event Location -->
+        <div>
+          <label for="location" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Event Location *
+          </label>
+          <input
+            type="text"
+            id="location"
+            formControlName="location"
+            placeholder="Enter event location"
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-[#2a2a35] dark:text-white"
+          />
+          @if (form.get('location')?.invalid && form.get('location')?.touched) {
+            <p class="text-red-500 text-sm mt-1">Event location is required (min 3 characters)</p>
+          }
+        </div>
+
+        <!-- Event Image -->
+        <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+            Event Image (Optional)
+          </label>
+          
+          @if (previewUrl) {
+            <div class="mb-4 relative">
+              <img 
+                [src]="previewUrl" 
+                alt="Preview" 
+                class="w-full h-48 object-cover rounded-lg"
+              />
+              <button
+                type="button"
+                (click)="removeImage()"
+                class="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600"
+              >
+                Remove
+              </button>
+            </div>
+          }
+
+          <input
+            type="file"
+            #fileInput
+            (change)="onFileSelected($event)"
+            accept="image/jpeg,image/png,image/gif"
+            class="hidden"
+          />
+          
+          <button
+            type="button"
+            (click)="fileInput.click()"
+            class="w-full py-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center hover:border-blue-500 dark:hover:border-blue-500 transition-colors"
+          >
+            <span class="material-symbols-outlined text-4xl text-gray-400 mx-auto block mb-2">
+              cloud_upload
+            </span>
+            <p class="text-gray-600 dark:text-gray-400">
+              {{ selectedFile ? 'Change image' : 'Click to upload an image or drag and drop' }}
+            </p>
+            <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
+              JPEG, PNG or GIF (max 5MB)
+            </p>
+          </button>
+        </div>
+
+        <!-- Ticket Configurations -->
+        <div class="bg-gray-50 dark:bg-[#2a2a35] p-6 rounded-lg">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Ticket Configurations</h2>
+          
+          @for (ticket of form.get('ticketConfigurations')?.value; track ticket.type) {
+            <div class="bg-white dark:bg-[#1e1e2d] p-4 rounded-lg mb-4 border border-gray-200 dark:border-gray-600">
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Ticket Type
+                  </label>
+                  <select
+                    [value]="ticket.type"
+                    (change)="ticket.type = $any($event.target).value"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-[#2a2a35] dark:text-white"
+                  >
+                    <option value="VIP">VIP</option>
+                    <option value="GENERAL">General</option>
+                    <option value="EARLY_BIRD">Early Bird</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Price
+                  </label>
+                  <input
+                    type="number"
+                    [(ngModel)]="ticket.price"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-[#2a2a35] dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Currency
+                  </label>
+                  <input
+                    type="text"
+                    [(ngModel)]="ticket.currency"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-[#2a2a35] dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Quantity
+                  </label>
+                  <input
+                    type="number"
+                    [(ngModel)]="ticket.quantity"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-[#2a2a35] dark:text-white"
+                  />
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Submit Button -->
+        <div class="flex gap-4">
+          <button
+            type="submit"
+            [disabled]="!form.valid || isLoading"
+            class="flex-1 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+          >
+            {{ isEditing ? 'Update Event' : 'Create Event' }}
+          </button>
+          <button
+            type="button"
+            (click)="router.navigate(['/'])"
+            class="flex-1 bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+</div>
