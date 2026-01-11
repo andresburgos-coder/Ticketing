@@ -14,6 +14,9 @@ async function bootstrap(): Promise<void> {
 
   app.useGlobalFilters(new DomainExceptionFilter());
 
+  // Set global prefix for all routes
+  app.setGlobalPrefix('api');
+
   // Cookie Parser: Parse cookies from requests
   // MUST be added before CORS and guards to ensure cookies are available
   app.use(cookieParser());

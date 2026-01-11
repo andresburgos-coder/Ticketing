@@ -34,8 +34,17 @@ export class EventDetail implements OnInit, OnDestroy {
   selectedQuantities: { [key: string]: number } = {};
 
   getMapUrl(): string {
-    const loc = this.event()?.location || '';
-    return `https://www.google.com/maps?q=${encodeURIComponent(loc)}&output=embed`;
+    const event = this.event();
+    if (!event?.location) {
+      return '';
+    }
+    
+    // Use Google Maps Embed API with a more specific query
+    const location = event.location;
+    const venueName = event.venueName || '';
+    const query = venueName ? `${venueName}, ${location}` : location;
+    
+    return `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dw901SwHHqfeaM&q=${encodeURIComponent(query)}`;
   }
 
   ngOnInit(): void {
@@ -245,6 +254,6 @@ export class EventDetail implements OnInit, OnDestroy {
       filename = filename.split('/').pop() || filename;
     }
 
-    return `${environment.baseUrl}/events/file/${filename}`;
+    return `${environment.apiUrl}/events/file/${filename}`;
   }
 }

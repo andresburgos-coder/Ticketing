@@ -152,7 +152,7 @@ export class ProcessPaymentUseCase {
     await this.ticketRepository.saveMany(tickets);
 
     // Update reservation status in repository
-    await this.reservationRepository.update(reservation);
+    await this.reservationRepository.update(reservation.id, { status: 'CONFIRMED' });
 
     return {
       success: true,
@@ -181,7 +181,7 @@ export class ProcessPaymentUseCase {
     event.releaseTickets(reservation.ticketType, reservation.quantity.value);
 
     // Update reservation status in repository
-    await this.reservationRepository.update(reservation);
+    await this.reservationRepository.update(reservation.id, { status: 'CANCELLED' });
 
     // Update event with released tickets
     await this.eventRepository.update(event);

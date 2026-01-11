@@ -43,7 +43,8 @@ export class EventMapper {
       ormEntity.venueName,
       ticketConfigurations,
       ormEntity.imageUrl,
-      details
+      details,
+      ormEntity.createdBy
     );
   }
 
@@ -60,13 +61,15 @@ export class EventMapper {
     ormEntity.location = domainEvent.location;
     ormEntity.venueName = domainEvent.venueName;
     ormEntity.imageUrl = domainEvent.imageUrl;
+    ormEntity.createdBy = domainEvent.createdBy;
     ormEntity.ticketConfigurations = domainEvent.ticketConfigurations.map((config) =>
       this.ticketConfigToPersistence(config)
     );
     // Map event details if present
-    if (domainEvent.details) {
+    if (domainEvent.details && domainEvent.details.length > 0) {
       ormEntity.details = domainEvent.details.map((d: any) => {
         const detail = new EventDetailsOrmEntity();
+        detail.eventId = domainEvent.id; // Set the eventId
         detail.category = d.category;
         detail.minAge = d.minAge;
         detail.seating = d.seating;

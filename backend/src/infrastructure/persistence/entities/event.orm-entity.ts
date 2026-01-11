@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { TicketConfigurationOrmEntity } from './ticket-configuration.orm-entity';
+import { EventDetailsOrmEntity } from './event-details.orm-entity';
 
 /**
  * Event ORM Entity
@@ -17,11 +18,11 @@ import { TicketConfigurationOrmEntity } from './ticket-configuration.orm-entity'
  */
 @Entity('events')
 export class EventOrmEntity {
-  @PrimaryColumn('uuid')
+  @PrimaryColumn('varchar', { length: 12 })
   id!: string;
 
-  @OneToMany('EventDetailsOrmEntity', 'event', { cascade: true, eager: true })
-  details!: any[];
+  @OneToMany(() => EventDetailsOrmEntity, (detail) => detail.event, { cascade: true, eager: true })
+  details!: EventDetailsOrmEntity[];
 
   @Column({ length: 255 })
   name!: string;
@@ -38,6 +39,9 @@ export class EventOrmEntity {
 
   @Column({ type: 'text', nullable: true })
   imageUrl?: string;
+
+  @Column({ type: 'uuid', nullable: true, name: 'created_by' })
+  createdBy?: string;
 
   @OneToMany(
     () => TicketConfigurationOrmEntity,

@@ -1,19 +1,26 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { EventOrmEntity } from './event.orm-entity';
+import { EventCategory } from '../../../domain/enums/event-category.enum';
 
 @Entity('event_details')
 export class EventDetailsOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ManyToOne('EventOrmEntity', 'details', { onDelete: 'CASCADE' })
+  @ManyToOne(() => EventOrmEntity, (event) => event.details, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'eventid' })
-  event!: any;
+  event!: EventOrmEntity;
 
   @Column('uuid', { name: 'eventid' })
   eventId!: string;
 
-  @Column({ length: 100, name: 'category' })
-  category!: string;
+  @Column({ 
+    type: 'enum', 
+    enum: EventCategory, 
+    name: 'category',
+    default: EventCategory.CUALQUIER_CATEGORIA 
+  })
+  category!: EventCategory;
 
   @Column({ type: 'int', nullable: true, name: 'minage' })
   minAge?: number;

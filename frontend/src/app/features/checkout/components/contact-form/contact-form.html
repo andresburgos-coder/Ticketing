@@ -11,6 +11,7 @@
         [(ngModel)]="formData.firstName"
         name="firstName"
         placeholder="John"
+        autocomplete="given-name"
         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent outline-none text-sm"
       />
       @if (errors['firstName']) {
@@ -27,6 +28,7 @@
         [(ngModel)]="formData.lastName"
         name="lastName"
         placeholder="Doe"
+        autocomplete="family-name"
         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent outline-none text-sm"
       />
       @if (errors['lastName']) {
@@ -44,6 +46,7 @@
       [(ngModel)]="formData.email"
       name="email"
       placeholder="john@example.com"
+      autocomplete="email"
       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent outline-none text-sm"
     />
     @if (errors['email']) {
@@ -60,6 +63,7 @@
       [(ngModel)]="formData.phone"
       name="phone"
       placeholder="+1 (555) 000-0000"
+      autocomplete="tel"
       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent outline-none text-sm"
     />
     @if (errors['phone']) {

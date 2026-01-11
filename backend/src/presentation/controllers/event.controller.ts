@@ -15,10 +15,12 @@ import {
   UploadedFile,
   Res,
   StreamableFile,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiConsumes } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiConsumes, ApiBearerAuth } from '@nestjs/swagger';
 import { CreateEventUseCase } from '../../application/use-cases/create-event.use-case';
 import { GetAllEventsUseCase } from '../../application/use-cases/get-all-events.use-case';
 import { UpdateEventUseCase } from '../../application/use-cases/update-event.use-case';
@@ -29,6 +31,7 @@ import { Event } from '../../domain/entities/event.entity';
 import { IEventRepository } from '../../domain/interfaces/event-repository.interface';
 import { EVENT_REPOSITORY } from '../../domain/interfaces/repository-tokens';
 import { MinioService } from '../../infrastructure/external/minio.service';
+import { JwtAuthGuard } from '../../application/services/jwt-auth.guard';
 
 /**
  * EventController
@@ -62,12 +65,14 @@ export class EventController {
    * Requirement 1.2: Store ticket configuration with price and quantity
    */
   @Post()
+  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(FileInterceptor('image'))
   @ApiConsumes('multipart/form-data')
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Create a new event',
-    description: 'Creates a new event with ticket configurations and an optional image'
+    description: 'Creates a new event with ticket configurations and an optional image. Requires authentication.'
   })
   @ApiBody({
     schema: {
@@ -139,6 +144,7 @@ export class EventController {
   async create(
     @Body() body: any,
     @UploadedFile() file?: Express.Multer.File,
+    @Request() req?: any,
   ): Promise<EventResponse> {
     try {
       // Parse and validate data (handles both JSON and form-data)
@@ -204,6 +210,25 @@ export class EventController {
         imageUrl = await this.minioService.uploadFile(file);
       }
 
+      // Parse event details if provided, otherwise create default details
+      let eventDetails;
+      try {
+        eventDetails = body.eventDetails 
+          ? (typeof body.eventDetails === 'string' ? JSON.parse(body.eventDetails) : body.eventDetails)
+          : [{
+              category: 'General',
+              minAge: null,
+              seating: 'General Admission',
+              capacity: ticketConfigurations.reduce((total: number, config: any) => total + config.quantity, 0),
+              foodSale: false,
+              liquorSale: false,
+              reducedMobilityAccess: false,
+              pregnantAccess: false
+            }];
+      } catch (error) {
+        throw new BadRequestException('Invalid eventDetails JSON format');
+      }
+
       // Execute use case
       const event = await this.createEventUseCase.execute({
         name,
@@ -212,6 +237,8 @@ export class EventController {
         venueName,
         imageUrl,
         ticketConfigurations,
+        eventDetails,
+        createdBy: req?.user?.id, // Extract user ID from JWT token
       });
       
       return this.formatEventResponse(event);
@@ -571,6 +598,7 @@ export class EventController {
       location: event.location,
       venueName: event.venueName,
       imageUrl: event.imageUrl || null,
+      createdBy: event.createdBy || null,
       ticketConfigurations: event.ticketConfigurations.map(config => ({
         type: config.type,
         price: config.price.amount,
@@ -594,6 +622,7 @@ interface EventResponse {
   location: string;
   venueName: string;
   imageUrl: string | null;
+  createdBy: string | null;
   ticketConfigurations: Array<{
     type: string;
     price: number;

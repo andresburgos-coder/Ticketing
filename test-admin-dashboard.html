@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        .log { max-height: 300px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>Admin Dashboard Test</h1>
+    
+    <div class="test-section info">
+        <h3>Test Steps</h3>
+        <ol>
+            <li>Get CSRF Token</li>
+            <li>Login as Admin (admin@ticketapp.com / Admin123!)</li>
+            <li>Test Admin Dashboard API endpoints</li>
+            <li>Test Navigation</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h3>Controls</h3>
+        <button onclick="runFullTest()">Run Full Test</button>
+        <button onclick="testLogin()">Test Login Only</button>
+        <button onclick="testDashboard()">Test Dashboard APIs</button>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+
+    <div class="test-section">
+        <h3>Test Results</h3>
+        <div id="results" class="log">
+            <p>Click "Run Full Test" to start testing...</p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+        let accessToken = null;
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'blue';
+            results.innerHTML += `<div style="color: ${color};">[${timestamp}] ${message}</div>`;
+            results.scrollTop = results.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function clearLog() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function getCsrfToken() {
+            try {
+                log('Getting CSRF token...');
+                const response = await fetch(`${API_BASE}/csrf/token`);
+                const data = await response.json();
+                log(`CSRF token received: ${data.csrfToken.substring(0, 20)}...`, 'success');
+                return data.csrfToken;
+            } catch (error) {
+                log(`Error getting CSRF token: ${error.message}`, 'error');
+                throw error;
+            }
+        }
+
+        async function testLogin() {
+            try {
+                const csrfToken = await getCsrfToken();
+                
+                log('Attempting admin login...');
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        email: 'admin@ticketapp.com',
+                        password: 'Admin123!'
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    throw new Error(`Login failed: ${response.status} - ${errorData}`);
+                }
+
+                const data = await response.json();
+                accessToken = data.accessToken;
+                
+                log(`Login successful! User: ${data.user.email}, Role: ${data.user.role}`, 'success');
+                log(`Access token: ${accessToken.substring(0, 30)}...`, 'success');
+                
+                // Store token in sessionStorage for testing
+                sessionStorage.setItem('accessToken', accessToken);
+                
+                return data;
+            } catch (error) {
+                log(`Login error: ${error.message}`, 'error');
+                throw error;
+            }
+        }
+
+        async function testDashboard() {
+            if (!accessToken) {
+                log('No access token available. Please login first.', 'error');
+                return;
+            }
+
+            const endpoints = [
+                '/api/admin/dashboard/stats',
+                '/api/admin/users?page=1&limit=10',
+                '/api/admin/events/stats',
+                '/api/admin/tickets/stats'
+            ];
+
+            for (const endpoint of endpoints) {
+                try {
+                    log(`Testing ${endpoint}...`);
+                    const response = await fetch(`${API_BASE}${endpoint}`, {
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include'
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`${response.status} - ${errorText}`);
+                    }
+
+                    const data = await response.json();
+                    log(`✅ ${endpoint} - Success`, 'success');
+                    log(`Response: ${JSON.stringify(data, null, 2).substring(0, 200)}...`);
+                } catch (error) {
+                    log(`❌ ${endpoint} - Error: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        async function testNavigation() {
+            log('Testing frontend navigation...');
+            
+            // Check if we can access the admin routes
+            const adminUrl = 'http://localhost:4200/admin';
+            log(`Admin panel should be accessible at: ${adminUrl}`);
+            
+            // Test if sessionStorage has the token
+            const storedToken = sessionStorage.getItem('accessToken');
+            if (storedToken) {
+                log(`✅ Token stored in sessionStorage: ${storedToken.substring(0, 30)}...`, 'success');
+            } else {
+                log('❌ No token in sessionStorage', 'error');
+            }
+        }
+
+        async function runFullTest() {
+            clearLog();
+            log('Starting full admin dashboard test...', 'info');
+            
+            try {
+                // Step 1: Login
+                await testLogin();
+                
+                // Step 2: Test API endpoints
+                await testDashboard();
+                
+                // Step 3: Test navigation
+                await testNavigation();
+                
+                log('✅ All tests completed successfully!', 'success');
+                log('You can now navigate to http://localhost:4200/admin to test the dashboard UI', 'info');
+                
+            } catch (error) {
+                log(`❌ Test failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run test on page load
+        window.addEventListener('load', () => {
+            log('Test page loaded. Ready to test admin dashboard functionality.', 'info');
+        });
+    </script>
+</body>
+</html>

@@ -60,6 +60,145 @@
           }
         </div>
 
+        <!-- Venue Name -->
+        <div>
+          <label for="venueName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Venue Name *
+          </label>
+          <input
+            type="text"
+            id="venueName"
+            formControlName="venueName"
+            placeholder="Enter venue name"
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-[#2a2a35] dark:text-white"
+          />
+          @if (form.get('venueName')?.invalid && form.get('venueName')?.touched) {
+            <p class="text-red-500 text-sm mt-1">Venue name is required (min 3 characters)</p>
+          }
+        </div>
+
+        <!-- Event Category -->
+        <div>
+          <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Event Category *
+          </label>
+          <select
+            id="category"
+            formControlName="category"
+            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-[#2a2a35] dark:text-white"
+          >
+            @for (category of categories; track category) {
+              <option [value]="category">{{ category }}</option>
+            }
+          </select>
+          @if (form.get('category')?.invalid && form.get('category')?.touched) {
+            <p class="text-red-500 text-sm mt-1">Event category is required</p>
+          }
+        </div>
+
+        <!-- Event Details Section -->
+        <div class="bg-gray-50 dark:bg-[#2a2a35] p-6 rounded-lg">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Event Details</h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Minimum Age -->
+            <div>
+              <label for="minAge" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Minimum Age
+              </label>
+              <input
+                type="number"
+                id="minAge"
+                formControlName="minAge"
+                placeholder="Enter minimum age (optional)"
+                min="0"
+                max="100"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-[#2a2a35] dark:text-white"
+              />
+            </div>
+
+            <!-- Seating Type -->
+            <div>
+              <label for="seating" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Seating Type
+              </label>
+              <input
+                type="text"
+                id="seating"
+                formControlName="seating"
+                placeholder="e.g., General Admission, Reserved Seating"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-[#2a2a35] dark:text-white"
+              />
+            </div>
+
+            <!-- Capacity -->
+            <div>
+              <label for="capacity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Venue Capacity
+              </label>
+              <input
+                type="number"
+                id="capacity"
+                formControlName="capacity"
+                placeholder="Enter venue capacity"
+                min="1"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-[#2a2a35] dark:text-white"
+              />
+            </div>
+          </div>
+
+          <!-- Checkboxes -->
+          <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex items-center">
+              <input
+                type="checkbox"
+                id="foodSale"
+                formControlName="foodSale"
+                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label for="foodSale" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                Food Sale Available
+              </label>
+            </div>
+
+            <div class="flex items-center">
+              <input
+                type="checkbox"
+                id="liquorSale"
+                formControlName="liquorSale"
+                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label for="liquorSale" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                Liquor Sale Available
+              </label>
+            </div>
+
+            <div class="flex items-center">
+              <input
+                type="checkbox"
+                id="reducedMobilityAccess"
+                formControlName="reducedMobilityAccess"
+                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label for="reducedMobilityAccess" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                Reduced Mobility Access
+              </label>
+            </div>
+
+            <div class="flex items-center">
+              <input
+                type="checkbox"
+                id="pregnantAccess"
+                formControlName="pregnantAccess"
+                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label for="pregnantAccess" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                Pregnant Access
+              </label>
+            </div>
+          </div>
+        </div>
+
         <!-- Event Image -->
         <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6">
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">

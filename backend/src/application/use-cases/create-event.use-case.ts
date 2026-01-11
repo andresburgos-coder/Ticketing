@@ -5,7 +5,7 @@ import { TicketType } from '../../domain/value-objects/ticket-type.vo';
 import { Money } from '../../domain/value-objects/money.vo';
 import { IEventRepository } from '../../domain/interfaces/event-repository.interface';
 import { EVENT_REPOSITORY } from '../../domain/interfaces/repository-tokens';
-import { v4 as uuidv4 } from 'uuid';
+import { EventIdGeneratorService } from '../services/event-id-generator.service';
 
 /**
  * CreateEventUseCase
@@ -30,6 +30,7 @@ export interface CreateEventInput {
     quantity: number;
   }>;
   eventDetails?: any[];
+  createdBy?: string;
 }
 
 @Injectable()
@@ -37,6 +38,7 @@ export class CreateEventUseCase {
   constructor(
     @Inject(EVENT_REPOSITORY)
     private readonly eventRepository: IEventRepository,
+    private readonly eventIdGenerator: EventIdGeneratorService,
   ) {}
 
   /**
@@ -50,6 +52,9 @@ export class CreateEventUseCase {
     // Validate input
     this.validateInput(input);
 
+    // Generate sequential event ID
+    const eventId = await this.eventIdGenerator.generateNextId();
+
     // Create ticket configurations
     const ticketConfigurations = input.ticketConfigurations.map(
       config => new TicketConfiguration(
@@ -62,14 +67,15 @@ export class CreateEventUseCase {
 
     // Create event entity
     const event = new Event(
-      uuidv4(),
+      eventId,
       input.name,
       input.date,
       input.location,
       input.venueName,
       ticketConfigurations,
       input.imageUrl,
-      input.eventDetails || []
+      input.eventDetails || [],
+      input.createdBy
     );
 
     // Persist event

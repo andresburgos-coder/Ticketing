@@ -44,7 +44,7 @@ export class TypeOrmEventRepository implements IEventRepository {
   async findById(id: string): Promise<Event | null> {
     const ormEntity = await this.repository.findOne({
       where: { id },
-      relations: ['ticketConfigurations'],
+      relations: ['ticketConfigurations', 'details'],
     });
 
     if (!ormEntity) {
@@ -60,7 +60,7 @@ export class TypeOrmEventRepository implements IEventRepository {
    */
   async findAll(): Promise<Event[]> {
     const ormEntities = await this.repository.find({
-      relations: ['ticketConfigurations'],
+      relations: ['ticketConfigurations', 'details'],
     });
 
     return ormEntities.map((ormEntity) => EventMapper.toDomain(ormEntity));
@@ -89,5 +89,76 @@ export class TypeOrmEventRepository implements IEventRepository {
     if (result.affected === 0) {
       throw new Error('Event not found');
     }
+  }
+
+  // Admin methods for statistics and management
+  async count(): Promise<number> {
+    return this.repository.count();
+  }
+
+  async findRecent(limit: number): Promise<Event[]> {
+    const ormEntities = await this.repository.find({
+      relations: ['ticketConfigurations', 'details'],
+      order: { createdAt: 'DESC' },
+      take: limit,
+    });
+
+    return ormEntities.map((ormEntity) => EventMapper.toDomain(ormEntity));
+  }
+
+  async findUpcoming(limit: number): Promise<Event[]> {
+    const ormEntities = await this.repository
+      .createQueryBuilder('event')
+      .leftJoinAndSelect('event.ticketConfigurations', 'ticketConfigurations')
+      .leftJoinAndSelect('event.details', 'details')
+      .where('event.date >= :now', { now: new Date() })
+      .orderBy('event.date', 'ASC')
+      .take(limit)
+      .getMany();
+
+    return ormEntities.map((ormEntity) => EventMapper.toDomain(ormEntity));
+  }
+
+  async findPast(limit: number): Promise<Event[]> {
+    const ormEntities = await this.repository
+      .createQueryBuilder('event')
+      .leftJoinAndSelect('event.ticketConfigurations', 'ticketConfigurations')
+      .leftJoinAndSelect('event.details', 'details')
+      .where('event.date < :now', { now: new Date() })
+      .orderBy('event.date', 'DESC')
+      .take(limit)
+      .getMany();
+
+    return ormEntities.map((ormEntity) => EventMapper.toDomain(ormEntity));
+  }
+
+  async getEventsByCategory(): Promise<Array<{ category: string; count: number }>> {
+    const result = await this.repository
+      .createQueryBuilder('event')
+      .leftJoin('event.details', 'details')
+      .select('details.category', 'category')
+      .addSelect('COUNT(*)', 'count')
+      .groupBy('details.category')
+      .getRawMany();
+
+    return result.map(row => ({
+      category: row.category || 'Sin categoría',
+      count: parseInt(row.count, 10),
+    }));
+  }
+
+  async getEventsByMonth(): Promise<Array<{ month: string; count: number }>> {
+    const result = await this.repository
+      .createQueryBuilder('event')
+      .select("TO_CHAR(event.date, 'YYYY-MM')", 'month')
+      .addSelect('COUNT(*)', 'count')
+      .groupBy("TO_CHAR(event.date, 'YYYY-MM')")
+      .orderBy('month', 'DESC')
+      .getRawMany();
+
+    return result.map(row => ({
+      month: row.month,
+      count: parseInt(row.count, 10),
+    }));
   }
 }

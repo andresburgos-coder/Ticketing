@@ -107,6 +107,23 @@ services:
       timeout: 20s
       retries: 3
 
+  # pgAdmin para administración de la base de datos
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: ticket-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@ticketapp.com
+      PGADMIN_DEFAULT_PASSWORD: Admin123!
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - ticket-network
+    depends_on:
+      - postgres
+
   # Servicio alternativo: Servidor de archivos simple con Node.js
   file-server:
     build:
@@ -140,3 +157,4 @@ volumes:
   postgres_data:
   minio_data:
   file_uploads:
+  pgadmin_data:

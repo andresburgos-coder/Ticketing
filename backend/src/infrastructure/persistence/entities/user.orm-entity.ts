@@ -1,4 +1,5 @@
 import { Entity, PrimaryColumn, Column, CreateDateColumn } from 'typeorm';
+import { UserRole } from '../../../domain/enums/user-role.enum';
 
 /**
  * User ORM Entity
@@ -24,8 +25,12 @@ export class UserOrmEntity {
   @Column({ length: 255 })
   lastName!: string;
 
-  @Column({ length: 20, default: 'BUYER' })
-  role!: string;
+  @Column({ 
+    type: 'enum', 
+    enum: UserRole, 
+    default: UserRole.BUYER 
+  })
+  role!: UserRole;
 
   @CreateDateColumn()
   createdAt!: Date;

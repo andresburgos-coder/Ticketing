@@ -58,4 +58,37 @@ export interface ITicketRepository {
    * @returns Promise resolving to the Ticket or null if not found
    */
   findById(id: string): Promise<Ticket | null>;
+
+  // Admin methods for statistics and management
+  findWithFilters(filters: {
+    eventId?: string;
+    status?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<Ticket[]>;
+
+  countWithFilters(filters: {
+    eventId?: string;
+    status?: string;
+  }): Promise<number>;
+
+  countSold(): Promise<number>;
+  countByEvent(eventId: string): Promise<number>;
+  countSoldByEvent(eventId: string): Promise<number>;
+  countUsedByEvent(eventId: string): Promise<number>;
+  countTotalByEvent(eventId: string): Promise<number>;
+
+  getTotalRevenue(): Promise<number>;
+  getRevenueByEvent(eventId: string): Promise<number>;
+
+  getTicketsByStatus(): Promise<Array<{ status: string; count: number }>>;
+  getTicketsByType(): Promise<Array<{ type: string; count: number }>>;
+  getTicketsByTypeForEvent(eventId: string): Promise<Array<{ type: string; count: number }>>;
+
+  getSalesByMonth(): Promise<Array<{ month: string; count: number; revenue: number }>>;
+  getSalesByDateForEvent(eventId: string): Promise<Array<{ date: string; count: number }>>;
+  getSalesTrendForEvent(eventId: string): Promise<Array<{ date: string; count: number }>>;
+
+  getTopSellingEvents(limit: number): Promise<Array<{ eventId: string; eventName: string; ticketsSold: number; revenue: number }>>;
 }
+export const TICKET_REPOSITORY = Symbol('TICKET_REPOSITORY');

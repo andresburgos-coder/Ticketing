@@ -8,7 +8,7 @@ import { environment } from '../../environments/environment';
   providedIn: 'root',
 })
 export class Events {
-  private apiUrl = `${environment.baseUrl}/events`;
+  private apiUrl = `${environment.apiUrl}/events`;
 
   constructor(private http: HttpClient) { }
 

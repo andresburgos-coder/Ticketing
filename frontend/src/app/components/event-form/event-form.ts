@@ -7,6 +7,28 @@ import { EventService } from '../../services/event.service';
 import { LoadingSpinner } from '../../shared/components/loading-spinner/loading-spinner';
 import { environment } from '../../../environments/environment';
 
+// Event categories enum
+export enum EventCategory {
+  CUALQUIER_CATEGORIA = 'Cualquier categoría',
+  ACCION_EXTREMO = 'Acción Extremo',
+  CIRCO = 'Circo',
+  COMEDIA = 'Comedia',
+  COMFAMA = 'Comfama',
+  CONCIERTO = 'Concierto',
+  CULTURAL = 'Cultural',
+  DEPORTES = 'Deportes',
+  FERIA = 'Feria',
+  FESTIVAL = 'Festival',
+  INMERSIONES_CENTROS_EXPERIENCIAS = 'Inmersiones a los centros de experiencias',
+  INSCRIPCION_COSMO_SCHOOLS = 'Inscripción a proceso de admisión en Cosmo Schools',
+  MUSICAL = 'Musical',
+  PODCAST = 'Podcast',
+  RECREATIVO = 'Recreativo',
+  STAND_UP_COMEDY = 'Stand-Up Comedy',
+  TEATRO = 'Teatro',
+  TURISMO = 'Turismo'
+}
+
 @Component({
   selector: 'app-event-form',
   standalone: true,
@@ -27,6 +49,9 @@ export class EventForm implements OnInit {
   selectedFile: File | null = null;
   previewUrl: string | ArrayBuffer | null = null;
   eventId: string | null = null;
+  
+  // Available categories
+  categories = Object.values(EventCategory);
 
   ngOnInit(): void {
     this.initializeForm();
@@ -38,6 +63,15 @@ export class EventForm implements OnInit {
       name: ['', [Validators.required, Validators.minLength(3)]],
       date: ['', Validators.required],
       location: ['', [Validators.required, Validators.minLength(3)]],
+      venueName: ['', [Validators.required, Validators.minLength(3)]],
+      category: [EventCategory.CUALQUIER_CATEGORIA, Validators.required],
+      minAge: [null],
+      seating: [''],
+      capacity: [null, [Validators.min(1)]],
+      foodSale: [false],
+      liquorSale: [false],
+      reducedMobilityAccess: [false],
+      pregnantAccess: [false],
       ticketConfigurations: [
         [
           { type: 'VIP', price: 100, currency: 'USD', quantity: 50 },
@@ -66,6 +100,15 @@ export class EventForm implements OnInit {
           name: event.name,
           date: new Date(event.date).toISOString().slice(0, 16),
           location: event.location,
+          venueName: event.venueName || '',
+          category: event.eventDetails?.category || EventCategory.CUALQUIER_CATEGORIA,
+          minAge: event.eventDetails?.minAge || null,
+          seating: event.eventDetails?.seating || '',
+          capacity: event.eventDetails?.capacity || null,
+          foodSales: event.eventDetails?.foodSales || false,
+          liquorSales: event.eventDetails?.liquorSales || false,
+          wheelchairAccess: event.eventDetails?.wheelchairAccess || false,
+          pregnancyAccess: event.eventDetails?.pregnancyAccess || false,
           ticketConfigurations: event.ticketConfigurations || []
         });
         if (event.imageUrl) {
@@ -79,7 +122,7 @@ export class EventForm implements OnInit {
             if (filename.includes('/')) {
               filename = filename.split('/').pop() || filename;
             }
-            this.previewUrl = `${environment.baseUrl}/events/file/${filename}`;
+            this.previewUrl = `${environment.apiUrl}/events/file/${filename}`;
           }
         }
         this.isLoading = false;
@@ -133,6 +176,21 @@ export class EventForm implements OnInit {
     formData.append('name', this.form.get('name')?.value);
     formData.append('date', new Date(this.form.get('date')?.value).toISOString());
     formData.append('location', this.form.get('location')?.value);
+    formData.append('venueName', this.form.get('venueName')?.value || '');
+    
+    // Add event details
+    const eventDetails = {
+      category: this.form.get('category')?.value,
+      minAge: this.form.get('minAge')?.value,
+      seating: this.form.get('seating')?.value,
+      capacity: this.form.get('capacity')?.value,
+      foodSale: this.form.get('foodSale')?.value,
+      liquorSale: this.form.get('liquorSale')?.value,
+      reducedMobilityAccess: this.form.get('reducedMobilityAccess')?.value,
+      pregnantAccess: this.form.get('pregnantAccess')?.value
+    };
+    formData.append('eventDetails', JSON.stringify(eventDetails));
+    
     formData.append(
       'ticketConfigurations',
       JSON.stringify(this.form.get('ticketConfigurations')?.value)

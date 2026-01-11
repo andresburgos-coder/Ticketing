@@ -9,6 +9,7 @@ import { MyTicketsComponent } from './features/tickets/my-tickets';
 import { ProfileComponent } from './features/profile/profile';
 import { authGuard } from './core/guards/auth.guard';
 import { checkoutGuard } from './core/guards/checkout.guard';
+import { AdminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
     { path: '', component: EventList },
@@ -22,5 +23,10 @@ export const routes: Routes = [
     { path: 'confirmation', component: Confirmation },
     { path: 'my-tickets', component: MyTicketsComponent, canActivate: [authGuard] },
     { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
+    {
+        path: 'admin',
+        canActivate: [AdminGuard],
+        loadChildren: () => import('./features/admin/admin.routes').then(m => m.adminRoutes)
+    },
     { path: '**', redirectTo: '' }
 ];

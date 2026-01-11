@@ -1,5 +1,6 @@
 import { User } from '../entities/user.entity';
 import { Email } from '../value-objects/email.vo';
+import { UserRole } from '../enums/user-role.enum';
 
 /**
  * IUserRepository Interface
@@ -24,7 +25,7 @@ export interface IUserRepository {
    * @param email - The Email value object to search for
    * @returns Promise resolving to the User if found, null otherwise
    */
-  findByEmail(email: Email): Promise<User | null>;
+  findByEmail(email: Email | string): Promise<User | null>;
 
   /**
    * Finds a user by ID
@@ -39,5 +40,44 @@ export interface IUserRepository {
    * @returns Promise resolving to the updated User
    * @throws Error if user not found or update fails
    */
-  update(user: User): Promise<User>;
+  update(id: string, data: Partial<User>): Promise<User>;
+
+  /**
+   * Deletes a user by ID
+   * @param id - The user ID to delete
+   * @returns Promise resolving when deletion is complete
+   */
+  delete(id: string): Promise<void>;
+
+  /**
+   * Finds users with filters and pagination
+   * @param filters - Filter criteria
+   * @returns Promise resolving to array of users
+   */
+  findWithFilters(filters: {
+    email?: string;
+    role?: UserRole;
+    search?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<User[]>;
+
+  /**
+   * Counts users with filters
+   * @param filters - Filter criteria
+   * @returns Promise resolving to count
+   */
+  countWithFilters(filters: {
+    email?: string;
+    role?: UserRole;
+    search?: string;
+  }): Promise<number>;
+
+  /**
+   * Counts total users
+   * @returns Promise resolving to total count
+   */
+  count(): Promise<number>;
 }
+
+export const USER_REPOSITORY = Symbol('USER_REPOSITORY');

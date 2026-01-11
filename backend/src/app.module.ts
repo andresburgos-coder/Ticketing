@@ -8,6 +8,7 @@ import { HealthController } from './presentation/controllers/health.controller';
 import { EventModule } from './modules/event.module';
 import { AuthModule } from './modules/auth.module';
 import { TicketModule } from './modules/ticket.module';
+import { AdminModule } from './modules/admin.module';
 
 @Module({
   imports: [
@@ -15,18 +16,10 @@ import { TicketModule } from './modules/ticket.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    ThrottlerModule.forRoot([
-      {
-        name: 'short',
-        ttl: 60000, // 1 minute
-        limit: 10, // 10 requests per minute (default)
-      },
-      {
-        name: 'auth',
-        ttl: 60000, // 1 minute
-        limit: 5, // 5 requests per minute for auth endpoints
-      },
-    ]),
+    ThrottlerModule.forRoot({
+      ttl: 60000, // 1 minute
+      limit: 10, // 10 requests per minute (default)
+    }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DATABASE_HOST ?? 'localhost',
@@ -42,6 +35,7 @@ import { TicketModule } from './modules/ticket.module';
     EventModule,
     AuthModule,
     TicketModule,
+    AdminModule,
   ],
   controllers: [HealthController],
   providers: [],

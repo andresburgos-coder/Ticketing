@@ -3,6 +3,7 @@ const protocol = typeof window !== 'undefined' ? window.location.protocol : 'htt
 
 export const environment = {
   production: true,
+  apiUrl: `${protocol}//${host}:3000/api`,
   baseUrl: `${protocol}//${host}:3000`,
   fileServerUrl: `${protocol}//${host}:3001`
 };

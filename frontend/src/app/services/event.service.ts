@@ -1,4 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
+import { Observable, Subject } from 'rxjs';
 import { Events } from './events';
 import { Event } from '../models/event.model';
 
@@ -19,6 +20,10 @@ export class EventService {
   private readonly _selectedEvent = signal<Event | null>(null);
   private readonly _isLoading = signal(false);
   private readonly _filters = signal<EventFilters>({});
+
+  // Observable for components that need to wait for events
+  private readonly eventsLoaded$ = new Subject<Event[]>();
+  readonly events$ = this.eventsLoaded$.asObservable();
 
   // Public read-only signals
   readonly events = this._events.asReadonly();
@@ -72,12 +77,16 @@ export class EventService {
     this._isLoading.set(true);
     this.eventsApi.getEvents().subscribe({
       next: (data) => {
+        console.log('[EventService] Events loaded:', data.length);
         this._events.set(data);
         this._isLoading.set(false);
+        // Emit the events for subscribers waiting for the data
+        this.eventsLoaded$.next(data);
       },
       error: (err) => {
         console.error('Error loading events:', err);
         this._isLoading.set(false);
+        this.eventsLoaded$.error(err);
       }
     });
   }
@@ -106,5 +115,19 @@ export class EventService {
 
   clearSelectedEvent(): void {
     this._selectedEvent.set(null);
+  }
+
+  deleteEvent(id: string | number): Observable<void> {
+    // TODO: Implement actual delete API call
+    return new Observable(observer => {
+      // Simulate API call
+      setTimeout(() => {
+        const events = this._events();
+        const updatedEvents = events.filter(event => event.id !== id);
+        this._events.set(updatedEvents);
+        observer.next();
+        observer.complete();
+      }, 500);
+    });
   }
 }

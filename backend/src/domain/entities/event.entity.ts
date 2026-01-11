@@ -17,6 +17,7 @@ export class Event {
     private _ticketConfigurations: TicketConfiguration[],
     public readonly imageUrl?: string,
     public readonly details?: any[], // EventDetails[] (puedes tipar luego)
+    public readonly createdBy?: string,
   ) {}
 
   /**
