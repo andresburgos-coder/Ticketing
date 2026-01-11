@@ -20,6 +20,6 @@ export class DateFormatPipe implements PipeTransform {
       minute: format !== 'short' ? '2-digit' : undefined,
     };
 
-    return new Intl.DateTimeFormat('en-US', options).format(date);
+    return new Intl.DateTimeFormat('es-ES', options).format(date);
   }
 }

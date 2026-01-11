@@ -18,6 +18,7 @@ import { ReservationOrmEntity } from '../infrastructure/persistence/entities/res
 import { EventOrmEntity } from '../infrastructure/persistence/entities/event.orm-entity';
 import { TicketConfigurationOrmEntity } from '../infrastructure/persistence/entities/ticket-configuration.orm-entity';
 import { TICKET_REPOSITORY, RESERVATION_REPOSITORY, EVENT_REPOSITORY } from '../domain/interfaces/repository-tokens';
+import { TicketAvailabilityService } from '../infrastructure/websocket/ticket-availability.service';
 
 /**
  * TicketModule
@@ -55,6 +56,9 @@ import { TICKET_REPOSITORY, RESERVATION_REPOSITORY, EVENT_REPOSITORY } from '../
     CreateReservationUseCase,
     ProcessPaymentUseCase,
     ReleaseTicketsUseCase,
+    
+    // WebSocket Service
+    TicketAvailabilityService,
     
     // Repositories
     {

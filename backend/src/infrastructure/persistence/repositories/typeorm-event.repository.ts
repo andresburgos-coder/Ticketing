@@ -37,15 +37,23 @@ export class TypeOrmEventRepository implements IEventRepository {
   }
 
   /**
-   * Finds an event by its unique identifier
+   * Finds an event by its unique identifier with row-level locking
    * @param id - The event ID to search for
+   * @param lock - Whether to lock the row for update (prevents concurrent modifications)
    * @returns Promise resolving to the Event if found, null otherwise
    */
-  async findById(id: string): Promise<Event | null> {
-    const ormEntity = await this.repository.findOne({
-      where: { id },
-      relations: ['ticketConfigurations', 'details'],
-    });
+  async findById(id: string, lock: boolean = false): Promise<Event | null> {
+    const queryBuilder = this.repository
+      .createQueryBuilder('event')
+      .leftJoinAndSelect('event.ticketConfigurations', 'ticketConfigurations')
+      .leftJoinAndSelect('event.details', 'details')
+      .where('event.id = :id', { id });
+
+    if (lock) {
+      queryBuilder.setLock('pessimistic_write');
+    }
+
+    const ormEntity = await queryBuilder.getOne();
 
     if (!ormEntity) {
       return null;

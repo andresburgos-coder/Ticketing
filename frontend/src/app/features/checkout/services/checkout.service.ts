@@ -3,6 +3,7 @@ import { Orders } from '../../../services/orders';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/services/auth.service';
+import { CacheInvalidationService } from '../../../core/services/cache-invalidation.service';
 
 export interface CartItem {
   ticketTypeId: number;
@@ -58,6 +59,7 @@ export class CheckoutService {
   private readonly http = inject(HttpClient);
   private readonly ordersService = inject(Orders);
   private readonly authService = inject(AuthService);
+  private readonly cacheInvalidationService = inject(CacheInvalidationService);
 
   // Signals
   private readonly _cart = signal<CartItem[]>(this.loadCart());
@@ -340,6 +342,23 @@ export class CheckoutService {
 
     // Also save to purchased tickets history
     this.saveToPurchasedTickets(completedOrder);
+
+    // Invalidate cache for event availability
+    const eventId = this._eventId();
+    if (eventId) {
+      // Invalidate cache for each ticket type purchased
+      cart.forEach(item => {
+        this.cacheInvalidationService.invalidateAfterPurchase(
+          String(eventId), 
+          item.ticketTypeName
+        );
+      });
+      
+      // Also invalidate the general event cache
+      this.cacheInvalidationService.invalidateEvent(String(eventId));
+      
+      console.log('🔄 [CheckoutService] Cache invalidated after purchase for event:', eventId);
+    }
 
     // Clear the cart after saving
     setTimeout(() => {

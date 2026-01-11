@@ -6,7 +6,7 @@ RUN apk add --no-cache libc6-compat
 # Development stage
 FROM base AS development
 COPY package*.json ./
-RUN npm ci
+RUN npm install --prefer-offline --no-audit
 COPY . .
 EXPOSE 3000
 CMD ["npm", "run", "start:dev"]
@@ -14,7 +14,7 @@ CMD ["npm", "run", "start:dev"]
 # Build stage
 FROM base AS builder
 COPY package*.json ./
-RUN npm ci
+RUN npm install --prefer-offline --no-audit
 COPY . .
 RUN npm run build
 
@@ -22,7 +22,7 @@ RUN npm run build
 FROM base AS production
 ENV NODE_ENV=production
 COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
+RUN npm install --prefer-offline --no-audit --production && npm cache clean --force
 COPY --from=builder /app/dist ./dist
 EXPOSE 3000
 USER node

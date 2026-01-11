@@ -80,7 +80,7 @@ export class TicketAvailabilityService {
   /**
    * Get subscription stats for debugging
    */
-  getStats(): { eventId: string; subscribers: number }[] {
+  getStats(): { eventId: string | number; subscribers: number }[] {
     return Array.from(this.eventSubscriptions.entries()).map(([eventId, subscribers]) => ({
       eventId,
       subscribers: subscribers.size

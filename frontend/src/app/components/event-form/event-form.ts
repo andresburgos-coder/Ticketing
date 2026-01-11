@@ -129,8 +129,8 @@ export class EventForm implements OnInit {
       pregnantAccess: [false],
       ticketConfigurations: [
         [
-          { type: 'VIP', price: 100, currency: 'USD', quantity: 50 },
-          { type: 'GENERAL', price: 50, currency: 'USD', quantity: 100 }
+          { type: 'VIP', price: 100, currency: 'COP', quantity: 50 },
+          { type: 'GENERAL', price: 50, currency: 'COP', quantity: 100 }
         ],
         Validators.required
       ]

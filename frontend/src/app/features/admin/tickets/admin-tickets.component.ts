@@ -6,11 +6,12 @@ import { AdminService } from '../../../services/admin.service';
 import { EventService } from '../../../services/event.service';
 import { AdminTicket, TicketsQuery } from '../../../models/admin.model';
 import { Event } from '../../../models/event.model';
+import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
 
 @Component({
   selector: 'app-admin-tickets',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CurrencyFormatPipe],
   templateUrl: './admin-tickets.component.html',
   styleUrl: './admin-tickets.component.css'
 })
@@ -74,12 +75,7 @@ export class AdminTicketsComponent implements OnInit {
           this.eventCodeMap.set(ev.code, idStr);
         }
       }
-      // Debug: imprimir mapa de nombres y eventos cargados
-      console.log('[AdminTickets] Event IDs:', this.events.map(e => String(e.id)));
-      console.log('[AdminTickets] Event name map keys:', Array.from(this.eventNameMap.keys()));
-      console.log('[AdminTickets] Event name map sample:', Array.from(this.eventNameMap.entries()).slice(0, 3));
-      console.log('[AdminTickets] Events loaded:', this.events.length);
-    } catch (error) {
+    } catch (error: any) {
       console.error('[AdminTickets] Error loading events:', error);
       this.events = [];
     }
@@ -152,9 +148,6 @@ export class AdminTicketsComponent implements OnInit {
     // Fallback: buscar directamente en el arreglo por si el mapa no contiene la clave
     const found = this.events.find(ev => String(ev.id) === key);
     const name = found?.name;
-    if (!name) {
-      console.warn('[AdminTickets] Event name not found for eventId:', key, 'Available keys:', Array.from(this.eventNameMap.keys()));
-    }
     return name ?? 'Evento no encontrado';
   }
 

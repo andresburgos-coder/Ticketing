@@ -21,9 +21,10 @@ export interface IEventRepository {
   /**
    * Finds an event by its unique identifier
    * @param id - The event ID to search for
+   * @param lock - Whether to lock the row for update (prevents concurrent modifications)
    * @returns Promise resolving to the Event if found, null otherwise
    */
-  findById(id: string): Promise<Event | null>;
+  findById(id: string, lock?: boolean): Promise<Event | null>;
 
   /**
    * Retrieves all events from the repository

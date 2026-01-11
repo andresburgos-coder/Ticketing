@@ -103,4 +103,25 @@ export class AdminService {
 
     return this.http.get<PaginatedResponse<AdminReservation>>(`${this.apiUrl}/reservations`, { params });
   }
+
+  // Event Management
+  getEvents(): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/events`);
+  }
+
+  getEvent(id: string): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/events/${id}`);
+  }
+
+  createEvent(formData: FormData): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/events`, formData);
+  }
+
+  updateEvent(id: string, formData: FormData): Observable<any> {
+    return this.http.put<any>(`${environment.apiUrl}/events/${id}`, formData);
+  }
+
+  deleteEvent(id: string): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${environment.apiUrl}/events/${id}`);
+  }
 }

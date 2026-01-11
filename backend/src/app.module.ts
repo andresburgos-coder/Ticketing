@@ -9,6 +9,8 @@ import { EventModule } from './modules/event.module';
 import { AuthModule } from './modules/auth.module';
 import { TicketModule } from './modules/ticket.module';
 import { AdminModule } from './modules/admin.module';
+import { TicketAvailabilityGateway } from './presentation/gateways/ticket-availability.gateway';
+import { TicketAvailabilityService } from './infrastructure/websocket/ticket-availability.service';
 
 @Module({
   imports: [
@@ -38,6 +40,6 @@ import { AdminModule } from './modules/admin.module';
     AdminModule,
   ],
   controllers: [HealthController],
-  providers: [],
+  providers: [TicketAvailabilityGateway, TicketAvailabilityService],
 })
 export class AppModule {}

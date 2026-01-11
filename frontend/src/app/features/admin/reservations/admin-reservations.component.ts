@@ -5,11 +5,12 @@ import { AdminService } from '../../../services/admin.service';
 import { EventService } from '../../../services/event.service';
 import { AdminReservation, ReservationsQuery } from '../../../models/admin.model';
 import { Event } from '../../../models/event.model';
+import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
 
 @Component({
   selector: 'app-admin-reservations',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CurrencyFormatPipe],
   templateUrl: './admin-reservations.component.html',
   styleUrl: './admin-reservations.component.css'
 })

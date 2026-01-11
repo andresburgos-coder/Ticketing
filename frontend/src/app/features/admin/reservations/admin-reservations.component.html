@@ -50,7 +50,7 @@
           </td>
           <td>{{ reservation.buyerEmail }}</td>
           <td class="price">
-            ${{ reservation.totalAmount | number:'1.2-2' }} {{ reservation.currency }}
+            {{ reservation.totalAmount | currencyFormat: reservation.currency }}
           </td>
           <td>
             <span class="status-badge" [class]="'status-' + reservation.status.toLowerCase()">

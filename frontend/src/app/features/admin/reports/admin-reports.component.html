@@ -8,7 +8,7 @@
       <div class="report-content">
         <div class="metric">
           <span class="label">Ingresos Totales:</span>
-          <span class="value revenue">${{ dashboardStats.overview.totalRevenue | number:'1.2-2' }}</span>
+          <span class="value revenue">{{ dashboardStats.overview.totalRevenue | currencyFormat }}</span>
         </div>
         <div class="metric">
           <span class="label">Tickets Vendidos:</span>
@@ -16,7 +16,7 @@
         </div>
         <div class="metric">
           <span class="label">Precio Promedio:</span>
-          <span class="value">${{ getAverageTicketPrice() | number:'1.2-2' }}</span>
+          <span class="value">{{ getAverageTicketPrice() | currencyFormat }}</span>
         </div>
       </div>
     </div>
@@ -64,7 +64,7 @@
           <div class="event-details">
             <h4>{{ event.eventName }}</h4>
             <p>{{ event.ticketsSold }} tickets vendidos</p>
-            <p class="revenue">${{ event.revenue | number:'1.2-2' }}</p>
+            <p class="revenue">{{ event.revenue | currencyFormat }}</p>
           </div>
         </div>
       </div>

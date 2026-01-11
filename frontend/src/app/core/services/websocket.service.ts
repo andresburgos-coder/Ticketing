@@ -1,5 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { io, Socket } from 'socket.io-client';
 import { environment } from '../../../environments/environment';
 
 export interface TicketAvailabilityUpdate {
@@ -14,12 +15,9 @@ export interface TicketAvailabilityUpdate {
   providedIn: 'root'
 })
 export class WebSocketService {
-  private ws: WebSocket | null = null;
+  private socket: Socket | null = null;
   private readonly isConnected = signal(false);
   private readonly availabilityUpdates$ = new BehaviorSubject<TicketAvailabilityUpdate | null>(null);
-  private reconnectAttempts = 0;
-  private readonly maxReconnectAttempts = 5;
-  private reconnectDelay = 1000; // Start with 1s, exponential backoff
 
   readonly isConnected$ = this.isConnected.asReadonly();
 
@@ -29,92 +27,72 @@ export class WebSocketService {
 
   private connect(): void {
     try {
-      // Convert HTTP/HTTPS URL to WS/WSS
-      const apiUrl = environment.apiUrl;
-      const wsUrl = apiUrl
-        .replace(/^https?:\/\//, 'ws' + (apiUrl.startsWith('https') ? 's' : '') + '://')
-        .replace(/\/$/, ''); // Remove trailing slash
+      const apiUrl = environment.apiUrl.replace(/\/$/, '');
+      console.log('[WebSocket] Connecting to:', apiUrl);
 
-      console.log('[WebSocket] Connecting to:', wsUrl);
-      this.ws = new WebSocket(wsUrl);
+      this.socket = io(apiUrl, {
+        transports: ['websocket', 'polling'],
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionAttempts: 5,
+      });
 
-      this.ws.addEventListener('open', () => {
-        console.log('[WebSocket] Connected');
+      this.socket.on('connect', () => {
+        console.log('[WebSocket] Connected - Socket ID:', this.socket?.id);
         this.isConnected.set(true);
-        this.reconnectAttempts = 0;
-        this.reconnectDelay = 1000;
       });
 
-      this.ws.addEventListener('message', (event: MessageEvent) => {
-        try {
-          const data = JSON.parse(event.data);
-          console.log('[WebSocket] Received:', data);
-
-          // Handle ticket availability updates
-          if (data.type === 'TICKET_AVAILABILITY_UPDATE' || data.type === 'ticketAvailabilityUpdate') {
-            const update: TicketAvailabilityUpdate = {
-              eventId: data.eventId,
-              ticketType: data.ticketType,
-              availableQuantity: data.availableQuantity,
-              totalQuantity: data.totalQuantity,
-              timestamp: data.timestamp || new Date().toISOString()
-            };
-            this.availabilityUpdates$.next(update);
-          }
-        } catch (error) {
-          console.warn('[WebSocket] Failed to parse message:', error);
-        }
+      this.socket.on('TICKET_AVAILABILITY_UPDATE', (data: any) => {
+        console.log('[WebSocket] Received availability update:', data);
+        const update: TicketAvailabilityUpdate = {
+          eventId: data.eventId,
+          ticketType: data.ticketType,
+          availableQuantity: data.availableQuantity,
+          totalQuantity: data.totalQuantity,
+          timestamp: data.timestamp || new Date().toISOString()
+        };
+        this.availabilityUpdates$.next(update);
       });
 
-      this.ws.addEventListener('close', () => {
-        console.log('[WebSocket] Disconnected');
-        this.isConnected.set(false);
-        this.attemptReconnect();
-      });
-
-      this.ws.addEventListener('error', (error: Event) => {
-        console.error('[WebSocket] Error:', error);
+      this.socket.on('disconnect', (reason: string) => {
+        console.log('[WebSocket] Disconnected:', reason);
         this.isConnected.set(false);
       });
+
+      this.socket.on('connect_error', (error: Error) => {
+        console.error('[WebSocket] Connection error:', error.message);
+        this.isConnected.set(false);
+      });
+
     } catch (error) {
       console.error('[WebSocket] Connection failed:', error);
-      this.attemptReconnect();
     }
   }
 
-  private attemptReconnect(): void {
-    if (this.reconnectAttempts < this.maxReconnectAttempts) {
-      this.reconnectAttempts++;
-      console.log(`[WebSocket] Reconnecting in ${this.reconnectDelay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
-      setTimeout(() => {
-        this.connect();
-      }, this.reconnectDelay);
-      // Exponential backoff: max 10s
-      this.reconnectDelay = Math.min(this.reconnectDelay * 1.5, 10000);
-    } else {
-      console.warn('[WebSocket] Max reconnect attempts reached');
-    }
-  }
 
   /**
    * Subscribe to availability updates for a specific event.
    * Returns an Observable that emits whenever there's an update.
    */
   subscribeToEvent(eventId: string | number): Observable<TicketAvailabilityUpdate | null> {
-    // Send subscription message if WebSocket is connected
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.sendMessage({
-        type: 'SUBSCRIBE',
-        eventId: eventId
-      });
+    // Send subscription message if Socket.IO is connected
+    if (this.socket && this.socket.connected) {
+      console.log('[WebSocket] Subscribing to event:', eventId);
+      this.socket.emit('SUBSCRIBE', { eventId });
     } else {
-      console.warn('[WebSocket] Not connected; subscription queued');
+      console.warn('[WebSocket] Not connected; will subscribe when connected');
+      // Queue subscription for when connection is established
+      this.socket?.on('connect', () => {
+        console.log('[WebSocket] Connected - now subscribing to event:', eventId);
+        this.socket?.emit('SUBSCRIBE', { eventId });
+      });
     }
 
     // Return a filtered observable that only emits updates for this event
     return new Observable(observer => {
       const subscription = this.availabilityUpdates$.subscribe(update => {
         if (update && String(update.eventId) === String(eventId)) {
+          console.log('[WebSocket] Emitting update for event:', eventId, update);
           observer.next(update);
         }
       });
@@ -127,37 +105,19 @@ export class WebSocketService {
    * Unsubscribe from a specific event.
    */
   unsubscribeFromEvent(eventId: string | number): void {
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.sendMessage({
-        type: 'UNSUBSCRIBE',
-        eventId: eventId
-      });
+    if (this.socket && this.socket.connected) {
+      console.log('[WebSocket] Unsubscribing from event:', eventId);
+      this.socket.emit('UNSUBSCRIBE', { eventId });
     }
   }
 
   /**
-   * Send a message through the WebSocket.
-   */
-  private sendMessage(message: any): void {
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      try {
-        this.ws.send(JSON.stringify(message));
-        console.log('[WebSocket] Sent:', message);
-      } catch (error) {
-        console.error('[WebSocket] Failed to send message:', error);
-      }
-    } else {
-      console.warn('[WebSocket] WebSocket not open; cannot send message');
-    }
-  }
-
-  /**
-   * Close WebSocket connection.
+   * Close Socket.IO connection.
    */
   disconnect(): void {
-    if (this.ws) {
-      this.ws.close();
-      this.ws = null;
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
       this.isConnected.set(false);
     }
   }
