@@ -1,6 +1,6 @@
-import { TicketType } from '../value-objects/ticket-type.vo';
-import { Money } from '../value-objects/money.vo';
-import { InsufficientTicketsException } from '../exceptions/insufficient-tickets.exception';
+import { TicketType } from "../value-objects/ticket-type.vo";
+import { Money } from "../value-objects/money.vo";
+import { InsufficientTicketsException } from "../exceptions/insufficient-tickets.exception";
 
 /**
  * TicketConfiguration Entity - Part of Event aggregate.
@@ -13,7 +13,7 @@ export class TicketConfiguration {
     public readonly price: Money,
     public readonly totalQuantity: number,
     private _availableQuantity: number,
-    public readonly id?: string // Optional ID for persistence
+    public readonly id?: string, // Optional ID for persistence
   ) {}
 
   get availableQuantity(): number {
@@ -27,7 +27,11 @@ export class TicketConfiguration {
    */
   decrementAvailability(quantity: number): void {
     if (this._availableQuantity < quantity) {
-      throw new InsufficientTicketsException(this.type, quantity, this._availableQuantity);
+      throw new InsufficientTicketsException(
+        this.type,
+        quantity,
+        this._availableQuantity,
+      );
     }
     this._availableQuantity -= quantity;
   }

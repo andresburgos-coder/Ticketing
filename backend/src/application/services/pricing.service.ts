@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { Money } from '../../domain/value-objects/money.vo';
-import { TicketType } from '../../domain/value-objects/ticket-type.vo';
-import { IPricingStrategy } from '../../domain/strategies/pricing-strategy.interface';
-import { VipPricingStrategy } from '../../domain/strategies/vip-pricing.strategy';
-import { GeneralPricingStrategy } from '../../domain/strategies/general-pricing.strategy';
-import { EarlyBirdPricingStrategy } from '../../domain/strategies/early-bird-pricing.strategy';
+import { Injectable } from "@nestjs/common";
+import { Money } from "../../domain/value-objects/money.vo";
+import { TicketType } from "../../domain/value-objects/ticket-type.vo";
+import { IPricingStrategy } from "../../domain/strategies/pricing-strategy.interface";
+import { VipPricingStrategy } from "../../domain/strategies/vip-pricing.strategy";
+import { GeneralPricingStrategy } from "../../domain/strategies/general-pricing.strategy";
+import { EarlyBirdPricingStrategy } from "../../domain/strategies/early-bird-pricing.strategy";
 
 /**
  * PricingService - Orchestrates pricing calculations using the Strategy Pattern.
@@ -42,11 +42,17 @@ export class PricingService {
    * @returns The total price calculated using the appropriate strategy
    * @throws Error if no strategy exists for the given ticket type
    */
-  calculatePrice(ticketType: TicketType, basePrice: Money, quantity: number): Money {
+  calculatePrice(
+    ticketType: TicketType,
+    basePrice: Money,
+    quantity: number,
+  ): Money {
     const strategy = this.strategies.get(ticketType);
 
     if (!strategy) {
-      throw new Error(`No pricing strategy found for ticket type: ${ticketType}`);
+      throw new Error(
+        `No pricing strategy found for ticket type: ${ticketType}`,
+      );
     }
 
     return strategy.calculatePrice(basePrice, quantity);

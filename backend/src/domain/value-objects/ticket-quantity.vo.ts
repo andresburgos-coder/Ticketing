@@ -1,4 +1,4 @@
-import { InvalidQuantityException } from '../exceptions/invalid-quantity.exception';
+import { InvalidQuantityException } from "../exceptions/invalid-quantity.exception";
 
 /**
  * TicketQuantity Value Object - Immutable representation of ticket quantities.
@@ -22,11 +22,14 @@ export class TicketQuantity {
    */
   static create(value: number): TicketQuantity {
     if (!Number.isInteger(value)) {
-      throw new InvalidQuantityException('Quantity must be an integer');
+      throw new InvalidQuantityException("Quantity must be an integer");
     }
-    if (value < TicketQuantity.MIN_QUANTITY || value > TicketQuantity.MAX_QUANTITY) {
+    if (
+      value < TicketQuantity.MIN_QUANTITY ||
+      value > TicketQuantity.MAX_QUANTITY
+    ) {
       throw new InvalidQuantityException(
-        `Quantity must be between ${TicketQuantity.MIN_QUANTITY} and ${TicketQuantity.MAX_QUANTITY}`
+        `Quantity must be between ${TicketQuantity.MIN_QUANTITY} and ${TicketQuantity.MAX_QUANTITY}`,
       );
     }
     return new TicketQuantity(value);

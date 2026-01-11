@@ -17,25 +17,36 @@ import {
   StreamableFile,
   UseGuards,
   Request,
-} from '@nestjs/common';
-import { Response } from 'express';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiConsumes, ApiBearerAuth } from '@nestjs/swagger';
-import { CreateEventUseCase } from '../../application/use-cases/create-event.use-case';
-import { GetAllEventsUseCase } from '../../application/use-cases/get-all-events.use-case';
-import { TicketConfiguration } from '../../domain/entities/ticket-configuration.entity';
-import { Event as EventEntity } from '../../domain/entities/event.entity';
-import { UpdateEventUseCase } from '../../application/use-cases/update-event.use-case';
-import { DeleteEventUseCase } from '../../application/use-cases/delete-event.use-case';
-import { CreateEventDto } from '../../application/dto/create-event.dto';
-import { UpdateEventDto } from '../../application/dto/update-event.dto';
-import { Event } from '../../domain/entities/event.entity';
-import { IEventRepository } from '../../domain/interfaces/event-repository.interface';
-import { EVENT_REPOSITORY, USER_REPOSITORY } from '../../domain/interfaces/repository-tokens';
-import { IUserRepository } from '../../domain/interfaces/user-repository.interface';
-import { User } from '../../domain/entities/user.entity';
-import { MinioService } from '../../infrastructure/external/minio.service';
-import { JwtAuthGuard } from '../../application/services/jwt-auth.guard';
+} from "@nestjs/common";
+import { Response } from "express";
+import { FileInterceptor } from "@nestjs/platform-express";
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBody,
+  ApiConsumes,
+  ApiBearerAuth,
+} from "@nestjs/swagger";
+import { CreateEventUseCase } from "../../application/use-cases/create-event.use-case";
+import { GetAllEventsUseCase } from "../../application/use-cases/get-all-events.use-case";
+import { TicketConfiguration } from "../../domain/entities/ticket-configuration.entity";
+import { Event as EventEntity } from "../../domain/entities/event.entity";
+import { UpdateEventUseCase } from "../../application/use-cases/update-event.use-case";
+import { DeleteEventUseCase } from "../../application/use-cases/delete-event.use-case";
+import { CreateEventDto } from "../../application/dto/create-event.dto";
+import { UpdateEventDto } from "../../application/dto/update-event.dto";
+import { Event } from "../../domain/entities/event.entity";
+import { IEventRepository } from "../../domain/interfaces/event-repository.interface";
+import {
+  EVENT_REPOSITORY,
+  USER_REPOSITORY,
+} from "../../domain/interfaces/repository-tokens";
+import { IUserRepository } from "../../domain/interfaces/user-repository.interface";
+import { User } from "../../domain/entities/user.entity";
+import { MinioService } from "../../infrastructure/external/minio.service";
+import { JwtAuthGuard } from "../../application/services/jwt-auth.guard";
 
 /**
  * EventController
@@ -43,8 +54,8 @@ import { JwtAuthGuard } from '../../application/services/jwt-auth.guard';
  * Follows REST conventions and NestJS best practices
  * Requirements: 1.1, 1.3, 1.4
  */
-@ApiTags('events')
-@Controller('events')
+@ApiTags("events")
+@Controller("events")
 export class EventController {
   constructor(
     private readonly createEventUseCase: CreateEventUseCase,
@@ -61,91 +72,114 @@ export class EventController {
   /**
    * POST /events
    * Creates a new event with ticket configurations and optional image
-   * 
+   *
    * @param createEventDto - The event data to create
    * @param file - Optional image file for the event
    * @returns The created event with ID
    * @throws BadRequestException if input validation fails
-   * 
+   *
    * Requirement 1.1: Persist event and return unique identifier
    * Requirement 1.2: Store ticket configuration with price and quantity
    */
   @Post()
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.CREATED)
-  @UseInterceptors(FileInterceptor('image'))
-  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor("image"))
+  @ApiConsumes("multipart/form-data")
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Create a new event',
-    description: 'Creates a new event with ticket configurations and an optional image. Requires authentication.'
+    summary: "Create a new event",
+    description:
+      "Creates a new event with ticket configurations and an optional image. Requires authentication.",
   })
   @ApiBody({
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        name: { type: 'string', description: 'Event name' },
-        date: { type: 'string', format: 'date-time', description: 'Event date in ISO 8601 format' },
-        location: { type: 'string', description: 'Event location' },
+        name: { type: "string", description: "Event name" },
+        date: {
+          type: "string",
+          format: "date-time",
+          description: "Event date in ISO 8601 format",
+        },
+        location: { type: "string", description: "Event location" },
         ticketConfigurations: {
-          type: 'array',
+          type: "array",
           items: {
-            type: 'object',
+            type: "object",
             properties: {
-              type: { type: 'string', enum: ['VIP', 'GENERAL', 'EARLY_BIRD'] },
-              price: { type: 'number' },
-              currency: { type: 'string' },
-              quantity: { type: 'number' }
-            }
-          }
+              type: { type: "string", enum: ["VIP", "GENERAL", "EARLY_BIRD"] },
+              price: { type: "number" },
+              currency: { type: "string" },
+              quantity: { type: "number" },
+            },
+          },
         },
         image: {
-          type: 'string',
-          format: 'binary',
-          description: 'Event image file (optional, jpg/png/gif)'
-        }
+          type: "string",
+          format: "binary",
+          description: "Event image file (optional, jpg/png/gif)",
+        },
       },
-      required: ['name', 'date', 'location', 'ticketConfigurations']
-    }
+      required: ["name", "date", "location", "ticketConfigurations"],
+    },
   })
   @ApiResponse({
     status: 201,
-    description: 'Event successfully created',
+    description: "Event successfully created",
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        id: { type: 'string', description: 'Event unique identifier' },
-        name: { type: 'string', description: 'Event name' },
-        date: { type: 'string', format: 'date-time', description: 'Event date and time' },
-        location: { type: 'string', description: 'Event location' },
-        imageUrl: { type: 'string', nullable: true, description: 'URL of the event image' },
+        id: { type: "string", description: "Event unique identifier" },
+        name: { type: "string", description: "Event name" },
+        date: {
+          type: "string",
+          format: "date-time",
+          description: "Event date and time",
+        },
+        location: { type: "string", description: "Event location" },
+        imageUrl: {
+          type: "string",
+          nullable: true,
+          description: "URL of the event image",
+        },
         ticketConfigurations: {
-          type: 'array',
+          type: "array",
           items: {
-            type: 'object',
+            type: "object",
             properties: {
-              type: { type: 'string', enum: ['VIP', 'GENERAL', 'EARLY_BIRD'], description: 'Ticket type' },
-              price: { type: 'number', description: 'Ticket price' },
-              currency: { type: 'string', description: 'Price currency' },
-              totalQuantity: { type: 'number', description: 'Total tickets available' },
-              availableQuantity: { type: 'number', description: 'Currently available tickets' }
-            }
-          }
-        }
-      }
-    }
+              type: {
+                type: "string",
+                enum: ["VIP", "GENERAL", "EARLY_BIRD"],
+                description: "Ticket type",
+              },
+              price: { type: "number", description: "Ticket price" },
+              currency: { type: "string", description: "Price currency" },
+              totalQuantity: {
+                type: "number",
+                description: "Total tickets available",
+              },
+              availableQuantity: {
+                type: "number",
+                description: "Currently available tickets",
+              },
+            },
+          },
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 400,
-    description: 'Bad request - validation failed',
+    description: "Bad request - validation failed",
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        statusCode: { type: 'number', example: 400 },
-        message: { type: 'string', example: 'Validation failed' },
-        error: { type: 'string', example: 'Bad Request' }
-      }
-    }
+        statusCode: { type: "number", example: 400 },
+        message: { type: "string", example: "Validation failed" },
+        error: { type: "string", example: "Bad Request" },
+      },
+    },
   })
   async create(
     @Body() body: any,
@@ -158,58 +192,77 @@ export class EventController {
       const date = body.date;
       const location = body.location;
       const venueName = body.venueName;
-      
+
       if (!name || !date || !location || !venueName) {
-        throw new BadRequestException('name, date, location, and venueName are required');
+        throw new BadRequestException(
+          "name, date, location, and venueName are required",
+        );
       }
 
       // Convert ISO string to Date
       const eventDate = new Date(date);
       if (isNaN(eventDate.getTime())) {
-        throw new BadRequestException('Invalid date format. Use ISO 8601 format');
+        throw new BadRequestException(
+          "Invalid date format. Use ISO 8601 format",
+        );
       }
 
       // Parse ticket configurations
       let ticketConfigurations;
       try {
         ticketConfigurations =
-          typeof body.ticketConfigurations === 'string'
+          typeof body.ticketConfigurations === "string"
             ? JSON.parse(body.ticketConfigurations)
             : body.ticketConfigurations;
       } catch (error) {
-        throw new BadRequestException('Invalid ticketConfigurations JSON format');
+        throw new BadRequestException(
+          "Invalid ticketConfigurations JSON format",
+        );
       }
 
-      if (!Array.isArray(ticketConfigurations) || ticketConfigurations.length === 0) {
-        throw new BadRequestException('At least one ticket configuration is required');
+      if (
+        !Array.isArray(ticketConfigurations) ||
+        ticketConfigurations.length === 0
+      ) {
+        throw new BadRequestException(
+          "At least one ticket configuration is required",
+        );
       }
 
       // Validate each ticket configuration
       for (const config of ticketConfigurations) {
-        if (!config.type || !config.price || !config.currency || !config.quantity) {
-          throw new BadRequestException('Each ticket configuration must have type, price, currency, and quantity');
+        if (
+          !config.type ||
+          !config.price ||
+          !config.currency ||
+          !config.quantity
+        ) {
+          throw new BadRequestException(
+            "Each ticket configuration must have type, price, currency, and quantity",
+          );
         }
-        if (typeof config.price !== 'number' || config.price < 0) {
-          throw new BadRequestException('Price must be a positive number');
+        if (typeof config.price !== "number" || config.price < 0) {
+          throw new BadRequestException("Price must be a positive number");
         }
-        if (typeof config.quantity !== 'number' || config.quantity < 1) {
-          throw new BadRequestException('Quantity must be at least 1');
+        if (typeof config.quantity !== "number" || config.quantity < 1) {
+          throw new BadRequestException("Quantity must be at least 1");
         }
       }
 
       // Upload image if provided
       let imageUrl: string | undefined;
       if (file) {
-        
         // Validate file type
-        const allowedMimes = ['image/jpeg', 'image/png', 'image/gif'];
+        const allowedMimes = ["image/jpeg", "image/png", "image/gif"];
         if (!allowedMimes.includes(file.mimetype)) {
-          throw new BadRequestException('Only JPEG, PNG, and GIF images are allowed');
+          throw new BadRequestException(
+            "Only JPEG, PNG, and GIF images are allowed",
+          );
         }
 
         // Validate file size (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
-          throw new BadRequestException('Image file size cannot exceed 5MB');
+          throw new BadRequestException("Image file size cannot exceed 5MB");
         }
 
         // Upload to MinIO
@@ -219,20 +272,27 @@ export class EventController {
       // Parse event details if provided, otherwise create default details
       let eventDetails;
       try {
-        eventDetails = body.eventDetails 
-          ? (typeof body.eventDetails === 'string' ? JSON.parse(body.eventDetails) : body.eventDetails)
-          : [{
-              category: 'General',
-              minAge: null,
-              seating: 'General Admission',
-              capacity: ticketConfigurations.reduce((total: number, config: any) => total + config.quantity, 0),
-              foodSale: false,
-              liquorSale: false,
-              reducedMobilityAccess: false,
-              pregnantAccess: false
-            }];
+        eventDetails = body.eventDetails
+          ? typeof body.eventDetails === "string"
+            ? JSON.parse(body.eventDetails)
+            : body.eventDetails
+          : [
+              {
+                category: "General",
+                minAge: null,
+                seating: "General Admission",
+                capacity: ticketConfigurations.reduce(
+                  (total: number, config: any) => total + config.quantity,
+                  0,
+                ),
+                foodSale: false,
+                liquorSale: false,
+                reducedMobilityAccess: false,
+                pregnantAccess: false,
+              },
+            ];
       } catch (error) {
-        throw new BadRequestException('Invalid eventDetails JSON format');
+        throw new BadRequestException("Invalid eventDetails JSON format");
       }
 
       // Execute use case
@@ -246,7 +306,7 @@ export class EventController {
         eventDetails,
         createdBy: req?.user?.id, // Extract user ID from JWT token
       });
-      
+
       return await this.formatEventResponse(event);
     } catch (error) {
       if (error instanceof BadRequestException) {
@@ -262,88 +322,104 @@ export class EventController {
   /**
    * PUT /events/:id
    * Updates an existing event
-   * 
+   *
    * @param id - The event ID
    * @returns The event with all ticket configurations and availability
    * @throws NotFoundException if event does not exist
-   * 
+   *
    * Requirement 1.3: Return event with all ticket types and current availability
    * Requirement 1.4: Return error with message "Evento no encontrado" if not found
    */
-  @Get(':id')
+  @Get(":id")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Get event by ID',
-    description: 'Retrieves an event by its unique identifier with all ticket configurations and current availability'
+    summary: "Get event by ID",
+    description:
+      "Retrieves an event by its unique identifier with all ticket configurations and current availability",
   })
   @ApiParam({
-    name: 'id',
-    description: 'Event unique identifier',
-    type: 'string',
-    format: 'uuid'
+    name: "id",
+    description: "Event unique identifier",
+    type: "string",
+    format: "uuid",
   })
   @ApiResponse({
     status: 200,
-    description: 'Event found successfully',
+    description: "Event found successfully",
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        id: { type: 'string', description: 'Event unique identifier' },
-        name: { type: 'string', description: 'Event name' },
-        date: { type: 'string', format: 'date-time', description: 'Event date and time' },
-        location: { type: 'string', description: 'Event location' },
+        id: { type: "string", description: "Event unique identifier" },
+        name: { type: "string", description: "Event name" },
+        date: {
+          type: "string",
+          format: "date-time",
+          description: "Event date and time",
+        },
+        location: { type: "string", description: "Event location" },
         ticketConfigurations: {
-          type: 'array',
+          type: "array",
           items: {
-            type: 'object',
+            type: "object",
             properties: {
-              type: { type: 'string', enum: ['VIP', 'GENERAL', 'EARLY_BIRD'], description: 'Ticket type' },
-              price: { type: 'number', description: 'Ticket price' },
-              currency: { type: 'string', description: 'Price currency' },
-              totalQuantity: { type: 'number', description: 'Total tickets available' },
-              availableQuantity: { type: 'number', description: 'Currently available tickets' }
-            }
-          }
-        }
-      }
-    }
+              type: {
+                type: "string",
+                enum: ["VIP", "GENERAL", "EARLY_BIRD"],
+                description: "Ticket type",
+              },
+              price: { type: "number", description: "Ticket price" },
+              currency: { type: "string", description: "Price currency" },
+              totalQuantity: {
+                type: "number",
+                description: "Total tickets available",
+              },
+              availableQuantity: {
+                type: "number",
+                description: "Currently available tickets",
+              },
+            },
+          },
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 404,
-    description: 'Event not found',
+    description: "Event not found",
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        statusCode: { type: 'number', example: 404 },
-        message: { type: 'string', example: 'Event not found' },
-        error: { type: 'string', example: 'Not Found' }
-      }
-    }
+        statusCode: { type: "number", example: 404 },
+        message: { type: "string", example: "Event not found" },
+        error: { type: "string", example: "Not Found" },
+      },
+    },
   })
-  async findById(@Param('id') id: string): Promise<EventResponse> {
+  async findById(@Param("id") id: string): Promise<EventResponse> {
     const event = await this.eventRepository.findById(id);
 
     if (!event) {
-      throw new NotFoundException('Event not found');
+      throw new NotFoundException("Event not found");
     }
 
     // Calculate real-time availability for this specific event
     const updatedConfigurations = await Promise.all(
       event.ticketConfigurations.map(async (config) => {
-        const realAvailability = await this.eventRepository.getRealTimeAvailability(
-          event.id,
-          config.type
-        );
-        
+        const realAvailability =
+          await this.eventRepository.getRealTimeAvailability(
+            event.id,
+            config.type,
+          );
+
         // Create new TicketConfiguration with real availability
         return new TicketConfiguration(
           config.type,
           config.price,
           config.totalQuantity,
           realAvailability, // Use real-time calculated availability
-          config.id
+          config.id,
         );
-      })
+      }),
     );
 
     // Create new Event with updated configurations
@@ -356,7 +432,7 @@ export class EventController {
       updatedConfigurations,
       event.imageUrl,
       event.details,
-      event.createdBy
+      event.createdBy,
     );
 
     return await this.formatEventResponse(eventWithRealAvailability);
@@ -365,94 +441,114 @@ export class EventController {
   /**
    * PUT /events/:id
    * Updates an existing event
-   * 
+   *
    * @param id - The event ID
    * @param updateEventDto - The event data to update
    * @returns The updated event
    * @throws NotFoundException if event does not exist
    * @throws BadRequestException if input validation fails
    */
-  @Put(':id')
+  @Put(":id")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Update event by ID',
-    description: 'Updates an existing event with new data'
+    summary: "Update event by ID",
+    description: "Updates an existing event with new data",
   })
   @ApiParam({
-    name: 'id',
-    description: 'Event unique identifier',
-    type: 'string',
-    format: 'uuid'
+    name: "id",
+    description: "Event unique identifier",
+    type: "string",
+    format: "uuid",
   })
   @ApiBody({
     type: UpdateEventDto,
-    description: 'Event update data'
+    description: "Event update data",
   })
   @ApiResponse({
     status: 200,
-    description: 'Event updated successfully',
+    description: "Event updated successfully",
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        id: { type: 'string', description: 'Event unique identifier' },
-        name: { type: 'string', description: 'Event name' },
-        date: { type: 'string', format: 'date-time', description: 'Event date and time' },
-        location: { type: 'string', description: 'Event location' },
+        id: { type: "string", description: "Event unique identifier" },
+        name: { type: "string", description: "Event name" },
+        date: {
+          type: "string",
+          format: "date-time",
+          description: "Event date and time",
+        },
+        location: { type: "string", description: "Event location" },
         ticketConfigurations: {
-          type: 'array',
+          type: "array",
           items: {
-            type: 'object',
+            type: "object",
             properties: {
-              type: { type: 'string', enum: ['VIP', 'GENERAL', 'EARLY_BIRD'], description: 'Ticket type' },
-              price: { type: 'number', description: 'Ticket price' },
-              currency: { type: 'string', description: 'Price currency' },
-              totalQuantity: { type: 'number', description: 'Total tickets available' },
-              availableQuantity: { type: 'number', description: 'Currently available tickets' }
-            }
-          }
-        }
-      }
-    }
+              type: {
+                type: "string",
+                enum: ["VIP", "GENERAL", "EARLY_BIRD"],
+                description: "Ticket type",
+              },
+              price: { type: "number", description: "Ticket price" },
+              currency: { type: "string", description: "Price currency" },
+              totalQuantity: {
+                type: "number",
+                description: "Total tickets available",
+              },
+              availableQuantity: {
+                type: "number",
+                description: "Currently available tickets",
+              },
+            },
+          },
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 400,
-    description: 'Bad request - validation failed',
+    description: "Bad request - validation failed",
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        statusCode: { type: 'number', example: 400 },
-        message: { type: 'string', example: 'Validation failed' },
-        error: { type: 'string', example: 'Bad Request' }
-      }
-    }
+        statusCode: { type: "number", example: 400 },
+        message: { type: "string", example: "Validation failed" },
+        error: { type: "string", example: "Bad Request" },
+      },
+    },
   })
   @ApiResponse({
     status: 404,
-    description: 'Event not found',
+    description: "Event not found",
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        statusCode: { type: 'number', example: 404 },
-        message: { type: 'string', example: 'Event not found' },
-        error: { type: 'string', example: 'Not Found' }
-      }
-    }
+        statusCode: { type: "number", example: 404 },
+        message: { type: "string", example: "Event not found" },
+        error: { type: "string", example: "Not Found" },
+      },
+    },
   })
-  async update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto): Promise<EventResponse> {
+  async update(
+    @Param("id") id: string,
+    @Body() updateEventDto: UpdateEventDto,
+  ): Promise<EventResponse> {
     try {
       // Get existing event to merge with updates
       const existingEvent = await this.eventRepository.findById(id);
       if (!existingEvent) {
-        throw new NotFoundException('Event not found');
+        throw new NotFoundException("Event not found");
       }
 
       // Merge existing data with updates
-      const eventDate = updateEventDto.date ? new Date(updateEventDto.date) : existingEvent.date;
+      const eventDate = updateEventDto.date
+        ? new Date(updateEventDto.date)
+        : existingEvent.date;
       const name = updateEventDto.name ?? existingEvent.name;
       const location = updateEventDto.location ?? existingEvent.location;
       const venueName = updateEventDto.venueName ?? existingEvent.venueName;
-      const ticketConfigurations = updateEventDto.ticketConfigurations ?? 
-        existingEvent.ticketConfigurations.map(config => ({
+      const ticketConfigurations =
+        updateEventDto.ticketConfigurations ??
+        existingEvent.ticketConfigurations.map((config) => ({
           type: config.type,
           price: config.price.amount,
           currency: config.price.currency,
@@ -476,8 +572,8 @@ export class EventController {
         throw error;
       }
       if (error instanceof Error) {
-        if (error.message === 'Event not found') {
-          throw new NotFoundException('Event not found');
+        if (error.message === "Event not found") {
+          throw new NotFoundException("Event not found");
         }
         throw new BadRequestException(error.message);
       }
@@ -488,45 +584,45 @@ export class EventController {
   /**
    * DELETE /events/:id
    * Deletes an event
-   * 
+   *
    * @param id - The event ID
    * @throws NotFoundException if event does not exist
    */
-  @Delete(':id')
+  @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    summary: 'Delete event by ID',
-    description: 'Deletes an existing event'
+    summary: "Delete event by ID",
+    description: "Deletes an existing event",
   })
   @ApiParam({
-    name: 'id',
-    description: 'Event unique identifier',
-    type: 'string',
-    format: 'uuid'
+    name: "id",
+    description: "Event unique identifier",
+    type: "string",
+    format: "uuid",
   })
   @ApiResponse({
     status: 204,
-    description: 'Event deleted successfully'
+    description: "Event deleted successfully",
   })
   @ApiResponse({
     status: 404,
-    description: 'Event not found',
+    description: "Event not found",
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        statusCode: { type: 'number', example: 404 },
-        message: { type: 'string', example: 'Event not found' },
-        error: { type: 'string', example: 'Not Found' }
-      }
-    }
+        statusCode: { type: "number", example: 404 },
+        message: { type: "string", example: "Event not found" },
+        error: { type: "string", example: "Not Found" },
+      },
+    },
   })
-  async delete(@Param('id') id: string): Promise<void> {
+  async delete(@Param("id") id: string): Promise<void> {
     try {
       await this.deleteEventUseCase.execute(id);
     } catch (error) {
       if (error instanceof Error) {
-        if (error.message === 'Event not found') {
-          throw new NotFoundException('Event not found');
+        if (error.message === "Event not found") {
+          throw new NotFoundException("Event not found");
         }
         throw new BadRequestException(error.message);
       }
@@ -537,47 +633,64 @@ export class EventController {
   /**
    * GET /events
    * Retrieves all events
-   * 
+   *
    * @returns Array of all events with their ticket configurations
    */
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Get all events',
-    description: 'Retrieves all events with their ticket configurations and current availability'
+    summary: "Get all events",
+    description:
+      "Retrieves all events with their ticket configurations and current availability",
   })
   @ApiResponse({
     status: 200,
-    description: 'Events retrieved successfully',
+    description: "Events retrieved successfully",
     schema: {
-      type: 'array',
+      type: "array",
       items: {
-        type: 'object',
+        type: "object",
         properties: {
-          id: { type: 'string', description: 'Event unique identifier' },
-          name: { type: 'string', description: 'Event name' },
-          date: { type: 'string', format: 'date-time', description: 'Event date and time' },
-          location: { type: 'string', description: 'Event location' },
+          id: { type: "string", description: "Event unique identifier" },
+          name: { type: "string", description: "Event name" },
+          date: {
+            type: "string",
+            format: "date-time",
+            description: "Event date and time",
+          },
+          location: { type: "string", description: "Event location" },
           ticketConfigurations: {
-            type: 'array',
+            type: "array",
             items: {
-              type: 'object',
+              type: "object",
               properties: {
-                type: { type: 'string', enum: ['VIP', 'GENERAL', 'EARLY_BIRD'], description: 'Ticket type' },
-                price: { type: 'number', description: 'Ticket price' },
-                currency: { type: 'string', description: 'Price currency' },
-                totalQuantity: { type: 'number', description: 'Total tickets available' },
-                availableQuantity: { type: 'number', description: 'Currently available tickets' }
-              }
-            }
-          }
-        }
-      }
-    }
+                type: {
+                  type: "string",
+                  enum: ["VIP", "GENERAL", "EARLY_BIRD"],
+                  description: "Ticket type",
+                },
+                price: { type: "number", description: "Ticket price" },
+                currency: { type: "string", description: "Price currency" },
+                totalQuantity: {
+                  type: "number",
+                  description: "Total tickets available",
+                },
+                availableQuantity: {
+                  type: "number",
+                  description: "Currently available tickets",
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   })
   async findAll(): Promise<EventResponse[]> {
     const events = await this.getAllEventsUseCase.execute();
-    return await Promise.all(events.map(event => this.formatEventResponse(event)));
+    return await Promise.all(
+      events.map((event) => this.formatEventResponse(event)),
+    );
   }
 
   /**
@@ -585,36 +698,44 @@ export class EventController {
    * Serves a file from MinIO storage by streaming it directly
    * This endpoint acts as a proxy to avoid CORS issues with MinIO
    */
-  @Get('file/:filename')
-  @ApiOperation({ summary: 'Get a file from storage' })
-  @ApiResponse({ status: 200, description: 'Returns the file' })
-  @ApiResponse({ status: 404, description: 'File not found' })
-  @ApiParam({ name: 'filename', description: 'The filename to retrieve' })
+  @Get("file/:filename")
+  @ApiOperation({ summary: "Get a file from storage" })
+  @ApiResponse({ status: 200, description: "Returns the file" })
+  @ApiResponse({ status: 404, description: "File not found" })
+  @ApiParam({ name: "filename", description: "The filename to retrieve" })
   async getFile(
-    @Param('filename') filename: string,
+    @Param("filename") filename: string,
     @Res() res: Response,
   ): Promise<void> {
     try {
       // Security: Validate filename to prevent path traversal attacks (A01:2021 - Broken Access Control)
-      if (!filename || filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
-        throw new BadRequestException('Invalid filename');
+      if (
+        !filename ||
+        filename.includes("..") ||
+        filename.includes("/") ||
+        filename.includes("\\")
+      ) {
+        throw new BadRequestException("Invalid filename");
       }
 
       // Construct the object path in MinIO
       const objectPath = `event-images/${filename}`;
-      
+
       // Get file metadata to set proper headers
       const metadata = await this.minioService.getFileMetadata(objectPath);
-      
+
       // Get file stream from MinIO
       const stream = await this.minioService.getFileStream(objectPath);
-      
+
       // Set appropriate headers
-      res.setHeader('Content-Type', metadata.metaData['content-type'] || 'application/octet-stream');
-      res.setHeader('Content-Length', metadata.size);
-      res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 24 hours
-      res.setHeader('Access-Control-Allow-Origin', '*'); // Allow CORS
-      
+      res.setHeader(
+        "Content-Type",
+        metadata.metaData["content-type"] || "application/octet-stream",
+      );
+      res.setHeader("Content-Length", metadata.size);
+      res.setHeader("Cache-Control", "public, max-age=86400"); // Cache for 24 hours
+      res.setHeader("Access-Control-Allow-Origin", "*"); // Allow CORS
+
       // Pipe the stream to the response
       stream.pipe(res);
     } catch (error) {
@@ -624,13 +745,13 @@ export class EventController {
 
   /**
    * Formats an Event entity into an HTTP response
-   * 
+   *
    * @param event - The Event entity to format
    * @returns Formatted event response
    */
   private async formatEventResponse(event: Event): Promise<EventResponse> {
     let organizer = null;
-    
+
     // Si el evento tiene un createdBy, obtener la información del usuario
     if (event.createdBy) {
       const user = await this.userRepository.findById(event.createdBy);
@@ -639,11 +760,11 @@ export class EventController {
           id: user.id,
           firstName: user.firstName,
           lastName: user.lastName,
-          email: typeof user.email === 'string' ? user.email : user.email.value,
+          email: typeof user.email === "string" ? user.email : user.email.value,
         };
       }
     }
-    
+
     return {
       id: event.id,
       name: event.name,
@@ -653,7 +774,7 @@ export class EventController {
       imageUrl: event.imageUrl || null,
       createdBy: event.createdBy || null,
       organizer,
-      ticketConfigurations: event.ticketConfigurations.map(config => ({
+      ticketConfigurations: event.ticketConfigurations.map((config) => ({
         type: config.type,
         price: config.price.amount,
         currency: config.price.currency,

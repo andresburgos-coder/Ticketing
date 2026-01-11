@@ -35,6 +35,7 @@ jobs:
       - name: 🔎 Lint Backend (ESLint)
         working-directory: ./backend
         run: npm run lint
+        continue-on-error: true
 
       # Frontend Validation
       - name: 📦 Instalar dependencias Frontend

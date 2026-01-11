@@ -1,18 +1,18 @@
-import * as fc from 'fast-check';
-import { Event } from '../../src/domain/entities/event.entity';
-import { Reservation } from '../../src/domain/entities/reservation.entity';
-import { TicketConfiguration } from '../../src/domain/entities/ticket-configuration.entity';
-import { Money } from '../../src/domain/value-objects/money.vo';
-import { TicketType } from '../../src/domain/value-objects/ticket-type.vo';
-import { TicketQuantity } from '../../src/domain/value-objects/ticket-quantity.vo';
-import { Email } from '../../src/domain/value-objects/email.vo';
-import { InsufficientTicketsException } from '../../src/domain/exceptions/insufficient-tickets.exception';
+import * as fc from "fast-check";
+import { Event } from "../../src/domain/entities/event.entity";
+import { Reservation } from "../../src/domain/entities/reservation.entity";
+import { TicketConfiguration } from "../../src/domain/entities/ticket-configuration.entity";
+import { Money } from "../../src/domain/value-objects/money.vo";
+import { TicketType } from "../../src/domain/value-objects/ticket-type.vo";
+import { TicketQuantity } from "../../src/domain/value-objects/ticket-quantity.vo";
+import { Email } from "../../src/domain/value-objects/email.vo";
+import { InsufficientTicketsException } from "../../src/domain/exceptions/insufficient-tickets.exception";
 import {
   eventDataArbitrary,
   validTicketQuantityArbitrary,
   ticketTypeArbitrary,
-} from './generators/event.generator';
-import { validEmailArbitrary } from './generators/email.generator';
+} from "./generators/event.generator";
+import { validEmailArbitrary } from "./generators/email.generator";
 
 /**
  * Feature: ticket-sales-system
@@ -29,14 +29,14 @@ import { validEmailArbitrary } from './generators/email.generator';
  * 3. When availability reaches 0, new reservations are rejected
  * 4. Releasing tickets increments availability back
  */
-describe('Property 12: Availability Reflects Reservations', () => {
+describe("Property 12: Availability Reflects Reservations", () => {
   const PROPERTY_CONFIG: fc.Parameters<unknown> = {
     numRuns: 100,
     verbose: fc.VerbosityLevel.VeryVerbose,
   };
 
-  describe('Availability decrements on reservation creation', () => {
-    it('should decrement availability when creating a reservation', () => {
+  describe("Availability decrements on reservation creation", () => {
+    it("should decrement availability when creating a reservation", () => {
       fc.assert(
         fc.property(
           eventDataArbitrary,
@@ -44,13 +44,14 @@ describe('Property 12: Availability Reflects Reservations', () => {
           validEmailArbitrary,
           (eventData: any, quantity: number, email: string) => {
             // Arrange
-            const ticketConfigs = eventData.ticketConfigurations.map((config: any) =>
-              new TicketConfiguration(
-                config.type,
-                Money.create(config.price.amount, config.price.currency),
-                config.totalQuantity,
-                config.availableQuantity
-              )
+            const ticketConfigs = eventData.ticketConfigurations.map(
+              (config: any) =>
+                new TicketConfiguration(
+                  config.type,
+                  Money.create(config.price.amount, config.price.currency),
+                  config.totalQuantity,
+                  config.availableQuantity,
+                ),
             );
 
             const event = new Event(
@@ -58,7 +59,7 @@ describe('Property 12: Availability Reflects Reservations', () => {
               eventData.name,
               eventData.date,
               eventData.location,
-              ticketConfigs
+              ticketConfigs,
             );
 
             // Select a ticket type that exists in the event
@@ -71,32 +72,39 @@ describe('Property 12: Availability Reflects Reservations', () => {
               event.reserveTickets(ticketType, quantity);
 
               // Assert
-              const afterReservationAvailability = event.getAvailability(ticketType);
-              expect(afterReservationAvailability).toBe(initialAvailability - quantity);
+              const afterReservationAvailability =
+                event.getAvailability(ticketType);
+              expect(afterReservationAvailability).toBe(
+                initialAvailability - quantity,
+              );
             }
-          }
+          },
         ),
-        PROPERTY_CONFIG
+        PROPERTY_CONFIG,
       );
     });
   });
 
-  describe('Availability reflects active reservations', () => {
-    it('should correctly track availability with multiple reservations', () => {
+  describe("Availability reflects active reservations", () => {
+    it("should correctly track availability with multiple reservations", () => {
       fc.assert(
         fc.property(
           eventDataArbitrary,
-          fc.array(validTicketQuantityArbitrary, { minLength: 1, maxLength: 5 }),
+          fc.array(validTicketQuantityArbitrary, {
+            minLength: 1,
+            maxLength: 5,
+          }),
           validEmailArbitrary,
           (eventData: any, quantities: number[], email: string) => {
             // Arrange
-            const ticketConfigs = eventData.ticketConfigurations.map((config: any) =>
-              new TicketConfiguration(
-                config.type,
-                Money.create(config.price.amount, config.price.currency),
-                config.totalQuantity,
-                config.availableQuantity
-              )
+            const ticketConfigs = eventData.ticketConfigurations.map(
+              (config: any) =>
+                new TicketConfiguration(
+                  config.type,
+                  Money.create(config.price.amount, config.price.currency),
+                  config.totalQuantity,
+                  config.availableQuantity,
+                ),
             );
 
             const event = new Event(
@@ -104,7 +112,7 @@ describe('Property 12: Availability Reflects Reservations', () => {
               eventData.name,
               eventData.date,
               eventData.location,
-              ticketConfigs
+              ticketConfigs,
             );
 
             const ticketType = ticketConfigs[0].type;
@@ -114,13 +122,15 @@ describe('Property 12: Availability Reflects Reservations', () => {
             // Act: Create multiple reservations
             for (const quantity of quantities) {
               const currentAvailability = event.getAvailability(ticketType);
-              
+
               if (currentAvailability >= quantity) {
                 event.reserveTickets(ticketType, quantity);
                 totalReserved += quantity;
               } else {
                 // If we can't reserve, availability should remain unchanged
-                expect(event.getAvailability(ticketType)).toBe(currentAvailability);
+                expect(event.getAvailability(ticketType)).toBe(
+                  currentAvailability,
+                );
               }
             }
 
@@ -128,15 +138,15 @@ describe('Property 12: Availability Reflects Reservations', () => {
             const finalAvailability = event.getAvailability(ticketType);
             expect(finalAvailability).toBe(initialAvailability - totalReserved);
             expect(finalAvailability).toBeGreaterThanOrEqual(0);
-          }
+          },
         ),
-        PROPERTY_CONFIG
+        PROPERTY_CONFIG,
       );
     });
   });
 
-  describe('Availability = 0 prevents new reservations', () => {
-    it('should reject reservations when availability is 0', () => {
+  describe("Availability = 0 prevents new reservations", () => {
+    it("should reject reservations when availability is 0", () => {
       fc.assert(
         fc.property(
           eventDataArbitrary,
@@ -144,13 +154,14 @@ describe('Property 12: Availability Reflects Reservations', () => {
           validEmailArbitrary,
           (eventData: any, quantity: number, email: string) => {
             // Arrange
-            const ticketConfigs = eventData.ticketConfigurations.map((config: any) =>
-              new TicketConfiguration(
-                config.type,
-                Money.create(config.price.amount, config.price.currency),
-                config.totalQuantity,
-                0 // Set availability to 0
-              )
+            const ticketConfigs = eventData.ticketConfigurations.map(
+              (config: any) =>
+                new TicketConfiguration(
+                  config.type,
+                  Money.create(config.price.amount, config.price.currency),
+                  config.totalQuantity,
+                  0, // Set availability to 0
+                ),
             );
 
             const event = new Event(
@@ -158,25 +169,26 @@ describe('Property 12: Availability Reflects Reservations', () => {
               eventData.name,
               eventData.date,
               eventData.location,
-              ticketConfigs
+              ticketConfigs,
             );
 
             const ticketType = ticketConfigs[0].type;
 
             // Act & Assert
             if (quantity > 0) {
-              expect(() => event.reserveTickets(ticketType, quantity))
-                .toThrow(InsufficientTicketsException);
+              expect(() => event.reserveTickets(ticketType, quantity)).toThrow(
+                InsufficientTicketsException,
+              );
             }
-          }
+          },
         ),
-        PROPERTY_CONFIG
+        PROPERTY_CONFIG,
       );
     });
   });
 
-  describe('Availability > 0 allows reservations', () => {
-    it('should allow reservations when availability > 0', () => {
+  describe("Availability > 0 allows reservations", () => {
+    it("should allow reservations when availability > 0", () => {
       fc.assert(
         fc.property(
           eventDataArbitrary,
@@ -184,13 +196,14 @@ describe('Property 12: Availability Reflects Reservations', () => {
           validEmailArbitrary,
           (eventData: any, quantity: number, email: string) => {
             // Arrange
-            const ticketConfigs = eventData.ticketConfigurations.map((config: any) =>
-              new TicketConfiguration(
-                config.type,
-                Money.create(config.price.amount, config.price.currency),
-                config.totalQuantity,
-                Math.max(quantity, 1) // Ensure at least 'quantity' available
-              )
+            const ticketConfigs = eventData.ticketConfigurations.map(
+              (config: any) =>
+                new TicketConfiguration(
+                  config.type,
+                  Money.create(config.price.amount, config.price.currency),
+                  config.totalQuantity,
+                  Math.max(quantity, 1), // Ensure at least 'quantity' available
+                ),
             );
 
             const event = new Event(
@@ -198,26 +211,29 @@ describe('Property 12: Availability Reflects Reservations', () => {
               eventData.name,
               eventData.date,
               eventData.location,
-              ticketConfigs
+              ticketConfigs,
             );
 
             const ticketType = ticketConfigs[0].type;
             const initialAvailability = event.getAvailability(ticketType);
 
             // Act & Assert
-            expect(() => event.reserveTickets(ticketType, quantity))
-              .not.toThrow();
-            
-            expect(event.getAvailability(ticketType)).toBe(initialAvailability - quantity);
-          }
+            expect(() =>
+              event.reserveTickets(ticketType, quantity),
+            ).not.toThrow();
+
+            expect(event.getAvailability(ticketType)).toBe(
+              initialAvailability - quantity,
+            );
+          },
         ),
-        PROPERTY_CONFIG
+        PROPERTY_CONFIG,
       );
     });
   });
 
-  describe('Release operations restore availability', () => {
-    it('should restore availability when releasing tickets', () => {
+  describe("Release operations restore availability", () => {
+    it("should restore availability when releasing tickets", () => {
       fc.assert(
         fc.property(
           eventDataArbitrary,
@@ -225,13 +241,14 @@ describe('Property 12: Availability Reflects Reservations', () => {
           validEmailArbitrary,
           (eventData: any, quantity: number, email: string) => {
             // Arrange
-            const ticketConfigs = eventData.ticketConfigurations.map((config: any) =>
-              new TicketConfiguration(
-                config.type,
-                Money.create(config.price.amount, config.price.currency),
-                config.totalQuantity,
-                Math.max(quantity, 1)
-              )
+            const ticketConfigs = eventData.ticketConfigurations.map(
+              (config: any) =>
+                new TicketConfiguration(
+                  config.type,
+                  Money.create(config.price.amount, config.price.currency),
+                  config.totalQuantity,
+                  Math.max(quantity, 1),
+                ),
             );
 
             const event = new Event(
@@ -239,7 +256,7 @@ describe('Property 12: Availability Reflects Reservations', () => {
               eventData.name,
               eventData.date,
               eventData.location,
-              ticketConfigs
+              ticketConfigs,
             );
 
             const ticketType = ticketConfigs[0].type;
@@ -248,20 +265,20 @@ describe('Property 12: Availability Reflects Reservations', () => {
             // Act
             event.reserveTickets(ticketType, quantity);
             const afterReserve = event.getAvailability(ticketType);
-            
+
             event.releaseTickets(ticketType, quantity);
             const afterRelease = event.getAvailability(ticketType);
 
             // Assert
             expect(afterReserve).toBe(initialAvailability - quantity);
             expect(afterRelease).toBe(initialAvailability);
-          }
+          },
         ),
-        PROPERTY_CONFIG
+        PROPERTY_CONFIG,
       );
     });
 
-    it('should not exceed total quantity when releasing tickets', () => {
+    it("should not exceed total quantity when releasing tickets", () => {
       fc.assert(
         fc.property(
           eventDataArbitrary,
@@ -269,13 +286,14 @@ describe('Property 12: Availability Reflects Reservations', () => {
           validEmailArbitrary,
           (eventData: any, quantity: number, email: string) => {
             // Arrange
-            const ticketConfigs = eventData.ticketConfigurations.map((config: any) =>
-              new TicketConfiguration(
-                config.type,
-                Money.create(config.price.amount, config.price.currency),
-                config.totalQuantity,
-                config.availableQuantity
-              )
+            const ticketConfigs = eventData.ticketConfigurations.map(
+              (config: any) =>
+                new TicketConfiguration(
+                  config.type,
+                  Money.create(config.price.amount, config.price.currency),
+                  config.totalQuantity,
+                  config.availableQuantity,
+                ),
             );
 
             const event = new Event(
@@ -283,7 +301,7 @@ describe('Property 12: Availability Reflects Reservations', () => {
               eventData.name,
               eventData.date,
               eventData.location,
-              ticketConfigs
+              ticketConfigs,
             );
 
             const ticketType = ticketConfigs[0].type;
@@ -295,29 +313,33 @@ describe('Property 12: Availability Reflects Reservations', () => {
             // Assert
             const finalAvailability = event.getAvailability(ticketType);
             expect(finalAvailability).toBeLessThanOrEqual(totalQuantity);
-          }
+          },
         ),
-        PROPERTY_CONFIG
+        PROPERTY_CONFIG,
       );
     });
   });
 
-  describe('Availability bounds invariants', () => {
-    it('should maintain availability within valid bounds [0, totalQuantity]', () => {
+  describe("Availability bounds invariants", () => {
+    it("should maintain availability within valid bounds [0, totalQuantity]", () => {
       fc.assert(
         fc.property(
           eventDataArbitrary,
-          fc.array(validTicketQuantityArbitrary, { minLength: 1, maxLength: 10 }),
+          fc.array(validTicketQuantityArbitrary, {
+            minLength: 1,
+            maxLength: 10,
+          }),
           validEmailArbitrary,
           (eventData: any, operations: number[], email: string) => {
             // Arrange
-            const ticketConfigs = eventData.ticketConfigurations.map((config: any) =>
-              new TicketConfiguration(
-                config.type,
-                Money.create(config.price.amount, config.price.currency),
-                config.totalQuantity,
-                config.availableQuantity
-              )
+            const ticketConfigs = eventData.ticketConfigurations.map(
+              (config: any) =>
+                new TicketConfiguration(
+                  config.type,
+                  Money.create(config.price.amount, config.price.currency),
+                  config.totalQuantity,
+                  config.availableQuantity,
+                ),
             );
 
             const event = new Event(
@@ -325,7 +347,7 @@ describe('Property 12: Availability Reflects Reservations', () => {
               eventData.name,
               eventData.date,
               eventData.location,
-              ticketConfigs
+              ticketConfigs,
             );
 
             const ticketType = ticketConfigs[0].type;
@@ -338,7 +360,7 @@ describe('Property 12: Availability Reflects Reservations', () => {
               } catch {
                 // Ignore insufficient tickets errors
               }
-              
+
               event.releaseTickets(ticketType, quantity);
             }
 
@@ -346,9 +368,9 @@ describe('Property 12: Availability Reflects Reservations', () => {
             const finalAvailability = event.getAvailability(ticketType);
             expect(finalAvailability).toBeGreaterThanOrEqual(0);
             expect(finalAvailability).toBeLessThanOrEqual(totalQuantity);
-          }
+          },
         ),
-        PROPERTY_CONFIG
+        PROPERTY_CONFIG,
       );
     });
   });

@@ -1,15 +1,15 @@
-import { Injectable } from '@nestjs/common';
-import { DataSource, Repository, LessThan } from 'typeorm';
-import { Reservation } from '../../../domain/entities/reservation.entity';
-import { IReservationRepository } from '../../../domain/interfaces/reservation-repository.interface';
-import { ReservationOrmEntity } from '../entities/reservation.orm-entity';
-import { ReservationMapper } from '../mappers/reservation.mapper';
+import { Injectable } from "@nestjs/common";
+import { DataSource, Repository, LessThan } from "typeorm";
+import { Reservation } from "../../../domain/entities/reservation.entity";
+import { IReservationRepository } from "../../../domain/interfaces/reservation-repository.interface";
+import { ReservationOrmEntity } from "../entities/reservation.orm-entity";
+import { ReservationMapper } from "../mappers/reservation.mapper";
 
 /**
  * TypeOrmReservationRepository
  * Implements the IReservationRepository interface using TypeORM
  * Handles persistence of Reservation entities to PostgreSQL database
- * 
+ *
  * Requirements: 3.1, 3.3, 3.4
  * - 3.1: Persist reservation with Active state and unique ID
  * - 3.3: Find expired reservations for automatic release
@@ -56,7 +56,7 @@ export class TypeOrmReservationRepository implements IReservationRepository {
    * Finds all expired reservations that need to be processed
    * Requirements: 3.3 - Find reservations with expiresAt < now and status ACTIVE
    * Used by scheduled jobs to automatically release tickets
-   * 
+   *
    * @returns Promise resolving to array of expired Reservations
    */
   async findExpired(): Promise<Reservation[]> {
@@ -64,17 +64,19 @@ export class TypeOrmReservationRepository implements IReservationRepository {
     const ormEntities = await this.repository.find({
       where: {
         expiresAt: LessThan(now),
-        status: 'ACTIVE',
+        status: "ACTIVE",
       },
     });
 
-    return ormEntities.map((ormEntity) => ReservationMapper.toDomain(ormEntity));
+    return ormEntities.map((ormEntity) =>
+      ReservationMapper.toDomain(ormEntity),
+    );
   }
 
   /**
    * Updates an existing reservation in the database
    * Typically used to change reservation status (ACTIVE -> CONFIRMED/EXPIRED/CANCELLED)
-   * 
+   *
    * @param id - The reservation ID to update
    * @param data - Partial reservation data to update
    * @returns Promise resolving to the updated Reservation
@@ -83,24 +85,24 @@ export class TypeOrmReservationRepository implements IReservationRepository {
   async update(id: string, data: Partial<Reservation>): Promise<Reservation> {
     // Convert domain data to ORM format for update
     const updateData: any = {};
-    
+
     if (data.status) {
       updateData.status = data.status;
     }
-    
+
     if (data.quantity) {
       updateData.quantity = data.quantity.value;
     }
-    
+
     if (data.totalAmount) {
       updateData.totalAmount = data.totalAmount.amount;
       updateData.currency = data.totalAmount.currency;
     }
-    
+
     if (data.buyerEmail) {
       updateData.buyerEmail = data.buyerEmail.value;
     }
-    
+
     if (data.expiresAt) {
       updateData.expiresAt = data.expiresAt;
     }
@@ -108,7 +110,7 @@ export class TypeOrmReservationRepository implements IReservationRepository {
     await this.repository.update(id, updateData);
     const updatedEntity = await this.repository.findOne({ where: { id } });
     if (!updatedEntity) {
-      throw new Error('Reservation not found after update');
+      throw new Error("Reservation not found after update");
     }
     return ReservationMapper.toDomain(updatedEntity);
   }
@@ -131,10 +133,12 @@ export class TypeOrmReservationRepository implements IReservationRepository {
     limit?: number;
     offset?: number;
   }): Promise<Reservation[]> {
-    const queryBuilder = this.repository.createQueryBuilder('reservation');
+    const queryBuilder = this.repository.createQueryBuilder("reservation");
 
     if (filters.status) {
-      queryBuilder.andWhere('reservation.status = :status', { status: filters.status });
+      queryBuilder.andWhere("reservation.status = :status", {
+        status: filters.status,
+      });
     }
 
     if (filters.limit) {
@@ -146,7 +150,7 @@ export class TypeOrmReservationRepository implements IReservationRepository {
     }
 
     const ormEntities = await queryBuilder.getMany();
-    return ormEntities.map(entity => ReservationMapper.toDomain(entity));
+    return ormEntities.map((entity) => ReservationMapper.toDomain(entity));
   }
 
   /**
@@ -154,13 +158,13 @@ export class TypeOrmReservationRepository implements IReservationRepository {
    * @param filters - Filter criteria
    * @returns Promise resolving to count
    */
-  async countWithFilters(filters: {
-    status?: string;
-  }): Promise<number> {
-    const queryBuilder = this.repository.createQueryBuilder('reservation');
+  async countWithFilters(filters: { status?: string }): Promise<number> {
+    const queryBuilder = this.repository.createQueryBuilder("reservation");
 
     if (filters.status) {
-      queryBuilder.andWhere('reservation.status = :status', { status: filters.status });
+      queryBuilder.andWhere("reservation.status = :status", {
+        status: filters.status,
+      });
     }
 
     return await queryBuilder.getCount();
@@ -172,7 +176,7 @@ export class TypeOrmReservationRepository implements IReservationRepository {
    */
   async countActive(): Promise<number> {
     return await this.repository.count({
-      where: { status: 'ACTIVE' }
+      where: { status: "ACTIVE" },
     });
   }
 }

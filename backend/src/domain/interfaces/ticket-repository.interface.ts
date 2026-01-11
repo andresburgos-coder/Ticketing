@@ -1,11 +1,11 @@
-import { Ticket } from '../entities/ticket.entity';
-import { Email } from '../value-objects/email.vo';
+import { Ticket } from "../entities/ticket.entity";
+import { Email } from "../value-objects/email.vo";
 
 /**
  * ITicketRepository Interface
  * Defines the contract for persisting and retrieving Ticket entities
  * Follows Dependency Inversion Principle (DIP)
- * 
+ *
  * Requirements: 4.4, 6.1
  * - 4.4: Generate tickets with unique code, event, type and buyer data
  * - 6.1: Return all confirmed tickets for a buyer
@@ -83,12 +83,29 @@ export interface ITicketRepository {
 
   getTicketsByStatus(): Promise<Array<{ status: string; count: number }>>;
   getTicketsByType(): Promise<Array<{ type: string; count: number }>>;
-  getTicketsByTypeForEvent(eventId: string): Promise<Array<{ type: string; count: number }>>;
+  getTicketsByTypeForEvent(
+    eventId: string,
+  ): Promise<Array<{ type: string; count: number }>>;
 
-  getSalesByMonth(): Promise<Array<{ month: string; count: number; revenue: number }>>;
-  getSalesByDateForEvent(eventId: string): Promise<Array<{ date: string; count: number }>>;
-  getSalesTrendForEvent(eventId: string): Promise<Array<{ date: string; count: number }>>;
+  getSalesByMonth(): Promise<
+    Array<{ month: string; count: number; revenue: number }>
+  >;
+  getSalesByDateForEvent(
+    eventId: string,
+  ): Promise<Array<{ date: string; count: number }>>;
+  getSalesTrendForEvent(
+    eventId: string,
+  ): Promise<Array<{ date: string; count: number }>>;
 
-  getTopSellingEvents(limit: number): Promise<Array<{ eventId: string; eventName: string; ticketsSold: number; revenue: number }>>;
+  getTopSellingEvents(
+    limit: number,
+  ): Promise<
+    Array<{
+      eventId: string;
+      eventName: string;
+      ticketsSold: number;
+      revenue: number;
+    }>
+  >;
 }
-export const TICKET_REPOSITORY = Symbol('TICKET_REPOSITORY');
+export const TICKET_REPOSITORY = Symbol("TICKET_REPOSITORY");

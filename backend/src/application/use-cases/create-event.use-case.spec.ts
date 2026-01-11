@@ -1,21 +1,21 @@
-import { CreateEventUseCase } from './create-event.use-case';
-import { IEventRepository } from '../../domain/interfaces/event-repository.interface';
-import { Event } from '../../domain/entities/event.entity';
-import { TicketConfiguration } from '../../domain/entities/ticket-configuration.entity';
-import { TicketType } from '../../domain/value-objects/ticket-type.vo';
-import { Money } from '../../domain/value-objects/money.vo';
+import { CreateEventUseCase } from "./create-event.use-case";
+import { IEventRepository } from "../../domain/interfaces/event-repository.interface";
+import { Event } from "../../domain/entities/event.entity";
+import { TicketConfiguration } from "../../domain/entities/ticket-configuration.entity";
+import { TicketType } from "../../domain/value-objects/ticket-type.vo";
+import { Money } from "../../domain/value-objects/money.vo";
 
 /**
  * CreateEventUseCase Tests
- * 
+ *
  * Tests for the use case that creates events with ticket configurations.
  * Validates that events are created correctly and persisted with unique IDs.
- * 
+ *
  * Requirements: 1.1, 1.2
  * - 1.1: Persist event and return unique identifier
  * - 1.2: Store ticket configuration with price and quantity
  */
-describe('CreateEventUseCase', () => {
+describe("CreateEventUseCase", () => {
   let useCase: CreateEventUseCase;
   let mockEventRepository: jest.Mocked<IEventRepository>;
 
@@ -31,16 +31,16 @@ describe('CreateEventUseCase', () => {
     useCase = new CreateEventUseCase(mockEventRepository);
   });
 
-  describe('execute', () => {
-    it('should create event with ticket configurations', async () => {
+  describe("execute", () => {
+    it("should create event with ticket configurations", async () => {
       // Arrange
       const futureDate = new Date();
       futureDate.setDate(futureDate.getDate() + 30);
 
       const input = {
-        name: 'Concierto de Rock',
+        name: "Concierto de Rock",
         date: futureDate,
-        location: 'Estadio Nacional',
+        location: "Estadio Nacional",
         ticketConfigurations: [
           {
             type: TicketType.VIP,
@@ -61,30 +61,30 @@ describe('CreateEventUseCase', () => {
       };
 
       const expectedEvent = new Event(
-        'event-123',
+        "event-123",
         input.name,
         input.date,
         input.location,
         [
           new TicketConfiguration(
             TicketType.VIP,
-            Money.create(150000, 'COP'),
+            Money.create(150000, "COP"),
             100,
-            100
+            100,
           ),
           new TicketConfiguration(
             TicketType.GENERAL,
-            Money.create(100000, 'COP'),
+            Money.create(100000, "COP"),
             200,
-            200
+            200,
           ),
           new TicketConfiguration(
             TicketType.EARLY_BIRD,
-            Money.create(80000, 'COP'),
+            Money.create(80000, "COP"),
             150,
-            150
+            150,
           ),
-        ]
+        ],
       );
 
       mockEventRepository.save.mockResolvedValue(expectedEvent);
@@ -98,12 +98,12 @@ describe('CreateEventUseCase', () => {
       expect(mockEventRepository.save).toHaveBeenCalledTimes(1);
     });
 
-    it('should validate input data', async () => {
+    it("should validate input data", async () => {
       // Arrange
       const invalidInput = {
-        name: '',
-        date: new Date('2025-03-15T20:00:00Z'),
-        location: 'Estadio Nacional',
+        name: "",
+        date: new Date("2025-03-15T20:00:00Z"),
+        location: "Estadio Nacional",
         ticketConfigurations: [],
       };
 
@@ -111,15 +111,15 @@ describe('CreateEventUseCase', () => {
       await expect(useCase.execute(invalidInput)).rejects.toThrow();
     });
 
-    it('should return event created with ID', async () => {
+    it("should return event created with ID", async () => {
       // Arrange
       const futureDate = new Date();
       futureDate.setDate(futureDate.getDate() + 45);
 
       const input = {
-        name: 'Festival de Música',
+        name: "Festival de Música",
         date: futureDate,
-        location: 'Parque Arvi',
+        location: "Parque Arvi",
         ticketConfigurations: [
           {
             type: TicketType.GENERAL,
@@ -130,18 +130,18 @@ describe('CreateEventUseCase', () => {
       };
 
       const createdEvent = new Event(
-        'event-456',
+        "event-456",
         input.name,
         input.date,
         input.location,
         [
           new TicketConfiguration(
             TicketType.GENERAL,
-            Money.create(50000, 'COP'),
+            Money.create(50000, "COP"),
             500,
-            500
+            500,
           ),
-        ]
+        ],
       );
 
       mockEventRepository.save.mockResolvedValue(createdEvent);
@@ -150,7 +150,7 @@ describe('CreateEventUseCase', () => {
       const result = await useCase.execute(input);
 
       // Assert
-      expect(result.id).toBe('event-456');
+      expect(result.id).toBe("event-456");
       expect(result.name).toBe(input.name);
       expect(result.date).toEqual(input.date);
       expect(result.location).toEqual(input.location);
@@ -158,14 +158,14 @@ describe('CreateEventUseCase', () => {
     });
   });
 
-  describe('validation', () => {
+  describe("validation", () => {
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 30);
 
     const validInput = {
-      name: 'Valid Event',
+      name: "Valid Event",
       date: futureDate,
-      location: 'Valid Location',
+      location: "Valid Location",
       ticketConfigurations: [
         {
           type: TicketType.VIP,
@@ -175,65 +175,79 @@ describe('CreateEventUseCase', () => {
       ],
     };
 
-    it('should reject empty event name', async () => {
+    it("should reject empty event name", async () => {
       // Arrange
-      const input = { ...validInput, name: '' };
+      const input = { ...validInput, name: "" };
 
       // Act & Assert
-      await expect(useCase.execute(input)).rejects.toThrow('Event name is required');
+      await expect(useCase.execute(input)).rejects.toThrow(
+        "Event name is required",
+      );
     });
 
-    it('should reject whitespace-only event name', async () => {
+    it("should reject whitespace-only event name", async () => {
       // Arrange
-      const input = { ...validInput, name: '   ' };
+      const input = { ...validInput, name: "   " };
 
       // Act & Assert
-      await expect(useCase.execute(input)).rejects.toThrow('Event name is required');
+      await expect(useCase.execute(input)).rejects.toThrow(
+        "Event name is required",
+      );
     });
 
-    it('should reject missing event date', async () => {
+    it("should reject missing event date", async () => {
       // Arrange
       const input = { ...validInput, date: null as any };
 
       // Act & Assert
-      await expect(useCase.execute(input)).rejects.toThrow('Event date is required');
+      await expect(useCase.execute(input)).rejects.toThrow(
+        "Event date is required",
+      );
     });
 
-    it('should reject past event date', async () => {
+    it("should reject past event date", async () => {
       // Arrange
       const pastDate = new Date();
       pastDate.setDate(pastDate.getDate() - 1);
       const input = { ...validInput, date: pastDate };
 
       // Act & Assert
-      await expect(useCase.execute(input)).rejects.toThrow('Event date cannot be in the past');
+      await expect(useCase.execute(input)).rejects.toThrow(
+        "Event date cannot be in the past",
+      );
     });
 
-    it('should reject empty event location', async () => {
+    it("should reject empty event location", async () => {
       // Arrange
-      const input = { ...validInput, location: '' };
+      const input = { ...validInput, location: "" };
 
       // Act & Assert
-      await expect(useCase.execute(input)).rejects.toThrow('Event location is required');
+      await expect(useCase.execute(input)).rejects.toThrow(
+        "Event location is required",
+      );
     });
 
-    it('should reject whitespace-only event location', async () => {
+    it("should reject whitespace-only event location", async () => {
       // Arrange
-      const input = { ...validInput, location: '   ' };
+      const input = { ...validInput, location: "   " };
 
       // Act & Assert
-      await expect(useCase.execute(input)).rejects.toThrow('Event location is required');
+      await expect(useCase.execute(input)).rejects.toThrow(
+        "Event location is required",
+      );
     });
 
-    it('should reject missing ticket configurations', async () => {
+    it("should reject missing ticket configurations", async () => {
       // Arrange
       const input = { ...validInput, ticketConfigurations: [] };
 
       // Act & Assert
-      await expect(useCase.execute(input)).rejects.toThrow('At least one ticket configuration is required');
+      await expect(useCase.execute(input)).rejects.toThrow(
+        "At least one ticket configuration is required",
+      );
     });
 
-    it('should reject ticket configuration with missing type', async () => {
+    it("should reject ticket configuration with missing type", async () => {
       // Arrange
       const input = {
         ...validInput,
@@ -247,10 +261,10 @@ describe('CreateEventUseCase', () => {
       };
 
       // Act & Assert
-      await expect(useCase.execute(input)).rejects.toThrow('missing type');
+      await expect(useCase.execute(input)).rejects.toThrow("missing type");
     });
 
-    it('should reject ticket configuration with negative price', async () => {
+    it("should reject ticket configuration with negative price", async () => {
       // Arrange
       const input = {
         ...validInput,
@@ -264,10 +278,10 @@ describe('CreateEventUseCase', () => {
       };
 
       // Act & Assert
-      await expect(useCase.execute(input)).rejects.toThrow('invalid price');
+      await expect(useCase.execute(input)).rejects.toThrow("invalid price");
     });
 
-    it('should reject ticket configuration with zero quantity', async () => {
+    it("should reject ticket configuration with zero quantity", async () => {
       // Arrange
       const input = {
         ...validInput,
@@ -281,10 +295,10 @@ describe('CreateEventUseCase', () => {
       };
 
       // Act & Assert
-      await expect(useCase.execute(input)).rejects.toThrow('invalid quantity');
+      await expect(useCase.execute(input)).rejects.toThrow("invalid quantity");
     });
 
-    it('should reject ticket configuration with negative quantity', async () => {
+    it("should reject ticket configuration with negative quantity", async () => {
       // Arrange
       const input = {
         ...validInput,
@@ -298,7 +312,7 @@ describe('CreateEventUseCase', () => {
       };
 
       // Act & Assert
-      await expect(useCase.execute(input)).rejects.toThrow('invalid quantity');
+      await expect(useCase.execute(input)).rejects.toThrow("invalid quantity");
     });
   });
 });

@@ -10,12 +10,15 @@ import {
   ConflictException,
   HttpException,
   Inject,
-} from '@nestjs/common';
-import { CreateReservationUseCase } from '../../application/use-cases/create-reservation.use-case';
-import { ProcessPaymentUseCase } from '../../application/use-cases/process-payment.use-case';
-import { CreateReservationDto, ProcessPaymentDto } from '../../application/dto/create-reservation.dto';
-import { IReservationRepository } from '../../domain/interfaces/reservation-repository.interface';
-import { RESERVATION_REPOSITORY } from '../../domain/interfaces/repository-tokens';
+} from "@nestjs/common";
+import { CreateReservationUseCase } from "../../application/use-cases/create-reservation.use-case";
+import { ProcessPaymentUseCase } from "../../application/use-cases/process-payment.use-case";
+import {
+  CreateReservationDto,
+  ProcessPaymentDto,
+} from "../../application/dto/create-reservation.dto";
+import { IReservationRepository } from "../../domain/interfaces/reservation-repository.interface";
+import { RESERVATION_REPOSITORY } from "../../domain/interfaces/repository-tokens";
 
 /**
  * ReservationController
@@ -23,7 +26,7 @@ import { RESERVATION_REPOSITORY } from '../../domain/interfaces/repository-token
  * Follows REST conventions and NestJS best practices
  * Requirements: 3.1, 3.5, 4.1
  */
-@Controller('reservations')
+@Controller("reservations")
 export class ReservationController {
   constructor(
     private readonly createReservationUseCase: CreateReservationUseCase,
@@ -35,18 +38,20 @@ export class ReservationController {
   /**
    * POST /reservations
    * Creates a new temporary ticket reservation
-   * 
+   *
    * @param createReservationDto - The reservation data to create
    * @returns The created reservation with ID and expiration time
    * @throws BadRequestException if input validation fails
    * @throws ConflictException if insufficient tickets available
-   * 
+   *
    * Requirement 3.1: Create reservation with ACTIVE state and 15-minute expiration
    * Requirement 3.5: Return 409 if insufficient tickets available
    */
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() createReservationDto: CreateReservationDto): Promise<ReservationResponse> {
+  async create(
+    @Body() createReservationDto: CreateReservationDto,
+  ): Promise<ReservationResponse> {
     try {
       // Execute use case
       const reservation = await this.createReservationUseCase.execute({
@@ -61,7 +66,11 @@ export class ReservationController {
     } catch (error) {
       if (error instanceof Error) {
         // Check if error is due to insufficient tickets
-        if (error.message.includes('Insufficient') || error.message.includes('insufficient') || error.message.includes('Requested')) {
+        if (
+          error.message.includes("Insufficient") ||
+          error.message.includes("insufficient") ||
+          error.message.includes("Requested")
+        ) {
           throw new ConflictException(error.message);
         }
         throw new BadRequestException(error.message);
@@ -73,31 +82,31 @@ export class ReservationController {
   /**
    * POST /reservations/:id/payment
    * Processes payment for a reservation
-   * 
+   *
    * @param id - The reservation ID
    * @param processPaymentDto - The payment data
    * @returns Payment result with success/failure info
    * @throws NotFoundException if reservation does not exist
    * @throws BadRequestException if payment validation fails
    * @throws HttpException with 402 status if payment fails
-   * 
+   *
    * Requirement 4.1: Process payment with amount validation
    * Requirement 4.2: Update payment status to COMPLETED on success
    * Requirement 4.3: Change reservation to CONFIRMED on successful payment
    * Requirement 4.4: Generate tickets with unique code on success
    * Requirement 4.5: Cancel reservation and release tickets on payment failure
    */
-  @Post(':id/payment')
+  @Post(":id/payment")
   @HttpCode(HttpStatus.OK)
   async processPayment(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @Body() processPaymentDto: ProcessPaymentDto,
   ): Promise<PaymentResponse> {
     try {
       // Verify reservation exists
       const reservation = await this.reservationRepository.findById(id);
       if (!reservation) {
-        throw new NotFoundException('Reservation not found');
+        throw new NotFoundException("Reservation not found");
       }
 
       // Execute use case
@@ -132,7 +141,10 @@ export class ReservationController {
       }
       if (error instanceof Error) {
         // Check if error is due to amount mismatch
-        if (error.message.includes('amount') || error.message.includes('currency')) {
+        if (
+          error.message.includes("amount") ||
+          error.message.includes("currency")
+        ) {
           throw new BadRequestException(error.message);
         }
         throw new BadRequestException(error.message);
@@ -143,7 +155,7 @@ export class ReservationController {
 
   /**
    * Formats a Reservation entity into an HTTP response
-   * 
+   *
    * @param reservation - The Reservation entity to format
    * @returns Formatted reservation response
    */

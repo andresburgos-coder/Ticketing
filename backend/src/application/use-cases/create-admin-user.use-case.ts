@@ -1,12 +1,12 @@
-import { Injectable, Inject, ConflictException } from '@nestjs/common';
-import { IUserRepository } from '../../domain/interfaces/user-repository.interface';
-import { User } from '../../domain/entities/user.entity';
-import { UserRole } from '../../domain/enums/user-role.enum';
-import { CreateAdminUserDto } from '../../presentation/dtos/create-admin-user.dto';
-import { USER_REPOSITORY } from '../../domain/interfaces/repository-tokens';
-import { Email } from '../../domain/value-objects/email.vo';
-import * as bcrypt from 'bcrypt';
-import { v4 as uuidv4 } from 'uuid';
+import { Injectable, Inject, ConflictException } from "@nestjs/common";
+import { IUserRepository } from "../../domain/interfaces/user-repository.interface";
+import { User } from "../../domain/entities/user.entity";
+import { UserRole } from "../../domain/enums/user-role.enum";
+import { CreateAdminUserDto } from "../../presentation/dtos/create-admin-user.dto";
+import { USER_REPOSITORY } from "../../domain/interfaces/repository-tokens";
+import { Email } from "../../domain/value-objects/email.vo";
+import * as bcrypt from "bcrypt";
+import { v4 as uuidv4 } from "uuid";
 
 @Injectable()
 export class CreateAdminUserUseCase {
@@ -15,14 +15,16 @@ export class CreateAdminUserUseCase {
     private readonly userRepository: IUserRepository,
   ) {}
 
-  async execute(createAdminUserDto: CreateAdminUserDto): Promise<Omit<User, 'passwordHash'>> {
+  async execute(
+    createAdminUserDto: CreateAdminUserDto,
+  ): Promise<Omit<User, "passwordHash">> {
     const { email, password, firstName, lastName, role } = createAdminUserDto;
 
     // Check if user already exists
     const emailObj = Email.create(email);
     const existingUser = await this.userRepository.findByEmail(emailObj);
     if (existingUser) {
-      throw new ConflictException('User with this email already exists');
+      throw new ConflictException("User with this email already exists");
     }
 
     // Hash password

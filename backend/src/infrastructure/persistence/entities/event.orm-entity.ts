@@ -5,9 +5,9 @@ import {
   OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
-} from 'typeorm';
-import { TicketConfigurationOrmEntity } from './ticket-configuration.orm-entity';
-import { EventDetailsOrmEntity } from './event-details.orm-entity';
+} from "typeorm";
+import { TicketConfigurationOrmEntity } from "./ticket-configuration.orm-entity";
+import { EventDetailsOrmEntity } from "./event-details.orm-entity";
 
 /**
  * Event ORM Entity
@@ -16,42 +16,40 @@ import { EventDetailsOrmEntity } from './event-details.orm-entity';
  *
  * Requirements: 1.1, 1.3, 8.3
  */
-@Entity('events')
+@Entity("events")
 export class EventOrmEntity {
-  @PrimaryColumn('varchar', { length: 12 })
+  @PrimaryColumn("varchar", { length: 12 })
   id!: string;
 
-  @OneToMany(() => EventDetailsOrmEntity, (detail) => detail.event, { cascade: true, eager: true })
+  @OneToMany(() => EventDetailsOrmEntity, (detail) => detail.event, {
+    cascade: true,
+    eager: true,
+  })
   details!: EventDetailsOrmEntity[];
 
   @Column({ length: 255 })
   name!: string;
 
-  @Column('timestamp')
+  @Column("timestamp")
   date!: Date;
-
 
   @Column({ length: 500 })
   location!: string;
 
-  @Column({ length: 255, name: 'venuename' })
+  @Column({ length: 255, name: "venuename" })
   venueName!: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: "text", nullable: true })
   imageUrl?: string;
 
-  @Column({ type: 'uuid', nullable: true, name: 'created_by' })
+  @Column({ type: "uuid", nullable: true, name: "created_by" })
   createdBy?: string;
 
-  @OneToMany(
-    () => TicketConfigurationOrmEntity,
-    (config) => config.event,
-    {
-      cascade: true,
-      eager: true,
-      onDelete: 'CASCADE',
-    }
-  )
+  @OneToMany(() => TicketConfigurationOrmEntity, (config) => config.event, {
+    cascade: true,
+    eager: true,
+    onDelete: "CASCADE",
+  })
   ticketConfigurations!: TicketConfigurationOrmEntity[];
 
   @CreateDateColumn()

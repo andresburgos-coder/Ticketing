@@ -1,4 +1,4 @@
-import { InvalidMoneyException } from '../exceptions/invalid-money.exception';
+import { InvalidMoneyException } from "../exceptions/invalid-money.exception";
 
 /**
  * Money Value Object - Immutable representation of monetary values.
@@ -21,12 +21,12 @@ export class Money {
    * @param currency - The 3-letter currency code (e.g., 'COP', 'USD', 'EUR')
    * @throws InvalidMoneyException if amount is negative or currency is invalid
    */
-  static create(amount: number, currency: string = 'COP'): Money {
+  static create(amount: number, currency: string = "COP"): Money {
     if (amount < 0) {
-      throw new InvalidMoneyException('Amount cannot be negative');
+      throw new InvalidMoneyException("Amount cannot be negative");
     }
     if (!currency || currency.length !== 3) {
-      throw new InvalidMoneyException('Currency must be a 3-letter code');
+      throw new InvalidMoneyException("Currency must be a 3-letter code");
     }
     return new Money(amount, currency.toUpperCase());
   }

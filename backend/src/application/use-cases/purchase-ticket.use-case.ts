@@ -1,19 +1,22 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { DataSource } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
-import { Ticket, TicketStatus } from '../../domain/entities/ticket.entity';
-import { ITicketRepository } from '../../domain/interfaces/ticket-repository.interface';
-import { IEventRepository } from '../../domain/interfaces/event-repository.interface';
-import { TICKET_REPOSITORY, EVENT_REPOSITORY } from '../../domain/interfaces/repository-tokens';
-import { Email } from '../../domain/value-objects/email.vo';
-import { Money } from '../../domain/value-objects/money.vo';
-import { TicketType } from '../../domain/value-objects/ticket-type.vo';
-import { TicketAvailabilityService } from '../../infrastructure/websocket/ticket-availability.service';
+import { Injectable, Inject } from "@nestjs/common";
+import { DataSource } from "typeorm";
+import { v4 as uuidv4 } from "uuid";
+import { Ticket, TicketStatus } from "../../domain/entities/ticket.entity";
+import { ITicketRepository } from "../../domain/interfaces/ticket-repository.interface";
+import { IEventRepository } from "../../domain/interfaces/event-repository.interface";
+import {
+  TICKET_REPOSITORY,
+  EVENT_REPOSITORY,
+} from "../../domain/interfaces/repository-tokens";
+import { Email } from "../../domain/value-objects/email.vo";
+import { Money } from "../../domain/value-objects/money.vo";
+import { TicketType } from "../../domain/value-objects/ticket-type.vo";
+import { TicketAvailabilityService } from "../../infrastructure/websocket/ticket-availability.service";
 
 /**
  * PurchaseTicketUseCase
  * Handles the business logic for purchasing tickets
- * 
+ *
  * Requirements:
  * - Validate event exists and has availability
  * - Create tickets with unique code and QR token
@@ -42,68 +45,92 @@ export class PurchaseTicketUseCase {
       cvv: string;
     };
   }): Promise<Ticket[]> {
-    console.log('🎫 [PurchaseTicketUseCase] Iniciando compra...');
-    console.log('🎫 Params:', { eventId: params.eventId, ticketType: params.ticketType, quantity: params.quantity, buyerEmail: params.buyerEmail });
+    console.log("🎫 [PurchaseTicketUseCase] Iniciando compra...");
+    console.log("🎫 Params:", {
+      eventId: params.eventId,
+      ticketType: params.ticketType,
+      quantity: params.quantity,
+      buyerEmail: params.buyerEmail,
+    });
 
     // Use database transaction to ensure atomicity
     const result = await this.dataSource.transaction(async (manager) => {
-      console.log('🔒 [PurchaseTicketUseCase] Iniciando transacción...');
+      console.log("🔒 [PurchaseTicketUseCase] Iniciando transacción...");
 
       // 1. Validate event exists (without lock for now, we'll add proper locking later)
-      console.log('🔍 Buscando evento:', params.eventId);
+      console.log("🔍 Buscando evento:", params.eventId);
       const event = await this.eventRepository.findById(params.eventId);
       if (!event) {
-        throw new Error('Event not found');
+        throw new Error("Event not found");
       }
-      console.log('✅ Evento encontrado:', event.name);
+      console.log("✅ Evento encontrado:", event.name);
 
       // 2. Check availability
       const availability = event.getAvailability(params.ticketType);
-      console.log(`🎫 Disponibilidad para ${params.ticketType}: ${availability}, solicitados: ${params.quantity}`);
+      console.log(
+        `🎫 Disponibilidad para ${params.ticketType}: ${availability}, solicitados: ${params.quantity}`,
+      );
       if (availability < params.quantity) {
         throw new Error(
-          `Insufficient tickets available. Requested: ${params.quantity}, Available: ${availability}`
+          `Insufficient tickets available. Requested: ${params.quantity}, Available: ${availability}`,
         );
       }
 
       // 3. Get ticket configuration for pricing
       const ticketConfig = event.ticketConfigurations.find(
-        (config) => config.type === params.ticketType
+        (config) => config.type === params.ticketType,
       );
       if (!ticketConfig) {
-        throw new Error(`Ticket type ${params.ticketType} not found for this event`);
+        throw new Error(
+          `Ticket type ${params.ticketType} not found for this event`,
+        );
       }
-      console.log('💰 Precio por ticket:', ticketConfig.price.amount, ticketConfig.price.currency);
+      console.log(
+        "💰 Precio por ticket:",
+        ticketConfig.price.amount,
+        ticketConfig.price.currency,
+      );
 
       // 4. Process payment (simplified - in real world would integrate with payment gateway)
       const totalAmount = ticketConfig.price.amount * params.quantity;
-      console.log('💳 Procesando pago:', { totalAmount, currency: ticketConfig.price.currency });
+      console.log("💳 Procesando pago:", {
+        totalAmount,
+        currency: ticketConfig.price.currency,
+      });
       const paymentSuccessful = await this.processPayment(
         totalAmount,
         ticketConfig.price.currency,
-        params.paymentInfo
+        params.paymentInfo,
       );
 
       if (!paymentSuccessful) {
-        console.error('❌ Pago fallido');
-        throw new Error('Payment failed');
+        console.error("❌ Pago fallido");
+        throw new Error("Payment failed");
       }
-      console.log('✅ Pago procesado exitosamente');
+      console.log("✅ Pago procesado exitosamente");
 
       // 5. Reserve tickets AFTER successful payment (this modifies the event entity)
-      console.log('🔐 Reservando tickets DESPUÉS del pago exitoso...');
+      console.log("🔐 Reservando tickets DESPUÉS del pago exitoso...");
       const availabilityBefore = event.getAvailability(params.ticketType);
       event.reserveTickets(params.ticketType, params.quantity);
       const availabilityAfter = event.getAvailability(params.ticketType);
-      console.log(`📊 Disponibilidad: ${availabilityBefore} → ${availabilityAfter}`);
+      console.log(
+        `📊 Disponibilidad: ${availabilityBefore} → ${availabilityAfter}`,
+      );
 
       // 6. Update availability directly in the database to ensure consistency (within transaction)
-      console.log('💾 Actualizando disponibilidad directamente en BD...');
-      await this.eventRepository.updateTicketAvailability(params.eventId, params.ticketType, availabilityAfter);
-      console.log(`✅ Disponibilidad actualizada directamente en BD: ${availabilityAfter}`);
+      console.log("💾 Actualizando disponibilidad directamente en BD...");
+      await this.eventRepository.updateTicketAvailability(
+        params.eventId,
+        params.ticketType,
+        availabilityAfter,
+      );
+      console.log(
+        `✅ Disponibilidad actualizada directamente en BD: ${availabilityAfter}`,
+      );
 
       // 7. Generate tickets
-      console.log('🎫 Generando tickets...');
+      console.log("🎫 Generando tickets...");
       const tickets: Ticket[] = [];
       const buyerEmail = Email.create(params.buyerEmail);
       const purchaseDate = new Date();
@@ -119,19 +146,24 @@ export class PurchaseTicketUseCase {
           purchaseDate,
           uuidv4(), // QR token
           TicketStatus.PAID,
-          null
+          null,
         );
         tickets.push(ticket);
       }
       console.log(`✅ ${tickets.length} tickets generados`);
 
       // 8. Save tickets (within transaction)
-      console.log('💾 Guardando tickets en BD...');
+      console.log("💾 Guardando tickets en BD...");
       const savedTickets = await this.ticketRepository.saveMany(tickets);
       console.log(`✅ ${savedTickets.length} tickets guardados en BD`);
-      console.log('✅ IDs guardados:', savedTickets.map(t => ({ id: t.id, code: t.code })));
+      console.log(
+        "✅ IDs guardados:",
+        savedTickets.map((t) => ({ id: t.id, code: t.code })),
+      );
 
-      console.log('✅ [PurchaseTicketUseCase] Transacción completada exitosamente');
+      console.log(
+        "✅ [PurchaseTicketUseCase] Transacción completada exitosamente",
+      );
 
       return { savedTickets, ticketConfig };
     });
@@ -139,11 +171,13 @@ export class PurchaseTicketUseCase {
     // 9. Broadcast availability update via WebSocket (after transaction commits)
     // Get real-time availability after the purchase
     const newAvailability = await this.eventRepository.getRealTimeAvailability(
-      params.eventId, 
-      params.ticketType
+      params.eventId,
+      params.ticketType,
     );
-    
-    console.log(`📡 Broadcasting availability update: ${newAvailability} remaining for ${params.ticketType}`);
+
+    console.log(
+      `📡 Broadcasting availability update: ${newAvailability} remaining for ${params.ticketType}`,
+    );
     this.ticketAvailabilityService.broadcastAvailabilityUpdate({
       eventId: params.eventId,
       ticketType: params.ticketType,
@@ -162,7 +196,7 @@ export class PurchaseTicketUseCase {
   private async processPayment(
     amount: number,
     currency: string,
-    paymentInfo: { cardNumber: string; expiryDate: string; cvv: string }
+    paymentInfo: { cardNumber: string; expiryDate: string; cvv: string },
   ): Promise<boolean> {
     // Simulate payment processing
     // In real implementation: call payment gateway API
@@ -179,8 +213,8 @@ export class PurchaseTicketUseCase {
    * Format: TKT-XXXXXX (6 random uppercase alphanumeric characters)
    */
   private generateTicketCode(): string {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let code = 'TKT-';
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "TKT-";
     for (let i = 0; i < 6; i++) {
       code += chars.charAt(Math.floor(Math.random() * chars.length));
     }

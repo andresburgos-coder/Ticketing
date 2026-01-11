@@ -1,6 +1,14 @@
-import { IsString, IsUUID, IsEmail, IsNumber, IsEnum, Min, IsNotEmpty } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
-import { TicketType } from '../../domain/value-objects/ticket-type.vo';
+import {
+  IsString,
+  IsUUID,
+  IsEmail,
+  IsNumber,
+  IsEnum,
+  Min,
+  IsNotEmpty,
+} from "class-validator";
+import { ApiProperty } from "@nestjs/swagger";
+import { TicketType } from "../../domain/value-objects/ticket-type.vo";
 
 /**
  * DTO for purchasing a ticket
@@ -8,15 +16,15 @@ import { TicketType } from '../../domain/value-objects/ticket-type.vo';
  */
 export class PurchaseTicketDto {
   @ApiProperty({
-    description: 'Event ID for which the ticket is being purchased',
-    example: 'TICK0001-001',
+    description: "Event ID for which the ticket is being purchased",
+    example: "TICK0001-001",
   })
   @IsString()
   @IsNotEmpty()
   eventId!: string;
 
   @ApiProperty({
-    description: 'Type of ticket to purchase',
+    description: "Type of ticket to purchase",
     enum: TicketType,
     example: TicketType.VIP,
   })
@@ -25,7 +33,7 @@ export class PurchaseTicketDto {
   ticketType!: TicketType;
 
   @ApiProperty({
-    description: 'Number of tickets to purchase',
+    description: "Number of tickets to purchase",
     example: 2,
     minimum: 1,
   })
@@ -35,19 +43,19 @@ export class PurchaseTicketDto {
   quantity!: number;
 
   @ApiProperty({
-    description: 'Email of the buyer',
-    example: 'buyer@example.com',
+    description: "Email of the buyer",
+    example: "buyer@example.com",
   })
   @IsEmail()
   @IsNotEmpty()
   buyerEmail!: string;
 
   @ApiProperty({
-    description: 'Payment information',
+    description: "Payment information",
     example: {
-      cardNumber: '4242424242424242',
-      expiryDate: '12/25',
-      cvv: '123',
+      cardNumber: "4242424242424242",
+      expiryDate: "12/25",
+      cvv: "123",
     },
   })
   @IsNotEmpty()

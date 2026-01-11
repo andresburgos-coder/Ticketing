@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
 import {
   IPaymentGateway,
   PaymentResult,
   PaymentData,
-} from '../../domain/interfaces/payment-gateway.interface';
+} from "../../domain/interfaces/payment-gateway.interface";
 
 /**
  * MockPaymentGateway
@@ -28,8 +28,8 @@ export class MockPaymentGateway implements IPaymentGateway {
     } else {
       return {
         success: false,
-        errorCode: 'PAYMENT_DECLINED',
-        errorMessage: 'Payment was declined by the issuer',
+        errorCode: "PAYMENT_DECLINED",
+        errorMessage: "Payment was declined by the issuer",
       };
     }
   }

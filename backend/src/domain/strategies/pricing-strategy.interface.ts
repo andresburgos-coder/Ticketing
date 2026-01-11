@@ -1,5 +1,5 @@
-import { Money } from '../value-objects/money.vo';
-import { TicketType } from '../value-objects/ticket-type.vo';
+import { Money } from "../value-objects/money.vo";
+import { TicketType } from "../value-objects/ticket-type.vo";
 
 /**
  * Interface for pricing strategies following the Strategy Pattern.

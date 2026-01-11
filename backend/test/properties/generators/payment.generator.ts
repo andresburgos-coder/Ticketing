@@ -1,9 +1,9 @@
-import * as fc from 'fast-check';
-import { Money } from '../../../src/domain/value-objects/money.vo';
-import { TicketType } from '../../../src/domain/value-objects/ticket-type.vo';
-import { Email } from '../../../src/domain/value-objects/email.vo';
-import { TicketQuantity } from '../../../src/domain/value-objects/ticket-quantity.vo';
-import { Reservation } from '../../../src/domain/entities/reservation.entity';
+import * as fc from "fast-check";
+import { Money } from "../../../src/domain/value-objects/money.vo";
+import { TicketType } from "../../../src/domain/value-objects/ticket-type.vo";
+import { Email } from "../../../src/domain/value-objects/email.vo";
+import { TicketQuantity } from "../../../src/domain/value-objects/ticket-quantity.vo";
+import { Reservation } from "../../../src/domain/entities/reservation.entity";
 
 /**
  * Generator for valid money amounts (positive numbers)
@@ -13,7 +13,7 @@ export const moneyAmountArbitrary = fc.integer({ min: 1000, max: 1000000 });
 /**
  * Generator for currency codes (3-letter codes)
  */
-export const currencyArbitrary = fc.constantFrom('USD', 'COP', 'EUR', 'MXN');
+export const currencyArbitrary = fc.constantFrom("USD", "COP", "EUR", "MXN");
 
 /**
  * Generator for ticket types
@@ -21,7 +21,7 @@ export const currencyArbitrary = fc.constantFrom('USD', 'COP', 'EUR', 'MXN');
 export const ticketTypeArbitrary = fc.constantFrom(
   TicketType.VIP,
   TicketType.GENERAL,
-  TicketType.EARLY_BIRD
+  TicketType.EARLY_BIRD,
 );
 
 /**
@@ -33,9 +33,7 @@ export const ticketQuantityArbitrary = fc.integer({ min: 1, max: 10 });
  * Generator for valid email addresses
  */
 export const emailArbitrary = fc
-  .tuple(
-    fc.emailAddress(),
-  )
+  .tuple(fc.emailAddress())
   .map(([email]) => email);
 
 /**
@@ -48,14 +46,16 @@ export const moneyArbitrary = fc
 /**
  * Generator for Email value objects
  */
-export const emailVOArbitrary = emailArbitrary
-  .map((email) => Email.create(email));
+export const emailVOArbitrary = emailArbitrary.map((email) =>
+  Email.create(email),
+);
 
 /**
  * Generator for TicketQuantity value objects
  */
-export const ticketQuantityVOArbitrary = ticketQuantityArbitrary
-  .map((quantity) => TicketQuantity.create(quantity));
+export const ticketQuantityVOArbitrary = ticketQuantityArbitrary.map(
+  (quantity) => TicketQuantity.create(quantity),
+);
 
 /**
  * Generator for valid reservation data
@@ -105,9 +105,14 @@ export const paymentResultArbitrary = fc.oneof(
   }),
   fc.record({
     success: fc.constant(false),
-    errorCode: fc.constantFrom('CARD_DECLINED', 'INSUFFICIENT_FUNDS', 'INVALID_CARD', 'NETWORK_ERROR'),
+    errorCode: fc.constantFrom(
+      "CARD_DECLINED",
+      "INSUFFICIENT_FUNDS",
+      "INVALID_CARD",
+      "NETWORK_ERROR",
+    ),
     errorMessage: fc.string({ minLength: 5, maxLength: 100 }),
-  })
+  }),
 );
 
 /**
@@ -117,15 +122,15 @@ export function createReservationWithAmount(
   amount: number,
   currency: string,
   ticketType: TicketType = TicketType.VIP,
-  quantity: number = 1
+  quantity: number = 1,
 ): Reservation {
   return new Reservation(
     fc.sample(fc.uuid(), 1)[0] as string,
     fc.sample(fc.uuid(), 1)[0] as string,
     ticketType,
     TicketQuantity.create(quantity),
-    Email.create('test@example.com'),
+    Email.create("test@example.com"),
     Money.create(amount, currency),
-    new Date(Date.now() + 15 * 60 * 1000)
+    new Date(Date.now() + 15 * 60 * 1000),
   );
 }

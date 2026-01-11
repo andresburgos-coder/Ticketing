@@ -1,15 +1,15 @@
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
-import { AuthController } from '../presentation/controllers/auth.controller';
-import { CsrfController } from '../presentation/controllers/csrf.controller';
-import { AuthService } from '../application/services/auth.service';
-import { CsrfService } from '../infrastructure/external/csrf.service';
-import { JwtStrategy } from '../infrastructure/auth/jwt.strategy';
-import { TypeOrmUserRepository } from '../infrastructure/persistence/repositories/typeorm-user.repository';
-import { UserOrmEntity } from '../infrastructure/persistence/entities/user.orm-entity';
-import { USER_REPOSITORY } from '../domain/interfaces/repository-tokens';
+import { Module } from "@nestjs/common";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { JwtModule } from "@nestjs/jwt";
+import { PassportModule } from "@nestjs/passport";
+import { AuthController } from "../presentation/controllers/auth.controller";
+import { CsrfController } from "../presentation/controllers/csrf.controller";
+import { AuthService } from "../application/services/auth.service";
+import { CsrfService } from "../infrastructure/external/csrf.service";
+import { JwtStrategy } from "../infrastructure/auth/jwt.strategy";
+import { TypeOrmUserRepository } from "../infrastructure/persistence/repositories/typeorm-user.repository";
+import { UserOrmEntity } from "../infrastructure/persistence/entities/user.orm-entity";
+import { USER_REPOSITORY } from "../domain/interfaces/repository-tokens";
 
 /**
  * AuthModule
@@ -23,8 +23,8 @@ import { USER_REPOSITORY } from '../domain/interfaces/repository-tokens';
     TypeOrmModule.forFeature([UserOrmEntity]),
     PassportModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET ?? 'your-secret-key',
-      signOptions: { expiresIn: '15m' },
+      secret: process.env.JWT_SECRET ?? "your-secret-key",
+      signOptions: { expiresIn: "15m" },
     }),
   ],
   controllers: [AuthController, CsrfController],

@@ -1,35 +1,39 @@
-import * as fc from 'fast-check';
-import { DataSource, DataSourceOptions } from 'typeorm';
-import { Ticket } from '../../src/domain/entities/ticket.entity';
-import { Email } from '../../src/domain/value-objects/email.vo';
-import { Money } from '../../src/domain/value-objects/money.vo';
-import { TypeOrmTicketRepository } from '../../src/infrastructure/persistence/repositories/typeorm-ticket.repository';
-import { TicketOrmEntity } from '../../src/infrastructure/persistence/entities/ticket.orm-entity';
-import { ticketDataArbitrary, ticketsByBuyerArbitrary, ticketsByEventArbitrary } from './generators/ticket.generator';
+import * as fc from "fast-check";
+import { DataSource, DataSourceOptions } from "typeorm";
+import { Ticket } from "../../src/domain/entities/ticket.entity";
+import { Email } from "../../src/domain/value-objects/email.vo";
+import { Money } from "../../src/domain/value-objects/money.vo";
+import { TypeOrmTicketRepository } from "../../src/infrastructure/persistence/repositories/typeorm-ticket.repository";
+import { TicketOrmEntity } from "../../src/infrastructure/persistence/entities/ticket.orm-entity";
+import {
+  ticketDataArbitrary,
+  ticketsByBuyerArbitrary,
+  ticketsByEventArbitrary,
+} from "./generators/ticket.generator";
 
 /**
  * Property Test: Ticket Persistence Round-Trip
- * 
+ *
  * Property 5: Entity Serialization Round-Trip
  * For any valid Ticket, persisting it to the database and retrieving it by buyer
  * should produce an equivalent Ticket with all data intact.
- * 
+ *
  * Validates: Requirements 8.3
  * - 8.3: Serialization/deserialization produces equivalent object
  */
-describe('Ticket Persistence Round-Trip Property Test', () => {
+describe("Ticket Persistence Round-Trip Property Test", () => {
   let dataSource: DataSource;
   let repository: TypeOrmTicketRepository;
   let isConnected = false;
 
   beforeAll(async () => {
     const testDataSourceOptions: DataSourceOptions = {
-      type: 'postgres',
-      host: process.env.TEST_DATABASE_HOST ?? 'localhost',
-      port: parseInt(process.env.TEST_DATABASE_PORT ?? '5433', 10),
-      username: process.env.TEST_DATABASE_USER ?? 'test_user',
-      password: process.env.TEST_DATABASE_PASSWORD ?? 'test_pass',
-      database: process.env.TEST_DATABASE_NAME ?? 'ticket_sales_test',
+      type: "postgres",
+      host: process.env.TEST_DATABASE_HOST ?? "localhost",
+      port: parseInt(process.env.TEST_DATABASE_PORT ?? "5433", 10),
+      username: process.env.TEST_DATABASE_USER ?? "test_user",
+      password: process.env.TEST_DATABASE_PASSWORD ?? "test_pass",
+      database: process.env.TEST_DATABASE_NAME ?? "ticket_sales_test",
       entities: [TicketOrmEntity],
       synchronize: true,
       dropSchema: true,
@@ -41,7 +45,7 @@ describe('Ticket Persistence Round-Trip Property Test', () => {
       repository = new TypeOrmTicketRepository(dataSource);
       isConnected = true;
     } catch (error) {
-      console.error('Failed to connect to test database:', error);
+      console.error("Failed to connect to test database:", error);
       isConnected = false;
     }
   });
@@ -63,9 +67,9 @@ describe('Ticket Persistence Round-Trip Property Test', () => {
     }
   });
 
-  it('should preserve Ticket data through persistence round-trip', async () => {
+  it("should preserve Ticket data through persistence round-trip", async () => {
     if (!isConnected) {
-      console.warn('Skipping test: Database not connected');
+      console.warn("Skipping test: Database not connected");
       return;
     }
 
@@ -79,40 +83,48 @@ describe('Ticket Persistence Round-Trip Property Test', () => {
           ticketData.eventId,
           ticketData.type,
           Email.create(ticketData.buyerEmail),
-          Money.create(ticketData.price, 'COP'),
-          ticketData.purchaseDate
+          Money.create(ticketData.price, "COP"),
+          ticketData.purchaseDate,
         );
 
         // Act: Persist and retrieve
         await repository.save(originalTicket);
-        const retrievedTickets = await repository.findByBuyer(Email.create(ticketData.buyerEmail));
+        const retrievedTickets = await repository.findByBuyer(
+          Email.create(ticketData.buyerEmail),
+        );
 
         // Assert: Verify round-trip equivalence
         expect(retrievedTickets).toHaveLength(1);
         const retrievedTicket = retrievedTickets[0];
 
         if (!retrievedTicket) {
-          throw new Error('Ticket not found after persistence');
+          throw new Error("Ticket not found after persistence");
         }
 
         expect(retrievedTicket.id).toBe(originalTicket.id);
         expect(retrievedTicket.code).toBe(originalTicket.code);
         expect(retrievedTicket.eventId).toBe(originalTicket.eventId);
         expect(retrievedTicket.type).toBe(originalTicket.type);
-        expect(retrievedTicket.buyerEmail.value).toBe(originalTicket.buyerEmail.value);
+        expect(retrievedTicket.buyerEmail.value).toBe(
+          originalTicket.buyerEmail.value,
+        );
         expect(retrievedTicket.price.amount).toBe(originalTicket.price.amount);
-        expect(retrievedTicket.price.currency).toBe(originalTicket.price.currency);
-        
+        expect(retrievedTicket.price.currency).toBe(
+          originalTicket.price.currency,
+        );
+
         // Verify date is preserved (accounting for potential millisecond precision loss)
-        expect(retrievedTicket.purchaseDate.getTime()).toBe(originalTicket.purchaseDate.getTime());
+        expect(retrievedTicket.purchaseDate.getTime()).toBe(
+          originalTicket.purchaseDate.getTime(),
+        );
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
-  it('should preserve all tickets for a buyer through persistence', async () => {
+  it("should preserve all tickets for a buyer through persistence", async () => {
     if (!isConnected) {
-      console.warn('Skipping test: Database not connected');
+      console.warn("Skipping test: Database not connected");
       return;
     }
 
@@ -129,9 +141,9 @@ describe('Ticket Persistence Round-Trip Property Test', () => {
               t.eventId,
               t.type,
               buyerEmail,
-              Money.create(t.price, 'COP'),
-              t.purchaseDate
-            )
+              Money.create(t.price, "COP"),
+              t.purchaseDate,
+            ),
         );
 
         // Act: Save all tickets
@@ -143,7 +155,9 @@ describe('Ticket Persistence Round-Trip Property Test', () => {
         expect(retrievedTickets).toHaveLength(tickets.length);
 
         for (const originalTicket of tickets) {
-          const retrieved = retrievedTickets.find((t) => t.id === originalTicket.id);
+          const retrieved = retrievedTickets.find(
+            (t) => t.id === originalTicket.id,
+          );
           expect(retrieved).toBeDefined();
           expect(retrieved?.code).toBe(originalTicket.code);
           expect(retrieved?.eventId).toBe(originalTicket.eventId);
@@ -151,13 +165,13 @@ describe('Ticket Persistence Round-Trip Property Test', () => {
           expect(retrieved?.price.amount).toBe(originalTicket.price.amount);
         }
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
-  it('should preserve all tickets for an event through persistence', async () => {
+  it("should preserve all tickets for an event through persistence", async () => {
     if (!isConnected) {
-      console.warn('Skipping test: Database not connected');
+      console.warn("Skipping test: Database not connected");
       return;
     }
 
@@ -173,9 +187,9 @@ describe('Ticket Persistence Round-Trip Property Test', () => {
               data.eventId,
               t.type,
               Email.create(t.buyerEmail),
-              Money.create(t.price, 'COP'),
-              t.purchaseDate
-            )
+              Money.create(t.price, "COP"),
+              t.purchaseDate,
+            ),
         );
 
         // Act: Save all tickets
@@ -187,21 +201,25 @@ describe('Ticket Persistence Round-Trip Property Test', () => {
         expect(retrievedTickets).toHaveLength(tickets.length);
 
         for (const originalTicket of tickets) {
-          const retrieved = retrievedTickets.find((t) => t.id === originalTicket.id);
+          const retrieved = retrievedTickets.find(
+            (t) => t.id === originalTicket.id,
+          );
           expect(retrieved).toBeDefined();
           expect(retrieved?.code).toBe(originalTicket.code);
-          expect(retrieved?.buyerEmail.value).toBe(originalTicket.buyerEmail.value);
+          expect(retrieved?.buyerEmail.value).toBe(
+            originalTicket.buyerEmail.value,
+          );
           expect(retrieved?.type).toBe(originalTicket.type);
           expect(retrieved?.price.amount).toBe(originalTicket.price.amount);
         }
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
-  it('should maintain ticket code uniqueness after persistence', async () => {
+  it("should maintain ticket code uniqueness after persistence", async () => {
     if (!isConnected) {
-      console.warn('Skipping test: Database not connected');
+      console.warn("Skipping test: Database not connected");
       return;
     }
 
@@ -218,9 +236,9 @@ describe('Ticket Persistence Round-Trip Property Test', () => {
               t.eventId,
               t.type,
               buyerEmail,
-              Money.create(t.price, 'COP'),
-              t.purchaseDate
-            )
+              Money.create(t.price, "COP"),
+              t.purchaseDate,
+            ),
         );
 
         // Act: Save all tickets
@@ -233,13 +251,13 @@ describe('Ticket Persistence Round-Trip Property Test', () => {
 
         expect(uniqueCodes.size).toBe(codes.length);
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
-  it('should preserve ticket JSON representation through round-trip', async () => {
+  it("should preserve ticket JSON representation through round-trip", async () => {
     if (!isConnected) {
-      console.warn('Skipping test: Database not connected');
+      console.warn("Skipping test: Database not connected");
       return;
     }
 
@@ -253,19 +271,21 @@ describe('Ticket Persistence Round-Trip Property Test', () => {
           ticketData.eventId,
           ticketData.type,
           Email.create(ticketData.buyerEmail),
-          Money.create(ticketData.price, 'COP'),
-          ticketData.purchaseDate
+          Money.create(ticketData.price, "COP"),
+          ticketData.purchaseDate,
         );
 
         const originalJSON = originalTicket.toJSON();
 
         // Act: Persist and retrieve
         await repository.save(originalTicket);
-        const retrievedTickets = await repository.findByBuyer(Email.create(ticketData.buyerEmail));
+        const retrievedTickets = await repository.findByBuyer(
+          Email.create(ticketData.buyerEmail),
+        );
         const retrievedTicket = retrievedTickets[0];
 
         if (!retrievedTicket) {
-          throw new Error('Ticket not found after persistence');
+          throw new Error("Ticket not found after persistence");
         }
 
         const retrievedJSON = retrievedTicket.toJSON();
@@ -280,10 +300,10 @@ describe('Ticket Persistence Round-Trip Property Test', () => {
         expect(retrievedJSON.price.currency).toBe(originalJSON.price.currency);
         // Dates might differ slightly due to serialization, so we check ISO strings
         expect(new Date(retrievedJSON.purchaseDate).getTime()).toBe(
-          new Date(originalJSON.purchaseDate).getTime()
+          new Date(originalJSON.purchaseDate).getTime(),
         );
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 });

@@ -1,4 +1,11 @@
-import { IsString, IsInt, IsBoolean, IsOptional, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsInt,
+  IsBoolean,
+  IsOptional,
+  Min,
+  Max,
+} from "class-validator";
 
 export class EventDetailsDto {
   @IsString()

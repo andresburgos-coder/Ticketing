@@ -1,4 +1,4 @@
-import * as fc from 'fast-check';
+import * as fc from "fast-check";
 
 /**
  * Generator for valid Money amounts (non-negative numbers)
@@ -13,7 +13,12 @@ export const validAmountArbitrary = fc.float({
 /**
  * Generator for valid 3-letter currency codes
  */
-export const validCurrencyArbitrary = fc.constantFrom('COP', 'USD', 'EUR', 'GBP');
+export const validCurrencyArbitrary = fc.constantFrom(
+  "COP",
+  "USD",
+  "EUR",
+  "GBP",
+);
 
 /**
  * Generator for valid Money data
@@ -46,9 +51,9 @@ export const PRICING_MULTIPLIERS = {
  * Generator for ticket type with its corresponding multiplier
  */
 export const ticketTypePricingArbitrary = fc.constantFrom(
-  { type: 'VIP' as const, multiplier: PRICING_MULTIPLIERS.VIP },
-  { type: 'GENERAL' as const, multiplier: PRICING_MULTIPLIERS.GENERAL },
-  { type: 'EARLY_BIRD' as const, multiplier: PRICING_MULTIPLIERS.EARLY_BIRD },
+  { type: "VIP" as const, multiplier: PRICING_MULTIPLIERS.VIP },
+  { type: "GENERAL" as const, multiplier: PRICING_MULTIPLIERS.GENERAL },
+  { type: "EARLY_BIRD" as const, multiplier: PRICING_MULTIPLIERS.EARLY_BIRD },
 );
 
 /**

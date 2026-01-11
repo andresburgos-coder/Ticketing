@@ -1,21 +1,21 @@
-import { Ticket } from './ticket.entity';
-import { TicketType } from '../value-objects/ticket-type.vo';
-import { Email } from '../value-objects/email.vo';
-import { Money } from '../value-objects/money.vo';
+import { Ticket } from "./ticket.entity";
+import { TicketType } from "../value-objects/ticket-type.vo";
+import { Email } from "../value-objects/email.vo";
+import { Money } from "../value-objects/money.vo";
 
-describe('Ticket Entity', () => {
+describe("Ticket Entity", () => {
   const validTicketData = {
-    id: 'ticket-123',
-    code: 'TKT-ABC123',
-    eventId: 'event-456',
+    id: "ticket-123",
+    code: "TKT-ABC123",
+    eventId: "event-456",
     type: TicketType.VIP,
-    buyerEmail: Email.create('buyer@example.com'),
-    price: Money.create(150000, 'COP'),
-    purchaseDate: new Date('2024-01-15T10:30:00Z'),
+    buyerEmail: Email.create("buyer@example.com"),
+    price: Money.create(150000, "COP"),
+    purchaseDate: new Date("2024-01-15T10:30:00Z"),
   };
 
-  describe('constructor', () => {
-    it('should create a Ticket with all required fields', () => {
+  describe("constructor", () => {
+    it("should create a Ticket with all required fields", () => {
       // Arrange & Act
       const ticket = new Ticket(
         validTicketData.id,
@@ -24,7 +24,7 @@ describe('Ticket Entity', () => {
         validTicketData.type,
         validTicketData.buyerEmail,
         validTicketData.price,
-        validTicketData.purchaseDate
+        validTicketData.purchaseDate,
       );
 
       // Assert
@@ -37,32 +37,32 @@ describe('Ticket Entity', () => {
       expect(ticket.purchaseDate).toBe(validTicketData.purchaseDate);
     });
 
-    it('should create a Ticket with GENERAL type', () => {
+    it("should create a Ticket with GENERAL type", () => {
       // Arrange & Act
       const ticket = new Ticket(
-        'ticket-456',
-        'TKT-DEF456',
-        'event-789',
+        "ticket-456",
+        "TKT-DEF456",
+        "event-789",
         TicketType.GENERAL,
-        Email.create('user@test.com'),
-        Money.create(75000, 'COP'),
-        new Date()
+        Email.create("user@test.com"),
+        Money.create(75000, "COP"),
+        new Date(),
       );
 
       // Assert
       expect(ticket.type).toBe(TicketType.GENERAL);
     });
 
-    it('should create a Ticket with EARLY_BIRD type', () => {
+    it("should create a Ticket with EARLY_BIRD type", () => {
       // Arrange & Act
       const ticket = new Ticket(
-        'ticket-789',
-        'TKT-GHI789',
-        'event-123',
+        "ticket-789",
+        "TKT-GHI789",
+        "event-123",
         TicketType.EARLY_BIRD,
-        Email.create('early@bird.com'),
-        Money.create(60000, 'COP'),
-        new Date()
+        Email.create("early@bird.com"),
+        Money.create(60000, "COP"),
+        new Date(),
       );
 
       // Assert
@@ -70,8 +70,8 @@ describe('Ticket Entity', () => {
     });
   });
 
-  describe('toJSON', () => {
-    it('should return object with all fields when calling toJSON()', () => {
+  describe("toJSON", () => {
+    it("should return object with all fields when calling toJSON()", () => {
       // Arrange
       const ticket = new Ticket(
         validTicketData.id,
@@ -80,7 +80,7 @@ describe('Ticket Entity', () => {
         validTicketData.type,
         validTicketData.buyerEmail,
         validTicketData.price,
-        validTicketData.purchaseDate
+        validTicketData.purchaseDate,
       );
 
       // Act
@@ -101,16 +101,16 @@ describe('Ticket Entity', () => {
       });
     });
 
-    it('should return correct JSON structure for different ticket types', () => {
+    it("should return correct JSON structure for different ticket types", () => {
       // Arrange
       const generalTicket = new Ticket(
-        'ticket-general',
-        'TKT-GEN001',
-        'event-concert',
+        "ticket-general",
+        "TKT-GEN001",
+        "event-concert",
         TicketType.GENERAL,
-        Email.create('fan@music.com'),
-        Money.create(100000, 'COP'),
-        new Date('2024-02-20T15:45:00Z')
+        Email.create("fan@music.com"),
+        Money.create(100000, "COP"),
+        new Date("2024-02-20T15:45:00Z"),
       );
 
       // Act
@@ -118,29 +118,29 @@ describe('Ticket Entity', () => {
 
       // Assert
       expect(json.type).toBe(TicketType.GENERAL);
-      expect(json.buyerEmail).toBe('fan@music.com');
+      expect(json.buyerEmail).toBe("fan@music.com");
       expect(json.price.amount).toBe(100000);
-      expect(json.price.currency).toBe('COP');
-      expect(json.purchaseDate).toBe('2024-02-20T15:45:00.000Z');
+      expect(json.price.currency).toBe("COP");
+      expect(json.purchaseDate).toBe("2024-02-20T15:45:00.000Z");
     });
 
-    it('should handle different currencies in toJSON()', () => {
+    it("should handle different currencies in toJSON()", () => {
       // Arrange
       const usdTicket = new Ticket(
-        'ticket-usd',
-        'TKT-USD001',
-        'event-international',
+        "ticket-usd",
+        "TKT-USD001",
+        "event-international",
         TicketType.VIP,
-        Email.create('international@buyer.com'),
-        Money.create(250, 'USD'),
-        new Date('2024-03-10T12:00:00Z')
+        Email.create("international@buyer.com"),
+        Money.create(250, "USD"),
+        new Date("2024-03-10T12:00:00Z"),
       );
 
       // Act
       const json = usdTicket.toJSON();
 
       // Assert
-      expect(json.price.currency).toBe('USD');
+      expect(json.price.currency).toBe("USD");
       expect(json.price.amount).toBe(250);
     });
   });
