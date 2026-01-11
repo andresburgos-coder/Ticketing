@@ -1,0 +1,136 @@
+<div class="admin-reports">
+  <h2>Reportes y Análisis</h2>
+
+  <div class="reports-grid" *ngIf="dashboardStats && eventStats && ticketStats">
+    <!-- Revenue Report -->
+    <div class="report-card">
+      <h3>📊 Reporte de Ingresos</h3>
+      <div class="report-content">
+        <div class="metric">
+          <span class="label">Ingresos Totales:</span>
+          <span class="value revenue">{{ dashboardStats.overview.totalRevenue | currencyFormat }}</span>
+        </div>
+        <div class="metric">
+          <span class="label">Tickets Vendidos:</span>
+          <span class="value">{{ dashboardStats.overview.totalTicketsSold }}</span>
+        </div>
+        <div class="metric">
+          <span class="label">Precio Promedio:</span>
+          <span class="value">{{ getAverageTicketPrice() | currencyFormat }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Events Report -->
+    <div class="report-card">
+      <h3>🎫 Reporte de Eventos</h3>
+      <div class="report-content">
+        <div class="metric">
+          <span class="label">Total Eventos:</span>
+          <span class="value">{{ dashboardStats.overview.totalEvents }}</span>
+        </div>
+        <div class="metric">
+          <span class="label">Eventos Próximos:</span>
+          <span class="value">{{ eventStats.upcomingEvents.length }}</span>
+        </div>
+        <div class="metric">
+          <span class="label">Eventos Pasados:</span>
+          <span class="value">{{ eventStats.pastEvents.length }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Users Report -->
+    <div class="report-card">
+      <h3>👥 Reporte de Usuarios</h3>
+      <div class="report-content">
+        <div class="metric">
+          <span class="label">Total Usuarios:</span>
+          <span class="value">{{ dashboardStats.overview.totalUsers }}</span>
+        </div>
+        <div class="metric">
+          <span class="label">Reservas Activas:</span>
+          <span class="value">{{ dashboardStats.overview.activeReservations }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Events -->
+    <div class="report-card full-width">
+      <h3>🏆 Eventos Más Exitosos</h3>
+      <div class="top-events-list">
+        <div class="top-event" *ngFor="let event of dashboardStats.topEvents; let i = index">
+          <div class="rank">{{ i + 1 }}</div>
+          <div class="event-details">
+            <h4>{{ event.eventName }}</h4>
+            <p>{{ event.ticketsSold }} tickets vendidos</p>
+            <p class="revenue">{{ event.revenue | currencyFormat }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Categories Report -->
+    <div class="report-card">
+      <h3>📈 Eventos por Categoría</h3>
+      <div class="categories-list">
+        <div class="category-item" *ngFor="let category of eventStats.eventsByCategory">
+          <span class="category-name">{{ category.category }}</span>
+          <span class="category-count">{{ category.count }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ticket Types Report -->
+    <div class="report-card">
+      <h3>🎟️ Tipos de Tickets</h3>
+      <div class="ticket-types-list">
+        <div class="ticket-type-item" *ngFor="let type of ticketStats.ticketsByType">
+          <span class="type-name">{{ type.type }}</span>
+          <span class="type-count">{{ type.count }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Monthly Sales -->
+    <div class="report-card full-width">
+      <h3>📅 Ventas por Mes</h3>
+      <div class="monthly-sales">
+        <div class="month-item" *ngFor="let month of ticketStats.salesByMonth">
+          <div class="month-info">
+            <h4>{{ month.month }}</h4>
+            <p>{{ month.count }} tickets</p>
+            <p class="revenue">${{ month.revenue | number:'1.2-2' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Export Actions -->
+    <div class="report-card">
+      <h3>📤 Exportar Datos</h3>
+      <div class="export-actions">
+        <button class="btn btn-primary" (click)="exportReport('events')">
+          Exportar Eventos
+        </button>
+        <button class="btn btn-primary" (click)="exportReport('tickets')">
+          Exportar Tickets
+        </button>
+        <button class="btn btn-primary" (click)="exportReport('users')">
+          Exportar Usuarios
+        </button>
+        <button class="btn btn-success" (click)="exportReport('full')">
+          Reporte Completo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading" *ngIf="loading">
+    <p>Cargando reportes...</p>
+  </div>
+
+  <div class="error" *ngIf="error">
+    <p>Error: {{ error }}</p>
+  </div>
+</div>

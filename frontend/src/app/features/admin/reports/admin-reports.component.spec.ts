@@ -1,0 +1,95 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { AdminReportsComponent } from './admin-reports.component';
+import { AdminService } from '../../../services/admin.service';
+import { of } from 'rxjs';
+
+describe('AdminReportsComponent', () => {
+  let component: AdminReportsComponent;
+  let fixture: ComponentFixture<AdminReportsComponent>;
+  let adminService: jasmine.SpyObj<AdminService>;
+
+  beforeEach(async () => {
+    const adminServiceSpy = jasmine.createSpyObj('AdminService', [
+      'getDashboardStats',
+      'getEventStats',
+      'getTicketStats'
+    ]);
+
+    await TestBed.configureTestingModule({
+      imports: [AdminReportsComponent],
+      providers: [{ provide: AdminService, useValue: adminServiceSpy }]
+    }).compileComponents();
+
+    adminService = TestBed.inject(AdminService) as jasmine.SpyObj<AdminService>;
+    fixture = TestBed.createComponent(AdminReportsComponent);
+    component = fixture.componentInstance;
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+
+  it('should calculate average ticket price', () => {
+    component.dashboardStats = {
+      overview: {
+        totalUsers: 100,
+        totalEvents: 10,
+        totalTicketsSold: 500,
+        totalRevenue: 5000,
+        activeReservations: 50
+      },
+      recentEvents: [],
+      topEvents: []
+    };
+
+    const avgPrice = component.getAverageTicketPrice();
+    expect(avgPrice).toBe(10);
+  });
+
+  it('should handle export report', () => {
+    spyOn(window.URL, 'createObjectURL').and.returnValue('blob:mock');
+    spyOn(document, 'createElement').and.returnValue({
+      href: '',
+      download: '',
+      click: jasmine.createSpy('click')
+    } as any);
+
+    component.dashboardStats = {
+      overview: {
+        totalUsers: 100,
+        totalEvents: 10,
+        totalTicketsSold: 500,
+        totalRevenue: 5000,
+        activeReservations: 50
+      },
+      recentEvents: [],
+      topEvents: []
+    };
+
+    expect(() => component.exportReport('events')).not.toThrow();
+  });
+
+  it('should load all reports on init', () => {
+    const mockDashboardStats = {
+      overview: {
+        totalUsers: 100,
+        totalEvents: 10,
+        totalTicketsSold: 500,
+        totalRevenue: 5000,
+        activeReservations: 50
+      },
+      recentEvents: [],
+      topEvents: []
+    };
+
+    adminService.getDashboardStats.and.returnValue(of(mockDashboardStats));
+    adminService.getEventStats.and.returnValue(of({ upcomingEvents: [], pastEvents: [], eventsByCategory: [] } as any));
+    adminService.getTicketStats.and.returnValue(of({ ticketsByType: [], salesByMonth: [] } as any));
+
+    component.ngOnInit();
+
+    expect(adminService.getDashboardStats).toHaveBeenCalled();
+    expect(adminService.getEventStats).toHaveBeenCalled();
+    expect(adminService.getTicketStats).toHaveBeenCalled();
+  });
+});

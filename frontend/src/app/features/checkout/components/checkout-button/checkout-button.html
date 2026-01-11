@@ -1,0 +1,6 @@
+<button
+  (click)="goToCheckout()"
+  [disabled]="disabled || !items || items.length === 0"
+  class="btn-primary w-full h-12 text-base font-bold leading-normal tracking-[0.015em] shadow-md hover:shadow-lg">
+  Checkout
+</button>

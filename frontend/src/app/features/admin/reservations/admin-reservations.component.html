@@ -1,0 +1,106 @@
+<div class="admin-reservations">
+  <div class="header">
+    <h2>Gestión de Reservas</h2>
+  </div>
+
+  <div class="filters">
+    <div class="filter-group">
+      <label for="status">Estado:</label>
+      <select id="status" [(ngModel)]="filters.status" (change)="loadReservations()">
+        <option value="">Todos los estados</option>
+        <option value="ACTIVE">Activa</option>
+        <option value="CONFIRMED">Confirmada</option>
+        <option value="EXPIRED">Expirada</option>
+        <option value="CANCELLED">Cancelada</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="reservations-table" *ngIf="!loading">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Evento</th>
+          <th>Tipo de Ticket</th>
+          <th>Cantidad</th>
+          <th>Comprador</th>
+          <th>Total</th>
+          <th>Estado</th>
+          <th>Expira</th>
+          <th>Creada</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let reservation of reservations">
+          <td>
+            <small>{{ reservation.id.substring(0, 8) }}...</small>
+          </td>
+          <td>
+            <div class="event-info">
+              <strong>{{ reservation.eventName || 'Evento no encontrado' }}</strong>
+              <small>{{ reservation.eventId }}</small>
+            </div>
+          </td>
+          <td>
+            <span class="ticket-type">{{ reservation.ticketType }}</span>
+          </td>
+          <td class="text-center">
+            <strong>{{ reservation.quantity }}</strong>
+          </td>
+          <td>{{ reservation.buyerEmail }}</td>
+          <td class="price">
+            {{ reservation.totalAmount | currencyFormat: reservation.currency }}
+          </td>
+          <td>
+            <span class="status-badge" [class]="'status-' + reservation.status.toLowerCase()">
+              {{ reservation.status }}
+            </span>
+          </td>
+          <td>
+            <div class="expiry-info" [class.expired]="isExpired(reservation.expiresAt)">
+              {{ reservation.expiresAt | date:'short' }}
+              <small *ngIf="isExpired(reservation.expiresAt)">Expirada</small>
+            </div>
+          </td>
+          <td>{{ reservation.createdAt | date:'short' }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pagination" *ngIf="pagination">
+      <button
+        class="btn btn-sm"
+        [disabled]="pagination.page <= 1"
+        (click)="changePage(pagination.page - 1)"
+      >
+        Anterior
+      </button>
+
+      <span class="page-info">
+        Página {{ pagination.page }} de {{ pagination.totalPages }}
+        ({{ pagination.total }} reservas)
+      </span>
+
+      <button
+        class="btn btn-sm"
+        [disabled]="pagination.page >= pagination.totalPages"
+        (click)="changePage(pagination.page + 1)"
+      >
+        Siguiente
+      </button>
+    </div>
+
+    <div class="no-reservations" *ngIf="reservations.length === 0">
+      <p>No se encontraron reservas.</p>
+    </div>
+  </div>
+
+  <div class="loading" *ngIf="loading">
+    <p>Cargando reservas...</p>
+  </div>
+
+  <div class="error" *ngIf="error">
+    <p>Error: {{ error }}</p>
+  </div>
+</div>

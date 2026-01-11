@@ -1,0 +1,73 @@
+<form class="space-y-4">
+  <h3 class="text-lg font-bold text-gray-900">Información de contacto</h3>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <!-- First Name -->
+    <div>
+      <label for="firstName" class="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
+      <input
+        id="firstName"
+        type="text"
+        [(ngModel)]="formData.firstName"
+        name="firstName"
+        placeholder="John"
+        autocomplete="given-name"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent outline-none text-sm"
+      />
+      @if (errors['firstName']) {
+        <p class="text-xs text-red-600 mt-1">{{ errors['firstName'] }}</p>
+      }
+    </div>
+
+    <!-- Last Name -->
+    <div>
+      <label for="lastName" class="block text-sm font-medium text-gray-700 mb-2">Apellido</label>
+      <input
+        id="lastName"
+        type="text"
+        [(ngModel)]="formData.lastName"
+        name="lastName"
+        placeholder="Doe"
+        autocomplete="family-name"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent outline-none text-sm"
+      />
+      @if (errors['lastName']) {
+        <p class="text-xs text-red-600 mt-1">{{ errors['lastName'] }}</p>
+      }
+    </div>
+  </div>
+
+  <!-- Email -->
+  <div>
+    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Correo electrónico</label>
+    <input
+      id="email"
+      type="email"
+      [(ngModel)]="formData.email"
+      name="email"
+      placeholder="john@example.com"
+      autocomplete="email"
+      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent outline-none text-sm"
+    />
+    @if (errors['email']) {
+      <p class="text-xs text-red-600 mt-1">{{ errors['email'] }}</p>
+    }
+  </div>
+
+  <!-- Phone -->
+  <div>
+    <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+    <input
+      id="phone"
+      type="tel"
+      [(ngModel)]="formData.phone"
+      name="phone"
+      placeholder="+1 (555) 000-0000"
+      autocomplete="tel"
+      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent outline-none text-sm"
+    />
+    @if (errors['phone']) {
+      <p class="text-xs text-red-600 mt-1">{{ errors['phone'] }}</p>
+    }
+  </div>
+</form>

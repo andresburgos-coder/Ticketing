@@ -1,0 +1,104 @@
+<div class="user-form-page">
+  <div class="header">
+    <h2>{{ isEditMode ? 'Editar Usuario' : 'Crear Usuario' }}</h2>
+  </div>
+
+  <div class="form-container">
+    <div class="error-message" *ngIf="error">
+      <p>{{ error }}</p>
+    </div>
+
+    <div class="loading" *ngIf="loading">
+      <p>Cargando usuario...</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" #userFormRef="ngForm" *ngIf="!loading">
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input
+          id="email"
+          type="email"
+          [(ngModel)]="userForm.email"
+          name="email"
+          required
+          #email="ngModel"
+          [disabled]="loading"
+        >
+        <div class="error-msg" *ngIf="email.invalid && email.touched">
+          Email es requerido y debe ser válido
+        </div>
+      </div>
+
+      <div class="form-group" *ngIf="!isEditMode">
+        <label for="password">Contraseña:</label>
+        <input
+          id="password"
+          type="password"
+          [(ngModel)]="userForm.password"
+          name="password"
+          required
+          minlength="8"
+          #passwordInput="ngModel"
+          [disabled]="loading"
+        >
+        <div class="error-msg" *ngIf="passwordInput.invalid && passwordInput.touched">
+          Contraseña debe tener al menos 8 caracteres
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="firstName">Nombre:</label>
+        <input
+          id="firstName"
+          type="text"
+          [(ngModel)]="userForm.firstName"
+          name="firstName"
+          required
+          #firstName="ngModel"
+          [disabled]="loading"
+        >
+        <div class="error-msg" *ngIf="firstName.invalid && firstName.touched">
+          Nombre es requerido
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="lastName">Apellido:</label>
+        <input
+          id="lastName"
+          type="text"
+          [(ngModel)]="userForm.lastName"
+          name="lastName"
+          required
+          #lastName="ngModel"
+          [disabled]="loading"
+        >
+        <div class="error-msg" *ngIf="lastName.invalid && lastName.touched">
+          Apellido es requerido
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="role">Rol:</label>
+        <select
+          id="role"
+          [(ngModel)]="userForm.role"
+          name="role"
+          required
+          [disabled]="loading"
+        >
+          <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="onCancel()" [disabled]="loading">
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="!userFormRef.valid || loading">
+          {{ loading ? 'Guardando...' : (isEditMode ? 'Actualizar Usuario' : 'Crear Usuario') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

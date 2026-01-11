@@ -8,6 +8,7 @@ dist/
 build/
 .next/
 out/
+.kiro
 
 # Testing
 coverage/
@@ -75,3 +76,5 @@ temp/
 
 # NestJS
 .nest/
+
+docs/

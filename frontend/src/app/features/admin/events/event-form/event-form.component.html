@@ -1,0 +1,218 @@
+<div class="event-form-container">
+  <div class="form-header">
+    <h2>{{ isEditing() ? 'Editar Evento' : 'Crear Nuevo Evento' }}</h2>
+    <button class="btn btn-secondary" (click)="onCancel()">Cancelar</button>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="event-form">
+    <!-- Información Básica -->
+    <section class="form-section">
+      <h3>Información Básica</h3>
+
+      <div class="form-group">
+        <label for="name">Nombre del Evento *</label>
+        <input
+          id="name"
+          type="text"
+          formControlName="name"
+          placeholder="Ej: Concierto de Rock"
+          class="form-control"
+          [class.is-invalid]="form.get('name')?.invalid && form.get('name')?.touched"
+        >
+        <div class="error-message" *ngIf="form.get('name')?.invalid && form.get('name')?.touched">
+          <span *ngIf="form.get('name')?.getError('required')">El nombre es requerido</span>
+          <span *ngIf="form.get('name')?.getError('minlength')">El nombre debe tener al menos 3 caracteres</span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="date">Fecha y Hora *</label>
+          <input
+            id="date"
+            type="datetime-local"
+            formControlName="date"
+            class="form-control"
+            [class.is-invalid]="form.get('date')?.invalid && form.get('date')?.touched"
+          >
+          <div class="error-message" *ngIf="form.get('date')?.invalid && form.get('date')?.touched">
+            La fecha es requerida
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="category">Categoría *</label>
+          <select
+            id="category"
+            formControlName="category"
+            class="form-control"
+            [class.is-invalid]="form.get('category')?.invalid && form.get('category')?.touched"
+          >
+            <option value="">Selecciona una categoría</option>
+            <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+          </select>
+          <div class="error-message" *ngIf="form.get('category')?.invalid && form.get('category')?.touched">
+            La categoría es requerida
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Descripción *</label>
+        <textarea
+          id="description"
+          formControlName="description"
+          placeholder="Describe el evento..."
+          class="form-control"
+          rows="3"
+          [class.is-invalid]="form.get('description')?.invalid && form.get('description')?.touched"
+        ></textarea>
+        <div class="error-message" *ngIf="form.get('description')?.invalid && form.get('description')?.touched">
+          La descripción es requerida
+        </div>
+      </div>
+    </section>
+
+    <!-- Ubicación -->
+    <section class="form-section">
+      <h3>Ubicación</h3>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="location">Dirección *</label>
+          <input
+            id="location"
+            type="text"
+            formControlName="location"
+            placeholder="Ej: Cra. 5 #6-64"
+            class="form-control"
+            [class.is-invalid]="form.get('location')?.invalid && form.get('location')?.touched"
+          >
+          <div class="error-message" *ngIf="form.get('location')?.invalid && form.get('location')?.touched">
+            La ubicación es requerida
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="venueName">Nombre del Lugar *</label>
+          <input
+            id="venueName"
+            type="text"
+            formControlName="venueName"
+            placeholder="Ej: Teatro Principal"
+            class="form-control"
+            [class.is-invalid]="form.get('venueName')?.invalid && form.get('venueName')?.touched"
+          >
+          <div class="error-message" *ngIf="form.get('venueName')?.invalid && form.get('venueName')?.touched">
+            El nombre del lugar es requerido
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Imagen -->
+    <section class="form-section">
+      <h3>Imagen del Evento</h3>
+
+      <div class="form-group">
+        <label for="image">Subir Imagen</label>
+        <div class="image-upload">
+          <input
+            id="image"
+            type="file"
+            accept="image/*"
+            (change)="onImageSelected($event)"
+            class="form-control"
+          >
+          <div class="image-preview" *ngIf="imagePreview()">
+            <img [src]="imagePreview()" alt="Preview">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tipos de Entrada -->
+    <section class="form-section">
+      <h3>Configuración de Entradas</h3>
+
+      <div formGroupName="ticketTypes">
+        <!-- General -->
+        <div class="ticket-type" formGroupName="general">
+          <h4>Entrada General *</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="generalPrice">Precio ($) *</label>
+              <input
+                id="generalPrice"
+                type="number"
+                formControlName="price"
+                placeholder="0.00"
+                class="form-control"
+                step="0.01"
+                [class.is-invalid]="generalTickets?.get('price')?.invalid && generalTickets?.get('price')?.touched"
+              >
+              <div class="error-message" *ngIf="generalTickets?.get('price')?.invalid && generalTickets?.get('price')?.touched">
+                <span *ngIf="generalTickets?.get('price')?.getError('required')">El precio es requerido</span>
+                <span *ngIf="generalTickets?.get('price')?.getError('min')">El precio debe ser mayor a 0</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="generalQty">Cantidad *</label>
+              <input
+                id="generalQty"
+                type="number"
+                formControlName="quantity"
+                placeholder="0"
+                class="form-control"
+                [class.is-invalid]="generalTickets?.get('quantity')?.invalid && generalTickets?.get('quantity')?.touched"
+              >
+              <div class="error-message" *ngIf="generalTickets?.get('quantity')?.invalid && generalTickets?.get('quantity')?.touched">
+                <span *ngIf="generalTickets?.get('quantity')?.getError('required')">La cantidad es requerida</span>
+                <span *ngIf="generalTickets?.get('quantity')?.getError('min')">La cantidad debe ser mayor a 0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIP -->
+        <div class="ticket-type" formGroupName="vip">
+          <h4>Entrada VIP (Opcional)</h4>
+          <p class="help-text">Deja vacío si no deseas ofrecer entradas VIP</p>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="vipPrice">Precio ($)</label>
+              <input
+                id="vipPrice"
+                type="number"
+                formControlName="price"
+                placeholder="0.00"
+                class="form-control"
+                step="0.01"
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="vipQty">Cantidad</label>
+              <input
+                id="vipQty"
+                type="number"
+                formControlName="quantity"
+                placeholder="0"
+                class="form-control"
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Botones de Acción -->
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="form.invalid || loading()">
+        {{ loading() ? 'Guardando...' : (isEditing() ? 'Actualizar Evento' : 'Crear Evento') }}
+      </button>
+      <button type="button" class="btn btn-secondary" (click)="onCancel()">Cancelar</button>
+    </div>
+  </form>
+</div>

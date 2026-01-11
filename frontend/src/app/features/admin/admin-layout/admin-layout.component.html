@@ -1,0 +1,60 @@
+<!-- Sidebar -->
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <h2>Panel Admin</h2>
+  </div>
+
+  <ul class="sidebar-menu">
+    <li>
+      <a routerLink="/admin/dashboard" routerLinkActive="active">
+        <i class="icon-dashboard"></i>
+        Dashboard
+      </a>
+    </li>
+    <li>
+      <a routerLink="/admin/events" routerLinkActive="active">
+        <i class="icon-events"></i>
+        Eventos
+      </a>
+    </li>
+    <li>
+      <a routerLink="/admin/users" routerLinkActive="active">
+        <i class="icon-users"></i>
+        Usuarios
+      </a>
+    </li>
+    <li>
+      <a routerLink="/admin/tickets" routerLinkActive="active">
+        <i class="icon-tickets"></i>
+        Tickets
+      </a>
+    </li>
+    <li>
+      <a routerLink="/admin/reservations" routerLinkActive="active">
+        <i class="icon-reservations"></i>
+        Reservas
+      </a>
+    </li>
+    <li>
+      <a routerLink="/admin/reports" routerLinkActive="active">
+        <i class="icon-reports"></i>
+        Reportes
+      </a>
+    </li>
+  </ul>
+
+  <div class="sidebar-footer">
+    <button (click)="logout()" class="logout-btn">
+      <i class="icon-logout"></i>
+      Cerrar Sesión
+    </button>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<main class="main-content">
+
+  <div class="content-area">
+    <router-outlet></router-outlet>
+  </div>
+</main>
