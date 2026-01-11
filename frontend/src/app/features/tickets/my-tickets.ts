@@ -5,10 +5,10 @@ import { FormsModule } from '@angular/forms';
 import { TicketsService, Ticket } from '../../core/services/tickets.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Events } from '../../services/events';
-import { CheckoutService, CompletedOrder, PurchasedTicket } from '../checkout/services/checkout.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { CurrencyFormatPipe } from '../../shared/pipes/currency-format.pipe';
+import { environment } from '../../../environments/environment';
 
 interface DisplayTicket {
   id: string;
@@ -51,7 +51,6 @@ export class MyTicketsComponent implements OnInit {
   private readonly ticketsService = inject(TicketsService);
   private readonly authService = inject(AuthService);
   private readonly eventsService = inject(Events);
-  private readonly checkoutService = inject(CheckoutService);
   readonly router = inject(Router); // Make router public for template
 
   // Signals
@@ -151,9 +150,8 @@ export class MyTicketsComponent implements OnInit {
         console.log('[MyTickets] Fetching event details for:', eventIds);
 
         if (eventIds.length === 0) {
-          // No tickets from backend, try local
-          const localTickets = this.getLocalPurchasedTickets();
-          this.tickets.set(localTickets);
+          // No tickets from backend
+          this.tickets.set([]);
           this.isLoading.set(false);
           return;
         }
@@ -183,12 +181,8 @@ export class MyTicketsComponent implements OnInit {
             // Map tickets with event data
             const enrichedTickets = this.mapBackendTicketsWithEvents(backendTickets, eventMap);
 
-            // Merge with local tickets
-            const localTickets = this.getLocalPurchasedTickets();
-            const allTickets = [...enrichedTickets, ...localTickets];
-
-            console.log('[MyTickets] Total tickets:', allTickets.length);
-            this.tickets.set(allTickets);
+            console.log('[MyTickets] Total tickets:', enrichedTickets.length);
+            this.tickets.set(enrichedTickets);
             this.isLoading.set(false);
             this.showAuthWarning.set(false);
           },
@@ -196,8 +190,7 @@ export class MyTicketsComponent implements OnInit {
             console.error('[MyTickets] Error loading events:', err);
             // Still show tickets without event enrichment
             const tickets = this.mapBackendTickets(backendTickets);
-            const localTickets = this.getLocalPurchasedTickets();
-            this.tickets.set([...tickets, ...localTickets]);
+            this.tickets.set(tickets);
             this.isLoading.set(false);
           }
         });
@@ -208,15 +201,12 @@ export class MyTicketsComponent implements OnInit {
         // Handle authentication errors
         if (error.status === 401 || error.status === 403 || error.status === 500) {
           this.showAuthWarning.set(true);
-          this.error.set('Please login to view your tickets from the server.');
+          this.error.set('Por favor inicia sesión para ver tus entradas.');
         } else {
-          this.error.set('Unable to load tickets from server.');
+          this.error.set('No se pudieron cargar las entradas del servidor.');
         }
 
-        // Fallback to local tickets
-        const localTickets = this.getLocalPurchasedTickets();
-        console.log('[MyTickets] Showing local tickets:', localTickets.length);
-        this.tickets.set(localTickets);
+        this.tickets.set([]);
         this.isLoading.set(false);
       }
     });
@@ -247,7 +237,7 @@ export class MyTicketsComponent implements OnInit {
         id: t.id,
         eventId: t.eventId,
         eventName: event?.name || `Event ${t.eventId.substring(0, 8)}`,
-        eventImageUrl: event?.imageUrl || '',
+        eventImageUrl: this.getEventImageUrl(event?.imageUrl),
         eventDate: event?.date || t.purchaseDate,
         eventTime: event?.time || '00:00',
         venue: event?.location || 'Ver detalles del evento',
@@ -262,6 +252,30 @@ export class MyTicketsComponent implements OnInit {
   }
 
   /**
+   * Constructs the full image URL from the imageUrl field
+   * Handles both full URLs and filename-only values
+   */
+  private getEventImageUrl(imageUrl: string | undefined): string {
+    if (!imageUrl) {
+      return '';
+    }
+
+    // If it's already a full URL (http/https) and not from minio, return as-is
+    if (imageUrl.startsWith('http') && !imageUrl.includes('minio')) {
+      return imageUrl;
+    }
+
+    // Extract filename if it contains a path
+    let filename = imageUrl;
+    if (filename.includes('/')) {
+      filename = filename.split('/').pop() || filename;
+    }
+
+    // Build the full URL using the API endpoint
+    return `${environment.apiUrl}/events/file/${filename}`;
+  }
+
+  /**
    * Maps backend ticket status (PAID, USED) to display status (upcoming, past, cancelled)
    * PAID → upcoming (not yet used)
    * USED → past (already used)
@@ -272,33 +286,6 @@ export class MyTicketsComponent implements OnInit {
     }
     // PAID tickets are considered upcoming until used
     return 'upcoming';
-  }
-
-  private getLocalPurchasedTickets(): DisplayTicket[] {
-    const purchasedOrders = this.checkoutService.getPurchasedTicketsHistory();
-    const displayTickets: DisplayTicket[] = [];
-
-    purchasedOrders.forEach((order: CompletedOrder) => {
-      order.tickets.forEach((ticket: PurchasedTicket) => {
-        displayTickets.push({
-          id: ticket.id,
-          eventId: String(order.eventId || ''),
-          eventName: order.eventName || 'Evento',
-          eventImageUrl: '',
-          eventDate: order.purchaseDate,
-          eventTime: '00:00',
-          venue: 'Ver detalles del evento',
-          ticketType: ticket.ticketTypeName,
-          price: ticket.price,
-          qrCode: ticket.qrCode,
-          purchaseDate: order.purchaseDate,
-          status: 'upcoming',
-          seatNumber: undefined
-        });
-      });
-    });
-
-    return displayTickets;
   }
 
   setActiveTab(tab: 'upcoming' | 'history') {

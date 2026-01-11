@@ -99,7 +99,7 @@
                 <!-- Event Banner/Image -->
                 <div class="relative mb-6 rounded-xl overflow-hidden" style="height: 250px;">
                   @if (ticket.eventImage) {
-                    <img [src]="ticket.eventImage" alt="Event" class="w-full h-full object-cover" />
+                    <img [src]="getEventImageUrl(ticket.eventImage)" alt="Event" class="w-full h-full object-cover" />
                   } @else {
                     <div class="w-full h-full bg-gradient-to-br from-purple-900 via-purple-700 to-blue-600 flex items-center justify-center">
                       <div class="text-center">

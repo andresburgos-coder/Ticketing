@@ -44,7 +44,7 @@ export class WebSocketService {
       });
 
       this.socket.on('TICKET_AVAILABILITY_UPDATE', (data: any) => {
-        console.log('[WebSocket] Received availability update:', data);
+        console.log('%c[WebSocket] 🎫 RECEIVED AVAILABILITY UPDATE', 'color: green; font-weight: bold;', data);
         const update: TicketAvailabilityUpdate = {
           eventId: data.eventId,
           ticketType: data.ticketType,
@@ -53,6 +53,10 @@ export class WebSocketService {
           timestamp: data.timestamp || new Date().toISOString()
         };
         this.availabilityUpdates$.next(update);
+      });
+
+      this.socket.on('SUBSCRIBE_SUCCESS', (data: any) => {
+        console.log('%c[WebSocket] ✅ SUBSCRIBE_SUCCESS', 'color: blue; font-weight: bold;', data);
       });
 
       this.socket.on('disconnect', (reason: string) => {
@@ -76,29 +80,40 @@ export class WebSocketService {
    * Returns an Observable that emits whenever there's an update.
    */
   subscribeToEvent(eventId: string | number): Observable<TicketAvailabilityUpdate | null> {
+    const doSubscribe = () => {
+      console.log('[WebSocket] Emitting SUBSCRIBE for event:', eventId);
+      this.socket?.emit('SUBSCRIBE', { eventId: String(eventId) });
+    };
+
     // Send subscription message if Socket.IO is connected
     if (this.socket && this.socket.connected) {
-      console.log('[WebSocket] Subscribing to event:', eventId);
-      this.socket.emit('SUBSCRIBE', { eventId });
+      console.log('[WebSocket] Already connected, subscribing to event:', eventId);
+      doSubscribe();
     } else {
-      console.warn('[WebSocket] Not connected; will subscribe when connected');
+      console.warn('[WebSocket] Not connected yet; will subscribe when connected');
       // Queue subscription for when connection is established
-      this.socket?.on('connect', () => {
+      const connectHandler = () => {
         console.log('[WebSocket] Connected - now subscribing to event:', eventId);
-        this.socket?.emit('SUBSCRIBE', { eventId });
-      });
+        doSubscribe();
+        // Remove the handler after first connection to avoid duplicate subscriptions
+        this.socket?.off('connect', connectHandler);
+      };
+      this.socket?.on('connect', connectHandler);
     }
 
     // Return a filtered observable that only emits updates for this event
     return new Observable(observer => {
       const subscription = this.availabilityUpdates$.subscribe(update => {
         if (update && String(update.eventId) === String(eventId)) {
-          console.log('[WebSocket] Emitting update for event:', eventId, update);
+          console.log('%c[WebSocket] 📤 Emitting update to subscriber for event:', 'color: orange; font-weight: bold;', eventId, update);
           observer.next(update);
         }
       });
 
-      return () => subscription.unsubscribe();
+      return () => {
+        console.log('[WebSocket] Unsubscribing observer for event:', eventId);
+        subscription.unsubscribe();
+      };
     });
   }
 

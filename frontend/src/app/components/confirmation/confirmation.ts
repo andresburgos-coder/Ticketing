@@ -8,6 +8,7 @@ import { TicketsService } from '../../core/services/tickets.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Events } from '../../services/events';
 import { forkJoin } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 interface BackendTicket {
   id: string;
@@ -375,6 +376,30 @@ export class Confirmation implements OnInit {
     return null;
   }
 
+  /**
+   * Constructs the full image URL from the imageUrl field
+   * Handles both full URLs and filename-only values
+   */
+  getEventImageUrl(imageUrl: string | undefined): string {
+    if (!imageUrl) {
+      return '';
+    }
+
+    // If it's already a full URL (http/https) and not from minio, return as-is
+    if (imageUrl.startsWith('http') && !imageUrl.includes('minio')) {
+      return imageUrl;
+    }
+
+    // Extract filename if it contains a path
+    let filename = imageUrl;
+    if (filename.includes('/')) {
+      filename = filename.split('/').pop() || filename;
+    }
+
+    // Build the full URL using the API endpoint
+    return `${environment.apiUrl}/events/file/${filename}`;
+  }
+
   continueShopping(): void {
     this.checkoutService.clearCart();
     // Clear buyer info from localStorage
@@ -411,7 +436,8 @@ export class Confirmation implements OnInit {
         this.drawGradientHeader(ctx, ticket);
         this.drawTicketContent(ctx, ticket, qrImageUrl, canvas);
       };
-      eventImg.src = ticket.eventImage;
+      // Use the helper method to get the correct URL
+      eventImg.src = this.getEventImageUrl(ticket.eventImage);
     } else {
       // Draw gradient header
       this.drawGradientHeader(ctx, ticket);

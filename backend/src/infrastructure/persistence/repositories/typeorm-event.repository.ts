@@ -208,7 +208,7 @@ export class TypeOrmEventRepository implements IEventRepository {
     const reservedResult = await this.dataSource.query(`
       SELECT COALESCE(SUM(quantity), 0) as reserved_count
       FROM reservations 
-      WHERE "eventId" = $1 AND "ticketType"::text = $2 AND "expiresAt" > NOW() AND status = 'PENDING'
+      WHERE "eventId" = $1 AND "ticketType"::text = $2 AND "expiresAt" > NOW() AND status = 'ACTIVE'
     `, [eventId, ticketType]);
 
     const reservedCount = parseInt(reservedResult[0].reserved_count, 10);

@@ -50,8 +50,13 @@ export class TicketAvailabilityGateway implements OnGatewayInit, OnGatewayConnec
       return;
     }
 
-    this.ticketAvailabilityService.subscribeToEvent(data.eventId, client.id);
-    client.emit('SUBSCRIBE_SUCCESS', { eventId: data.eventId });
+    // Normalize eventId to string for consistent room naming
+    const eventId = String(data.eventId);
+    console.log(`[WebSocket] Client ${client.id} subscribing to event: ${eventId}`);
+    
+    // Pass the full socket object so it can join the room
+    this.ticketAvailabilityService.subscribeToEvent(eventId, client);
+    client.emit('SUBSCRIBE_SUCCESS', { eventId });
   }
 
   @SubscribeMessage('UNSUBSCRIBE')
@@ -64,13 +69,25 @@ export class TicketAvailabilityGateway implements OnGatewayInit, OnGatewayConnec
       return;
     }
 
-    this.ticketAvailabilityService.unsubscribeFromEvent(data.eventId, client.id);
+    // Pass the full socket object so it can leave the room
+    this.ticketAvailabilityService.unsubscribeFromEvent(data.eventId, client);
     client.emit('UNSUBSCRIBE_SUCCESS', { eventId: data.eventId });
   }
 
   @SubscribeMessage('GET_STATS')
   handleGetStats(@ConnectedSocket() client: Socket): void {
     const stats = this.ticketAvailabilityService.getStats();
+    console.log('[WebSocket] Stats requested by client:', client.id);
+    console.log('[WebSocket] Current room stats:', stats);
     client.emit('STATS', stats);
+  }
+
+  @SubscribeMessage('DEBUG')
+  handleDebug(@ConnectedSocket() client: Socket): void {
+    const stats = this.ticketAvailabilityService.getStats();
+    const rooms = Array.from(this.server.sockets.adapter.rooms.keys());
+    console.log('[WebSocket] DEBUG - All rooms:', rooms);
+    console.log('[WebSocket] DEBUG - Event rooms:', stats);
+    client.emit('DEBUG_RESPONSE', { rooms, eventRooms: stats, clientId: client.id });
   }
 }
