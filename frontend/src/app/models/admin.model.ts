@@ -2,7 +2,7 @@ import { Event } from './event.model';
 
 export interface User {
   id: string;
-  email: string;
+  email: string | { value: string };
   firstName: string;
   lastName: string;
   role: UserRole;

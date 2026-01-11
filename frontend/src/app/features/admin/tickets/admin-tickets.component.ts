@@ -27,40 +27,77 @@ export class AdminTicketsComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.loadEvents();
-    this.loadTickets();
+    this.initializeData();
   }
 
-  loadEvents() {
-    // Load events using signal
-    this.eventService.loadEvents();
-    // Get events from signal
-    this.events = this.eventService.events();
-  }
-
-  loadTickets() {
+  private async initializeData() {
     this.loading = true;
     this.error = null;
 
-    this.adminService.getTickets(this.filters).subscribe({
-      next: (response) => {
-        this.tickets = response.data.map(ticket => ({
-          ...ticket,
-          eventName: this.getEventName(ticket.eventId)
-        }));
-        this.pagination = response.pagination;
-        this.loading = false;
-      },
-      error: (error) => {
-        this.error = error.message || 'Error al cargar los tickets';
-        this.loading = false;
-      }
+    try {
+      // Esperar a que se carguen los eventos primero
+      await this.loadEventsPromise();
+      // Luego cargar los tickets
+      await this.loadTicketsPromise();
+    } catch (err) {
+      this.error = 'Error al cargar los datos';
+      console.warn('Error cargando datos iniciales');
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  private loadEventsPromise(): Promise<void> {
+    return new Promise((resolve) => {
+      this.eventService.loadEvents();
+      // Pequeño delay para asegurar que el signal se actualice
+      setTimeout(() => {
+        this.events = this.eventService.events();
+        resolve();
+      }, 100);
     });
+  }
+
+  private loadTicketsPromise(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.adminService.getTickets(this.filters).subscribe({
+        next: (response) => {
+          this.tickets = response.data.map(ticket => ({
+            ...ticket,
+            eventName: this.getEventName(ticket.eventId)
+          }));
+          this.pagination = response.pagination;
+          resolve();
+        },
+        error: (error) => {
+          this.error = error.message || 'Error al cargar los tickets';
+          reject(error);
+        }
+      });
+    });
+  }
+
+  loadTickets() {
+    this.filters.page = 1;
+    this.loadPageData();
   }
 
   changePage(page: number) {
     this.filters.page = page;
-    this.loadTickets();
+    this.loadPageData();
+  }
+
+  private loadPageData() {
+    this.loading = true;
+    this.error = null;
+
+    this.loadTicketsPromise()
+      .then(() => {
+        this.loading = false;
+      })
+      .catch(() => {
+        this.loading = false;
+      });
   }
 
   private getEventName(eventId: string): string {

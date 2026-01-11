@@ -10,6 +10,7 @@ import { GetUsersQueryDto } from '../../presentation/dtos/get-users-query.dto';
 import { IUserRepository } from '../../domain/interfaces/user-repository.interface';
 import { ITicketRepository } from '../../domain/interfaces/ticket-repository.interface';
 import { IReservationRepository } from '../../domain/interfaces/reservation-repository.interface';
+import { Email } from '../../domain/value-objects/email.vo';
 import { USER_REPOSITORY, TICKET_REPOSITORY, RESERVATION_REPOSITORY } from '../../domain/interfaces/repository-tokens';
 import * as bcrypt from 'bcrypt';
 
@@ -30,6 +31,13 @@ export class AdminService {
   ) {}
 
   async createAdminUser(createAdminUserDto: CreateAdminUserDto) {
+    // Check if email already exists
+    const emailObj = Email.create(createAdminUserDto.email);
+    const existingUser = await this.userRepository.findByEmail(emailObj);
+    if (existingUser) {
+      throw new ConflictException('Email already exists');
+    }
+
     return this.createAdminUserUseCase.execute(createAdminUserDto);
   }
 
@@ -55,8 +63,10 @@ export class AdminService {
     }
 
     // Check if email is being changed and if it already exists
-    if (updateUserDto.email && updateUserDto.email !== user.email) {
-      const existingUser = await this.userRepository.findByEmail(updateUserDto.email);
+    const currentEmailValue = typeof user.email === 'string' ? user.email : user.email.value;
+    if (updateUserDto.email && updateUserDto.email !== currentEmailValue) {
+      const emailObj = Email.create(updateUserDto.email);
+      const existingUser = await this.userRepository.findByEmail(emailObj);
       if (existingUser) {
         throw new ConflictException('Email already exists');
       }
