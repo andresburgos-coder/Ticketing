@@ -5,7 +5,7 @@ export const environment = {
     const host = window.location.hostname;
     const protocol = window.location.protocol; // El protocolo ya será HTTPS gracias a NGINX
     const port = window.location.protocol === 'https:' ? '' : ':3000'; // Sin puerto en HTTPS con NGINX
-    
+
     if (host === 'localhost' || host === '127.0.0.1') {
       return `${protocol}//${host}${port}/api`;
     } else {
@@ -17,7 +17,7 @@ export const environment = {
     const host = window.location.hostname;
     const protocol = window.location.protocol;
     const port = window.location.protocol === 'https:' ? '' : ':3000';
-    
+
     if (host === 'localhost' || host === '127.0.0.1') {
       return `${protocol}//${host}${port}`;
     } else {

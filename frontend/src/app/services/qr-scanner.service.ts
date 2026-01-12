@@ -52,12 +52,12 @@ export class QRScannerService {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         return false;
       }
-      
+
       // Try to get camera permissions
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' } // Prefer back camera
       });
-      
+
       // Stop the stream immediately after checking
       stream.getTracks().forEach(track => track.stop());
       return true;

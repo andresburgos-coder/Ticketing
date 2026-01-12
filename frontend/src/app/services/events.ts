@@ -52,9 +52,9 @@ export class Events {
   private handleError(operation = 'operation') {
     return (error: HttpErrorResponse): Observable<never> => {
       console.error(`[Events Service] ${operation} failed:`, error.message);
-      
+
       let errorMessage = 'Unknown error occurred';
-      
+
       if (error.error instanceof ErrorEvent) {
         // Client-side error
         errorMessage = `Client error: ${error.error.message}`;
@@ -62,7 +62,7 @@ export class Events {
         // Server-side error
         errorMessage = `Server error: ${error.status} ${error.statusText}`;
       }
-      
+
       return throwError(() => new Error(errorMessage));
     };
   }

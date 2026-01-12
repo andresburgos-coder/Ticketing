@@ -29,13 +29,13 @@ export class WebSocketService {
     try {
       // Use baseUrl instead of apiUrl for Socket.IO connection
       let baseUrl = environment.baseUrl || environment.apiUrl.replace('/api', '');
-      
+
       // Detectar si estamos usando una IP específica
       const hostname = window.location.hostname;
-      const isSpecificIP = hostname !== 'localhost' && 
-                          hostname !== '127.0.0.1' && 
+      const isSpecificIP = hostname !== 'localhost' &&
+                          hostname !== '127.0.0.1' &&
                           /^\d+\.\d+\.\d+\.\d+$/.test(hostname);
-      
+
       // Si es una IP específica, forzar HTTP
       if (isSpecificIP && baseUrl.startsWith('https://')) {
         baseUrl = baseUrl.replace('https://', 'http://');
