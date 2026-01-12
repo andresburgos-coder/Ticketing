@@ -4,12 +4,14 @@
       Eventos
     </a>
     @if (isAuthenticated) {
-      <a [routerLink]="['/my-tickets']" (click)="onClose()" class="px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-        Mis Entradas
-      </a>
-      <a [routerLink]="['/profile']" (click)="onClose()" class="px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-        Perfil
-      </a>
+      @if (isBuyer()) {
+        <a [routerLink]="['/my-tickets']" (click)="onClose()" class="px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+          Mis Entradas
+        </a>
+        <a [routerLink]="['/profile']" (click)="onClose()" class="px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+          Perfil
+        </a>
+      }
       <button (click)="onLogout()" class="px-4 py-3 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
         Cerrar sesión
       </button>

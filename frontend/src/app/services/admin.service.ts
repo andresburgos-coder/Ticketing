@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import {
@@ -83,12 +83,35 @@ export class AdminService {
   getTickets(query: TicketsQuery = {}): Observable<PaginatedResponse<AdminTicket>> {
     let params = new HttpParams();
 
-    if (query.eventId) params = params.set('eventId', query.eventId);
-    if (query.status) params = params.set('status', query.status);
+    console.log('[AdminService] getTickets called with query:', query);
+    console.log('[AdminService] eventId type:', typeof query.eventId, 'value:', query.eventId);
+    console.log('[AdminService] status type:', typeof query.status, 'value:', query.status);
+
+    // Simplificar condiciones - enviar si hay valor
+    if (query.eventId !== undefined && query.eventId !== null && query.eventId !== '') {
+      params = params.set('eventId', String(query.eventId));
+      console.log('[AdminService] Adding eventId param:', String(query.eventId));
+    }
+    if (query.status !== undefined && query.status !== null && query.status !== '') {
+      params = params.set('status', query.status);
+      console.log('[AdminService] Adding status param:', query.status);
+    }
     if (query.page) params = params.set('page', query.page.toString());
     if (query.limit) params = params.set('limit', query.limit.toString());
 
-    return this.http.get<PaginatedResponse<AdminTicket>>(`${this.apiUrl}/tickets`, { params });
+    console.log('[AdminService] Final HTTP params:', params.toString());
+    console.log('[AdminService] Making request to:', `${this.apiUrl}/tickets`);
+
+    return this.http.get<PaginatedResponse<AdminTicket>>(`${this.apiUrl}/tickets`, { params }).pipe(
+      tap(response => console.log('[AdminService] Success response:', response)),
+      catchError(error => {
+        console.error('[AdminService] HTTP Error:', error);
+        console.error('[AdminService] Error status:', error.status);
+        console.error('[AdminService] Error message:', error.message);
+        console.error('[AdminService] Error body:', error.error);
+        return throwError(() => error);
+      })
+    );
   }
 
   // Reservation Management

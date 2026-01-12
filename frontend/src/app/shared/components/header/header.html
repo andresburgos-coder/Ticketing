@@ -13,7 +13,7 @@
     <!-- Desktop Navigation -->
     <nav class="hidden md:flex items-center gap-6">
 
-      @if (isAuthenticated()) {
+      @if (isAuthenticated() && isBuyer()) {
         <a [routerLink]="['/my-tickets']" class="text-gray-700 hover:text-blue-600 transition-colors">Mis Entradas</a>
         <a [routerLink]="['/profile']" class="text-gray-700 hover:text-blue-600 transition-colors">Perfil</a>
       }
@@ -57,6 +57,7 @@
   @if (mobileMenuOpen()) {
     <app-mobile-menu
       [isAuthenticated]="isAuthenticated()"
+      [currentUser]="currentUser()"
       (close)="toggleMobileMenu()"
       (logout)="logout()">
     </app-mobile-menu>

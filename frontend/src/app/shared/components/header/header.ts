@@ -19,6 +19,11 @@ export class Header {
   protected readonly currentUser = this.authService.currentUser;
   protected readonly mobileMenuOpen = signal(false);
 
+  isBuyer() {
+    const user = this.currentUser();
+    return user && user.role === 'BUYER';
+  }
+
   toggleMobileMenu() {
     this.mobileMenuOpen.update(value => !value);
   }
