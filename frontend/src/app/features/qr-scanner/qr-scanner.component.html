@@ -1,0 +1,151 @@
+<div class="qr-scanner-container">
+  <!-- Header -->
+  <div class="scanner-header">
+    <h2>🎫 Escáner de Entradas</h2>
+    <p class="subtitle">Valida las entradas escaneando el código QR</p>
+  </div>
+
+  <!-- Event Selection -->
+  <div class="event-selection">
+    <label for="eventSelect">Seleccionar Evento:</label>
+    <select 
+      id="eventSelect" 
+      [value]="selectedEventId()" 
+      (change)="onEventChange($any($event.target).value)"
+      [disabled]="isLoading()"
+      class="event-select">
+      <option value="">-- Selecciona un evento --</option>
+      @for (event of events(); track event.id) {
+        <option [value]="event.id">{{ event.name }} - {{ event.date | date:'dd/MM/yyyy' }}</option>
+      }
+    </select>
+  </div>
+
+  <!-- Camera Controls -->
+  <div class="camera-controls">
+    @if (!cameraSupported()) {
+      <div class="camera-error">
+        <p>❌ Cámara no disponible</p>
+        <small>Asegúrate de usar HTTPS y permitir acceso a la cámara</small>
+      </div>
+    } @else if (!selectedEventId()) {
+      <div class="camera-disabled">
+        <p>📱 Selecciona un evento para activar el escáner</p>
+      </div>
+    } @else {
+      <div class="camera-buttons">
+        @if (!isCameraActive()) {
+          <button 
+            class="btn btn-primary btn-large"
+            (click)="startCamera()"
+            [disabled]="isLoading() || !canScan()">
+            @if (isLoading()) {
+              <span class="spinner"></span> Iniciando...
+            } @else {
+              📷 Iniciar Escáner
+            }
+          </button>
+        } @else {
+          <button 
+            class="btn btn-secondary"
+            (click)="stopCamera()">
+            ⏹️ Detener Escáner
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Camera View -->
+  @if (isCameraActive()) {
+    <div class="camera-container">
+      <video 
+        #videoElement 
+        class="camera-video"
+        autoplay 
+        playsinline>
+      </video>
+      
+      <div class="scan-overlay">
+        <div class="scan-frame"></div>
+        @if (isLoading()) {
+          <div class="scan-status">
+            <div class="spinner"></div>
+            <p>Validando entrada...</p>
+          </div>
+        } @else {
+          <div class="scan-instructions">
+            <p>Apunta la cámara al código QR</p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Scan Results -->
+  @if (scanResults().length > 0) {
+    <div class="results-section">
+      <div class="results-header">
+        <h3>📋 Resultados de Validación</h3>
+        <button 
+          class="btn btn-small btn-outline"
+          (click)="clearResults()">
+          🗑️ Limpiar
+        </button>
+      </div>
+
+      <div class="results-list">
+        @for (result of scanResults(); track $index) {
+          <div class="result-item" [ngClass]="getResultClass(result.success)">
+            <div class="result-header">
+              <span class="result-icon">{{ getResultIcon(result.success) }}</span>
+              <span class="result-time">{{ formatTime(result.timestamp) }}</span>
+            </div>
+            
+            <div class="result-content">
+              <p class="result-message">{{ result.message }}</p>
+              
+              @if (result.ticket) {
+                <div class="ticket-details">
+                  <div class="ticket-info">
+                    <span><strong>Código:</strong> {{ result.ticket.code }}</span>
+                    <span><strong>Tipo:</strong> {{ result.ticket.type }}</span>
+                    <span><strong>Email:</strong> {{ result.ticket.buyerEmail }}</span>
+                  </div>
+                  
+                  @if (result.ticket.usedAt) {
+                    <div class="usage-info">
+                      <small>Usado el: {{ result.ticket.usedAt | date:'dd/MM/yyyy HH:mm:ss' }}</small>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Instructions -->
+  <div class="instructions">
+    <h4>📖 Instrucciones de Uso</h4>
+    <ol>
+      <li>Selecciona el evento donde estás validando entradas</li>
+      <li>Presiona "Iniciar Escáner" para activar la cámara</li>
+      <li>Apunta la cámara al código QR de la entrada</li>
+      <li>El sistema validará automáticamente la entrada</li>
+      <li>Verás el resultado en pantalla: ✅ válida o ❌ inválida</li>
+    </ol>
+    
+    <div class="tips">
+      <h5>💡 Consejos:</h5>
+      <ul>
+        <li>Asegúrate de tener buena iluminación</li>
+        <li>Mantén el código QR centrado en la pantalla</li>
+        <li>Si no funciona, verifica que estés usando HTTPS</li>
+        <li>Cada entrada solo puede usarse una vez</li>
+      </ul>
+    </div>
+  </div>
+</div>

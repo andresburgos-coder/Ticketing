@@ -7,6 +7,7 @@ import { Confirmation } from './components/confirmation/confirmation';
 import { AuthComponent } from './features/auth/components/auth/auth';
 import { MyTicketsComponent } from './features/tickets/my-tickets';
 import { ProfileComponent } from './features/profile/profile';
+import { QRScannerComponent } from './features/qr-scanner/qr-scanner.component';
 import { authGuard } from './core/guards/auth.guard';
 import { checkoutGuard } from './core/guards/checkout.guard';
 import { AdminGuard } from './core/guards/admin.guard';
@@ -24,6 +25,7 @@ export const routes: Routes = [
     { path: 'confirmation', component: Confirmation },
     { path: 'my-tickets', component: MyTicketsComponent, canActivate: [authGuard] },
     { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
+    { path: 'qr-scanner', component: QRScannerComponent, canActivate: [organizerGuard] },
     {
         path: 'admin',
         canActivate: [organizerGuard],

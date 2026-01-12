@@ -3,11 +3,37 @@
 /* Material Symbols Icons */
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
 
+/* Reset and base styles */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 html, body {
   height: 100%;
   margin: 0;
   padding: 0;
   font-family: system-ui, -apple-system, sans-serif;
+  overflow-x: hidden; /* Prevenir scroll horizontal */
+}
+
+/* Responsive text sizes */
+@media (max-width: 640px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+/* Mejoras para touch devices */
+@media (hover: none) and (pointer: coarse) {
+  button, .btn-base {
+    min-height: 44px; /* Tamaño mínimo para touch */
+  }
 }
 
 /* Accessibility improvements */

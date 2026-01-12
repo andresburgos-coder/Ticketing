@@ -15,3 +15,26 @@
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
+
+/* Ocultar scrollbar en indicadores */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE y Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari y Opera */
+}
+
+/* Mejoras para touch devices */
+@media (hover: none) and (pointer: coarse) {
+  .hover\:bg-primary-600:hover {
+    background-color: inherit;
+  }
+}
+
+/* Asegurar que las imágenes se vean bien en móvil */
+@media (max-width: 640px) {
+  .bg-center {
+    background-position: center top;
+  }
+}
