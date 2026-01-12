@@ -38,7 +38,7 @@ export class ValidateQRUseCase {
     if (!ticket) {
       return {
         valid: false,
-        message: "Ticket not found",
+        message: "Entrada no encontrada. Por favor, verifica el código QR",
       };
     }
 
@@ -46,15 +46,17 @@ export class ValidateQRUseCase {
     if (ticket.eventId !== params.eventId) {
       return {
         valid: false,
-        message: "Ticket is not valid for this event",
+        message: "Esta entrada no es válida para este evento",
       };
     }
 
     // 3. Validate ticket status is PAID
     if (ticket.status === TicketStatus.USED) {
+      const usedDate = ticket.usedAt || new Date();
+      const formattedDate = this.formatDateForUser(usedDate);
       return {
         valid: false,
-        message: `Ticket already used on ${ticket.usedAt?.toISOString()}`,
+        message: `Esta entrada ya fue utilizada el ${formattedDate}`,
         ticket: {
           id: ticket.id,
           code: ticket.code,
@@ -68,7 +70,7 @@ export class ValidateQRUseCase {
     if (ticket.status !== TicketStatus.PAID) {
       return {
         valid: false,
-        message: "Ticket is not in PAID status",
+        message: "Esta entrada no está confirmada. Por favor, contacta al organizador",
       };
     }
 
@@ -77,7 +79,7 @@ export class ValidateQRUseCase {
     if (!event) {
       return {
         valid: false,
-        message: "Event not found",
+        message: "Evento no encontrado",
       };
     }
 
@@ -86,7 +88,7 @@ export class ValidateQRUseCase {
     if (event.date < now) {
       return {
         valid: false,
-        message: "Event has already ended",
+        message: "Este evento ya ha finalizado",
       };
     }
 
@@ -97,7 +99,7 @@ export class ValidateQRUseCase {
     // 6. Return success response
     return {
       valid: true,
-      message: "Ticket validated successfully",
+      message: "¡Bienvenido! Entrada válida. Puede ingresar al evento",
       ticket: {
         id: usedTicket.id,
         code: usedTicket.code,
@@ -106,5 +108,21 @@ export class ValidateQRUseCase {
         usedAt: usedTicket.usedAt?.toISOString() || null,
       },
     };
+  }
+
+  private formatDateForUser(date: Date): string {
+    const options: Intl.DateTimeFormatOptions = {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    };
+    
+    const formatted = date.toLocaleString('es-ES', options);
+    // Format: "HH:MM AM/PM - DD/MM/YYYY"
+    const [datePart, timePart] = formatted.split(', ');
+    return `${timePart} - ${datePart}`;
   }
 }

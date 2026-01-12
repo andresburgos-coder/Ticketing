@@ -8,9 +8,9 @@
   <!-- Event Selection -->
   <div class="event-selection">
     <label for="eventSelect">Seleccionar Evento:</label>
-    <select 
-      id="eventSelect" 
-      [value]="selectedEventId()" 
+    <select
+      id="eventSelect"
+      [value]="selectedEventId()"
       (change)="onEventChange($any($event.target).value)"
       [disabled]="isLoading()"
       class="event-select">
@@ -35,7 +35,7 @@
     } @else {
       <div class="camera-buttons">
         @if (!isCameraActive()) {
-          <button 
+          <button
             class="btn btn-primary btn-large"
             (click)="startCamera()"
             [disabled]="isLoading() || !canScan()">
@@ -46,10 +46,18 @@
             }
           </button>
         } @else {
-          <button 
+          <button
             class="btn btn-secondary"
             (click)="stopCamera()">
             ⏹️ Detener Escáner
+          </button>
+
+          <!-- Test button for development -->
+          <button
+            class="btn btn-outline"
+            (click)="testValidUUID()"
+            style="margin-left: 10px;">
+            🧪 Probar UUID
           </button>
         }
       </div>
@@ -59,13 +67,19 @@
   <!-- Camera View -->
   @if (isCameraActive()) {
     <div class="camera-container">
-      <video 
-        #videoElement 
+      <video
+        #videoElement
         class="camera-video"
-        autoplay 
+        autoplay
         playsinline>
       </video>
-      
+
+      <!-- Canvas for QR scanning (hidden) -->
+      <canvas
+        #canvasElement
+        style="display: none;">
+      </canvas>
+
       <div class="scan-overlay">
         <div class="scan-frame"></div>
         @if (isLoading()) {
@@ -87,7 +101,7 @@
     <div class="results-section">
       <div class="results-header">
         <h3>📋 Resultados de Validación</h3>
-        <button 
+        <button
           class="btn btn-small btn-outline"
           (click)="clearResults()">
           🗑️ Limpiar
@@ -101,10 +115,10 @@
               <span class="result-icon">{{ getResultIcon(result.success) }}</span>
               <span class="result-time">{{ formatTime(result.timestamp) }}</span>
             </div>
-            
+
             <div class="result-content">
               <p class="result-message">{{ result.message }}</p>
-              
+
               @if (result.ticket) {
                 <div class="ticket-details">
                   <div class="ticket-info">
@@ -112,7 +126,7 @@
                     <span><strong>Tipo:</strong> {{ result.ticket.type }}</span>
                     <span><strong>Email:</strong> {{ result.ticket.buyerEmail }}</span>
                   </div>
-                  
+
                   @if (result.ticket.usedAt) {
                     <div class="usage-info">
                       <small>Usado el: {{ result.ticket.usedAt | date:'dd/MM/yyyy HH:mm:ss' }}</small>
@@ -137,7 +151,7 @@
       <li>El sistema validará automáticamente la entrada</li>
       <li>Verás el resultado en pantalla: ✅ válida o ❌ inválida</li>
     </ol>
-    
+
     <div class="tips">
       <h5>💡 Consejos:</h5>
       <ul>

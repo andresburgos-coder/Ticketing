@@ -36,8 +36,9 @@ export class WebSocketService {
                           hostname !== '127.0.0.1' &&
                           /^\d+\.\d+\.\d+\.\d+$/.test(hostname);
 
-      // Si es una IP específica, forzar HTTP
-      if (isSpecificIP && baseUrl.startsWith('https://')) {
+      // Para HTTPS, mantener HTTPS para WebSocket (wss://)
+      // Solo usar HTTP si el contexto actual es HTTP
+      if (!window.location.protocol.startsWith('https') && isSpecificIP && baseUrl.startsWith('https://')) {
         baseUrl = baseUrl.replace('https://', 'http://');
       }
 
@@ -47,10 +48,10 @@ export class WebSocketService {
         reconnectionDelay: 1000,
         reconnectionAttempts: 5,
         forceNew: true,
-        // Para IPs específicas, nunca usar SSL
-        secure: !isSpecificIP && baseUrl.startsWith('https://'),
+        // Usar SSL si estamos en HTTPS
+        secure: window.location.protocol === 'https:',
         rejectUnauthorized: false, // Para desarrollo con certificados auto-firmados
-        // Configuración adicional para IPs específicas
+        // Configuración adicional
         upgrade: true,
         rememberUpgrade: false
       });

@@ -35,6 +35,12 @@ export class QRScannerService {
    */
   validateQR(qrToken: string, eventId: string): Observable<QRValidationResponse> {
     const request: QRValidationRequest = { qrToken, eventId };
+
+    console.log('[QRScannerService] Sending validation request:', request);
+    console.log('[QRScannerService] QR Token:', qrToken);
+    console.log('[QRScannerService] Event ID:', eventId);
+    console.log('[QRScannerService] Request URL:', `${this.baseUrl}/validate-qr`);
+
     return this.http.post<QRValidationResponse>(`${this.baseUrl}/validate-qr`, request);
   }
 
@@ -44,24 +50,31 @@ export class QRScannerService {
    */
   async checkCameraSupport(): Promise<boolean> {
     try {
+      console.log('[QR] Checking camera support...');
+
       // Check if running in secure context
       if (!window.isSecureContext) {
+        console.warn('[QR] Not in secure context - HTTPS required');
         return false;
       }
 
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        console.warn('[QR] MediaDevices API not available');
         return false;
       }
 
+      console.log('[QR] Requesting camera access...');
       // Try to get camera permissions
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' } // Prefer back camera
       });
 
+      console.log('[QR] Camera access granted');
       // Stop the stream immediately after checking
       stream.getTracks().forEach(track => track.stop());
       return true;
     } catch (error: any) {
+      console.error('[QR] Camera access failed:', error.name, error.message);
       return false;
     }
   }

@@ -102,17 +102,20 @@ export class EventService {
     this._isLoading.set(true);
     this.eventsApi.getEvent(id).subscribe({
       next: (data) => {
-                this._selectedEvent.set(data);
+        this._selectedEvent.set(data);
         this._isLoading.set(false);
+
+        // Subscribe to WebSocket updates using the actual event ID (UUID) from the API response
+        // not the URL parameter which might be a code like "TICK0009-004"
+        if (data && data.id) {
+          this.subscribeToEventUpdates(data.id);
+        }
       },
       error: (err) => {
         console.error('Error loading event:', err);
         this._isLoading.set(false);
       }
     });
-
-    // Subscribe to WebSocket updates for this event
-    this.subscribeToEventUpdates(id);
   }
 
   /**
@@ -121,7 +124,9 @@ export class EventService {
    */
   private subscribeToEventUpdates(eventId: string | number): void {
     const eventIdStr = String(eventId);
-    
+
+    console.log('%c[EventService] 🔔 Attempting WebSocket subscription for event UUID:', 'color: blue; font-weight: bold;', eventIdStr);
+
     // Check if already subscribed with a valid subscription
     const existingSub = this.wsSubscriptions.get(eventIdStr);
     if (existingSub && !existingSub.closed) {
@@ -143,7 +148,7 @@ export class EventService {
           console.log('%c[EventService] 🎫 AVAILABILITY UPDATE RECEIVED!', 'color: green; font-size: 14px; font-weight: bold;');
           console.log('[EventService] Update details:', update);
           console.log('[EventService] Refetching event:', eventIdStr);
-          
+
           // Refetch the event to get updated availability
           this.eventsApi.getEvent(eventIdStr).subscribe({
             next: (data) => {

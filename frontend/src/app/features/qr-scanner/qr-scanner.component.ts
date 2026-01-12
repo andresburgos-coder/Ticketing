@@ -6,9 +6,7 @@ import { QRScannerService, QRValidationResponse } from '../../services/qr-scanne
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { AdminService } from '../../services/admin.service';
-
-// Import QR code scanning library
-declare var QrScanner: any;
+import jsQR from 'jsqr';
 
 interface ScanResult {
   success: boolean;
@@ -33,6 +31,9 @@ interface ScanResult {
 export class QRScannerComponent implements OnInit, OnDestroy {
   @ViewChild('videoElement', { static: false }) videoElement!: ElementRef<HTMLVideoElement>;
 
+  // Canvas for QR scanning
+  @ViewChild('canvasElement', { static: false }) canvasElement!: ElementRef<HTMLCanvasElement>;
+
   private readonly qrScannerService = inject(QRScannerService);
   private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
@@ -40,9 +41,9 @@ export class QRScannerComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
-  // QR Scanner instance
-  private qrScanner: any = null;
+  // QR Scanner properties
   private stream: MediaStream | null = null;
+  private scanningInterval: any = null;
 
   // Signals
   readonly isLoading = signal(false);
@@ -84,25 +85,32 @@ export class QRScannerComponent implements OnInit, OnDestroy {
   }
 
   private async checkCameraSupport() {
+    console.log('[QRComponent] Checking camera support...');
     const supported = await this.qrScannerService.checkCameraSupport();
     this.cameraSupported.set(supported);
+
+    console.log('[QRComponent] Camera supported:', supported);
+    console.log('[QRComponent] Current protocol:', window.location.protocol);
+    console.log('[QRComponent] Current hostname:', window.location.hostname);
+    console.log('[QRComponent] Secure context:', window.isSecureContext);
 
     if (!supported) {
       const isHttps = window.location.protocol === 'https:';
       const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-      let message = 'No se puede acceder a la cámara. ';
+      let message = '❌ Cámara no disponible. ';
 
-      if (!isHttps && !isLocalhost) {
-        message += 'Necesitas usar HTTPS para acceder a la cámara desde otro dispositivo. ';
-        message += 'Para desarrollo, usa: npm run start:ssl';
-      } else if (!isHttps && isLocalhost) {
-        message += 'Tu navegador puede requerir HTTPS. Intenta con: npm run start:ssl';
+      if (!window.isSecureContext) {
+        message += 'Se requiere HTTPS para acceder a la cámara. ';
+      } else if (!navigator.mediaDevices) {
+        message += 'Tu navegador no soporta acceso a la cámara. ';
       } else {
-        message += 'Verifica que tu dispositivo tenga cámara y permisos habilitados.';
+        message += 'Verifica permisos de cámara en tu navegador. ';
       }
 
-      this.toastService.show(message, 'warning');
+      this.toastService.show(message, 'error');
+    } else {
+      this.toastService.show('✅ Cámara disponible', 'success');
     }
   }
 
@@ -135,8 +143,13 @@ export class QRScannerComponent implements OnInit, OnDestroy {
     }
 
     try {
+      console.log('[QRComponent] Starting camera...');
       this.isLoading.set(true);
 
+      // Activate camera state first to show video element
+      this.isCameraActive.set(true);
+
+      console.log('[QRComponent] Requesting camera stream...');
       // Get camera stream
       this.stream = await navigator.mediaDevices.getUserMedia({
         video: {
@@ -146,55 +159,116 @@ export class QRScannerComponent implements OnInit, OnDestroy {
         }
       });
 
+      console.log('[QRComponent] Camera stream obtained:', this.stream);
+
+      // Wait for video element to be available in DOM
+      await this.waitForVideoElement();
+
       // Set video source
       if (this.videoElement?.nativeElement) {
+        console.log('[QRComponent] Setting video source...');
         this.videoElement.nativeElement.srcObject = this.stream;
-        this.videoElement.nativeElement.play();
+        await this.videoElement.nativeElement.play();
+        console.log('[QRComponent] Video playing');
+      } else {
+        console.error('[QRComponent] Video element still not found after waiting!');
+        throw new Error('Video element not available');
       }
 
       // Initialize QR Scanner
       await this.initQRScanner();
 
-      this.isCameraActive.set(true);
       this.isLoading.set(false);
-      this.toastService.show('Cámara iniciada. Apunta al código QR', 'success');
+      this.toastService.show('✅ Cámara iniciada. Apunta al código QR', 'success');
 
-    } catch (error) {
-      console.error('Error starting camera:', error);
-      this.toastService.show('Error al acceder a la cámara. Verifica los permisos.', 'error');
+    } catch (error: any) {
+      console.error('[QRComponent] Error starting camera:', error.name, error.message);
+      let errorMessage = '❌ Error al acceder a la cámara. ';
+
+      if (error.name === 'NotAllowedError') {
+        errorMessage += 'Permisos de cámara denegados.';
+      } else if (error.name === 'NotFoundError') {
+        errorMessage += 'No se encontró cámara en el dispositivo.';
+      } else if (error.name === 'NotSupportedError') {
+        errorMessage += 'Cámara no soportada - usa HTTPS.';
+      } else {
+        errorMessage += 'Verifica los permisos y conexión.';
+      }
+
+      this.toastService.show(errorMessage, 'error');
       this.isLoading.set(false);
+      this.isCameraActive.set(false); // Reset camera state on error
     }
   }
 
   private async initQRScanner() {
-    if (typeof QrScanner === 'undefined') {
-      // Load QR Scanner library dynamically
-      await this.loadQRScannerLibrary();
-    }
+    try {
+      console.log('[QRComponent] Initializing jsQR scanner...');
 
-    if (this.videoElement?.nativeElement) {
-      this.qrScanner = new QrScanner(
-        this.videoElement.nativeElement,
-        (result: string) => this.onQRDetected(result),
-        {
-          returnDetailedScanResult: false,
-          highlightScanRegion: true,
-          highlightCodeOutline: true,
+      if (this.videoElement?.nativeElement && this.canvasElement?.nativeElement) {
+        const video = this.videoElement.nativeElement;
+        const canvas = this.canvasElement.nativeElement;
+        const context = canvas.getContext('2d');
+
+        if (!context) {
+          throw new Error('Could not get canvas context');
         }
-      );
 
-      await this.qrScanner.start();
+        // Set canvas dimensions to match video
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        // Start scanning loop
+        this.scanningInterval = setInterval(() => {
+          if (video.videoWidth === 0 || video.videoHeight === 0) return;
+
+          // Update canvas size if video dimensions changed
+          if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+          }
+
+          // Draw the current video frame to canvas
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+          // Get image data from canvas
+          const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+
+          // Try to detect QR code
+          const qrCode = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: 'dontInvert',
+          });
+
+          if (qrCode) {
+            console.log('[QRComponent] QR Code detected:', qrCode.data);
+            this.onQRDetected(qrCode.data);
+          }
+        }, 250); // Scan every 250ms
+
+        console.log('[QRComponent] jsQR scanner initialized and started');
+      }
+    } catch (error) {
+      console.error('[QRComponent] Failed to initialize jsQR scanner:', error);
+      throw error;
     }
   }
 
-  private async loadQRScannerLibrary(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/qr-scanner@1.4.2/qr-scanner.min.js';
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Failed to load QR Scanner library'));
-      document.head.appendChild(script);
-    });
+
+  private async waitForVideoElement(): Promise<void> {
+    const maxAttempts = 10;
+    const delay = 100; // 100ms
+
+    for (let i = 0; i < maxAttempts; i++) {
+      if (this.videoElement?.nativeElement) {
+        console.log('[QRComponent] Video element found after', (i * delay), 'ms');
+        return;
+      }
+
+      // Wait before next attempt
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+
+    throw new Error('Video element not found after waiting');
   }
 
   private async onQRDetected(qrData: string) {
@@ -204,34 +278,76 @@ export class QRScannerComponent implements OnInit, OnDestroy {
     this.isLoading.set(true);
 
     try {
-      // Validate the QR token
-      const response = await this.qrScannerService.validateQR(
-        qrData,
-        this.selectedEventId()
-      ).toPromise();
-
-      if (response) {
-        this.addScanResult(response);
-
-        if (response.valid) {
-          this.toastService.show('¡Entrada válida! Acceso permitido', 'success');
-          // Play success sound (optional)
-          this.playSound('success');
-        } else {
-          this.toastService.show(response.message, 'error');
-          // Play error sound (optional)
-          this.playSound('error');
-        }
+      // Get the selected event code directly - no need to search by ID
+      const selectedEventCode = this.selectedEventId();
+      
+      if (!selectedEventCode) {
+        console.error('No event selected');
+        this.toastService.show('Selecciona un evento primero', 'error');
+        this.isLoading.set(false);
+        return;
       }
 
-    } catch (error) {
-      console.error('Error validating QR:', error);
-      this.toastService.show('Error al validar el código QR', 'error');
+      console.log('[QRComponent] Validating QR for event code:', selectedEventCode);
+      console.log('[QRComponent] QR Data scanned:', qrData);
 
-      // Create a manual scan result for connection errors
+      // Validate if QR data looks like a UUID
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(qrData.trim())) {
+        console.warn('[QRComponent] QR data is not a valid UUID:', qrData);
+        this.toastService.show(`QR inválido: debe ser un código UUID válido. Escaneado: "${qrData.substring(0, 50)}"`, 'error');
+        this.isLoading.set(false);
+        return;
+      }
+
+      // Validate the QR token using the event code directly
+      this.qrScannerService.validateQR(
+        qrData.trim(), // QR Token (UUID)
+        selectedEventCode // Event Code (TICK0009-XXX)
+      ).subscribe(
+        (response: QRValidationResponse) => {
+          this.addScanResult(response);
+
+          if (response.valid) {
+            this.toastService.show('¡Entrada válida! Acceso permitido', 'success');
+            // Play success sound (optional)
+            this.playSound('success');
+          } else {
+            this.toastService.show(response.message, 'error');
+            // Play error sound (optional)
+            this.playSound('error');
+          }
+        },
+        (error: any) => {
+          throw error; // Re-throw to be caught by outer catch block
+        }
+      );
+
+    } catch (error: any) {
+      console.error('Error validating QR:', error);
+
+      let errorMessage = 'Error al validar el código QR';
+
+      if (error.status === 400) {
+        // Bad Request - validation error
+        errorMessage = 'Código QR o evento inválido';
+        if (error.error?.message) {
+          errorMessage += `: ${error.error.message}`;
+        }
+      } else if (error.status === 404) {
+        errorMessage = 'Ticket no encontrado';
+      } else if (error.status === 403) {
+        errorMessage = 'Ticket ya utilizado o no válido para este evento';
+      } else if (error.status >= 500) {
+        errorMessage = 'Error del servidor. Inténtelo más tarde';
+      }
+
+      this.toastService.show(errorMessage, 'error');
+
+      // Create a manual scan result for errors
       const errorResult: ScanResult = {
         success: false,
-        message: 'Error de conexión al validar',
+        message: errorMessage,
         timestamp: new Date()
       };
       this.scanResults.update(results => [errorResult, ...results.slice(0, 9)]);
@@ -267,13 +383,29 @@ export class QRScannerComponent implements OnInit, OnDestroy {
     }
   }
 
-  stopCamera() {
-    if (this.qrScanner) {
-      this.qrScanner.stop();
-      this.qrScanner.destroy();
-      this.qrScanner = null;
+  // Testing method - simulate a QR scan with a UUID
+  testValidUUID() {
+    if (!this.selectedEventId()) {
+      this.toastService.show('Selecciona un evento primero', 'warning');
+      return;
     }
 
+    // Generate a random UUID for testing (this would be a real ticket qrToken)
+    const testUUID = 'a1b2c3d4-e5f6-7890-1234-567890abcdef';
+    console.log('[QRComponent] Testing with UUID:', testUUID);
+    console.log('[QRComponent] Selected event code:', this.selectedEventId());
+
+    // Call onQRDetected with test data
+    this.onQRDetected(testUUID);
+  }
+
+  stopCamera() {
+    if (this.scanningInterval) {
+      clearInterval(this.scanningInterval);
+      this.scanningInterval = null;
+    }
+
+    // Stop media stream
     if (this.stream) {
       this.stream.getTracks().forEach(track => track.stop());
       this.stream = null;
