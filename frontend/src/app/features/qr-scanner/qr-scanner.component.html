@@ -36,28 +36,22 @@
       <div class="camera-buttons">
         @if (!isCameraActive()) {
           <button
-            class="btn btn-primary btn-large"
+            class="btn btn-primary btn-large btn-scan"
             (click)="startCamera()"
             [disabled]="isLoading() || !canScan()">
             @if (isLoading()) {
               <span class="spinner"></span> Iniciando...
             } @else {
-              📷 Iniciar Escáner
+              <span class="btn-icon">📷</span>
+              <span>Escanear Entrada</span>
             }
           </button>
         } @else {
           <button
-            class="btn btn-secondary"
+            class="btn btn-danger btn-large"
             (click)="stopCamera()">
-            ⏹️ Detener Escáner
-          </button>
-
-          <!-- Test button for development -->
-          <button
-            class="btn btn-outline"
-            (click)="testValidUUID()"
-            style="margin-left: 10px;">
-            🧪 Probar UUID
+            <span class="btn-icon">⏹️</span>
+            <span>Detener</span>
           </button>
         }
       </div>
@@ -81,15 +75,22 @@
       </canvas>
 
       <div class="scan-overlay">
-        <div class="scan-frame"></div>
+        <div class="scan-frame">
+          <div class="scan-corner scan-corner-tl"></div>
+          <div class="scan-corner scan-corner-tr"></div>
+          <div class="scan-corner scan-corner-bl"></div>
+          <div class="scan-corner scan-corner-br"></div>
+        </div>
+
         @if (isLoading()) {
-          <div class="scan-status">
-            <div class="spinner"></div>
+          <div class="scan-status scanning">
+            <div class="spinner-large"></div>
             <p>Validando entrada...</p>
           </div>
         } @else {
           <div class="scan-instructions">
-            <p>Apunta la cámara al código QR</p>
+            <div class="pulse-icon">📱</div>
+            <p>Coloca el QR dentro del marco</p>
           </div>
         }
       </div>
@@ -100,7 +101,7 @@
   @if (scanResults().length > 0) {
     <div class="results-section">
       <div class="results-header">
-        <h3>📋 Resultados de Validación</h3>
+        <h3>📋 Últimas Validaciones</h3>
         <button
           class="btn btn-small btn-outline"
           (click)="clearResults()">
@@ -111,25 +112,40 @@
       <div class="results-list">
         @for (result of scanResults(); track $index) {
           <div class="result-item" [ngClass]="getResultClass(result.success)">
-            <div class="result-header">
-              <span class="result-icon">{{ getResultIcon(result.success) }}</span>
-              <span class="result-time">{{ formatTime(result.timestamp) }}</span>
+            <div class="result-icon-large">
+              {{ getResultIcon(result.success) }}
             </div>
 
             <div class="result-content">
+              <div class="result-status">
+                <span class="status-badge" [class.success]="result.success" [class.error]="!result.success">
+                  {{ result.success ? 'VÁLIDA' : 'RECHAZADA' }}
+                </span>
+                <span class="result-time">{{ formatTime(result.timestamp) }}</span>
+              </div>
+
               <p class="result-message">{{ result.message }}</p>
 
               @if (result.ticket) {
                 <div class="ticket-details">
-                  <div class="ticket-info">
-                    <span><strong>Código:</strong> {{ result.ticket.code }}</span>
-                    <span><strong>Tipo:</strong> {{ result.ticket.type }}</span>
-                    <span><strong>Email:</strong> {{ result.ticket.buyerEmail }}</span>
+                  <div class="ticket-info-grid">
+                    <div class="info-item">
+                      <span class="info-label">Código</span>
+                      <span class="info-value">{{ result.ticket.code }}</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Tipo</span>
+                      <span class="info-value">{{ result.ticket.type }}</span>
+                    </div>
+                    <div class="info-item full-width">
+                      <span class="info-label">Comprador</span>
+                      <span class="info-value">{{ result.ticket.buyerEmail }}</span>
+                    </div>
                   </div>
 
                   @if (result.ticket.usedAt) {
                     <div class="usage-info">
-                      <small>Usado el: {{ result.ticket.usedAt | date:'dd/MM/yyyy HH:mm:ss' }}</small>
+                      <small>⏰ Usado: {{ result.ticket.usedAt | date:'dd/MM/yyyy HH:mm' }}</small>
                     </div>
                   }
                 </div>
@@ -141,25 +157,28 @@
     </div>
   }
 
-  <!-- Instructions -->
-  <div class="instructions">
-    <h4>📖 Instrucciones de Uso</h4>
-    <ol>
-      <li>Selecciona el evento donde estás validando entradas</li>
-      <li>Presiona "Iniciar Escáner" para activar la cámara</li>
-      <li>Apunta la cámara al código QR de la entrada</li>
-      <li>El sistema validará automáticamente la entrada</li>
-      <li>Verás el resultado en pantalla: ✅ válida o ❌ inválida</li>
-    </ol>
-
-    <div class="tips">
-      <h5>💡 Consejos:</h5>
-      <ul>
-        <li>Asegúrate de tener buena iluminación</li>
-        <li>Mantén el código QR centrado en la pantalla</li>
-        <li>Si no funciona, verifica que estés usando HTTPS</li>
-        <li>Cada entrada solo puede usarse una vez</li>
-      </ul>
+  <!-- Quick Instructions (Mobile Optimized) -->
+  @if (!isCameraActive()) {
+    <div class="quick-instructions">
+      <h4>📖 Cómo usar</h4>
+      <div class="instruction-steps">
+        <div class="step">
+          <span class="step-number">1</span>
+          <span class="step-text">Selecciona el evento</span>
+        </div>
+        <div class="step">
+          <span class="step-number">2</span>
+          <span class="step-text">Presiona "Escanear Entrada"</span>
+        </div>
+        <div class="step">
+          <span class="step-number">3</span>
+          <span class="step-text">Apunta al código QR</span>
+        </div>
+        <div class="step">
+          <span class="step-number">4</span>
+          <span class="step-text">Verifica el resultado</span>
+        </div>
+      </div>
     </div>
-  </div>
+  }
 </div>

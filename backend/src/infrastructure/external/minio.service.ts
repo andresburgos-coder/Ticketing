@@ -154,9 +154,9 @@ export class MinioService {
     const filename = objectPath.split("/").pop() || objectPath;
 
     // Return a URL that goes through the backend's file endpoint
-    // This will be served from http://127.0.0.1:3000/events/file/:filename
-    // The frontend should construct the full URL using the API base URL
-    return filename;
+    // This will be served from /api/events/file/:filename
+    // The full URL will be constructed in the response as {apiUrl}/events/file/{filename}
+    return `/api/events/file/${filename}`;
   }
 
   /**

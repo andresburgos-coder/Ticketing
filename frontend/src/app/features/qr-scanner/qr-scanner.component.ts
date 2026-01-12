@@ -295,10 +295,14 @@ export class QRScannerComponent implements OnInit, OnDestroy {
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (!uuidRegex.test(qrData.trim())) {
         console.warn('[QRComponent] QR data is not a valid UUID:', qrData);
-        this.toastService.show(`QR inválido: debe ser un código UUID válido. Escaneado: "${qrData.substring(0, 50)}"`, 'error');
+        this.stopCamera(); // Stop camera on invalid QR
+        this.toastService.show(`QR inválido: debe ser un código UUID válido`, 'error');
         this.isLoading.set(false);
         return;
       }
+
+      // Stop camera to show results
+      this.stopCamera();
 
       // Validate the QR token using the event code directly
       this.qrScannerService.validateQR(

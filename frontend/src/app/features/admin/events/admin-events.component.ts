@@ -136,6 +136,28 @@ export class AdminEventsComponent implements OnInit {
     return this.eventStats[eventId]?.ticketsSold || 0;
   }
 
+  /**
+   * Calcula los tickets vendidos de un evento basándose en su configuración
+   * Tickets Vendidos = Total Quantity - Available Quantity
+   */
+  getTicketsSoldByEvent(event: Event): number {
+    if (!event.ticketConfigurations || !event.ticketConfigurations[0]) {
+      return 0;
+    }
+    const config = event.ticketConfigurations[0];
+    return (config.totalQuantity || 0) - (config.availableQuantity || 0);
+  }
+
+  /**
+   * Calcula el ingreso total de un evento
+   * Ingresos = Tickets Vendidos × Precio
+   */
+  calculateEventRevenue(event: Event): number {
+    const ticketsSold = this.getTicketsSoldByEvent(event);
+    const price = event.ticketConfigurations?.[0]?.price || 0;
+    return ticketsSold * price;
+  }
+
   getRevenue(eventId: string): number {
     return this.eventStats[eventId]?.revenue || 0;
   }

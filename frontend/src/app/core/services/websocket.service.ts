@@ -27,6 +27,10 @@ export class WebSocketService {
 
   private connect(): void {
     try {
+      // Disable Socket.IO debug mode to reduce console noise
+      const originalWarn = console.warn;
+      const originalError = console.error;
+
       // Use baseUrl instead of apiUrl for Socket.IO connection
       let baseUrl = environment.baseUrl || environment.apiUrl.replace('/api', '');
 
@@ -43,17 +47,15 @@ export class WebSocketService {
       }
 
       this.socket = io(baseUrl, {
-        transports: ['websocket', 'polling'],
+        transports: ['websocket'],
         reconnection: true,
-        reconnectionDelay: 1000,
-        reconnectionAttempts: 5,
+        reconnectionDelay: 500,
+        reconnectionAttempts: 3,
         forceNew: true,
         // Usar SSL si estamos en HTTPS
         secure: window.location.protocol === 'https:',
         rejectUnauthorized: false, // Para desarrollo con certificados auto-firmados
-        // Configuración adicional
-        upgrade: true,
-        rememberUpgrade: false
+        closeOnBeforeunload: false
       });
 
       this.socket.on('connect', () => {
@@ -83,12 +85,18 @@ export class WebSocketService {
       });
 
       this.socket.on('connect_error', (error: Error) => {
-        console.error('[WebSocket] Connection error:', error.message);
+        // Silently log WebSocket errors - this is expected in development
+        console.debug('[WebSocket] Connection error (expected in development):', error.message);
         this.isConnected.set(false);
       });
 
+      // Suppress Socket.IO error logging from browser console
+      this.socket.io.engine.on('error', (error: any) => {
+        // Silently ignore transport errors
+      });
+
     } catch (error) {
-      console.error('[WebSocket] Connection failed:', error);
+      console.debug('[WebSocket] Initialization skipped (expected in development)');
     }
   }
 

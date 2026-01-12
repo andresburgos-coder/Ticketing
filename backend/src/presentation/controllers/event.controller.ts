@@ -441,19 +441,21 @@ export class EventController {
 
   /**
    * PUT /events/:id
-   * Updates an existing event
+   * Updates an existing event with optional image upload
    *
    * @param id - The event ID
    * @param updateEventDto - The event data to update
+   * @param file - Optional image file for the event
    * @returns The updated event
    * @throws NotFoundException if event does not exist
    * @throws BadRequestException if input validation fails
    */
   @Put(":id")
   @HttpCode(HttpStatus.OK)
+  @UseInterceptors(FileInterceptor("image"))
   @ApiOperation({
     summary: "Update event by ID",
-    description: "Updates an existing event with new data",
+    description: "Updates an existing event with new data and optional image",
   })
   @ApiParam({
     name: "id",
@@ -463,7 +465,7 @@ export class EventController {
   })
   @ApiBody({
     type: UpdateEventDto,
-    description: "Event update data",
+    description: "Event update data with optional image",
   })
   @ApiResponse({
     status: 200,
@@ -479,6 +481,7 @@ export class EventController {
           description: "Event date and time",
         },
         location: { type: "string", description: "Event location" },
+        imageUrl: { type: "string", description: "URL of the event image" },
         ticketConfigurations: {
           type: "array",
           items: {
@@ -532,12 +535,28 @@ export class EventController {
   async update(
     @Param("id") id: string,
     @Body() updateEventDto: UpdateEventDto,
+    @UploadedFile() file?: Express.Multer.File,
   ): Promise<EventResponse> {
     try {
       // Get existing event to merge with updates
       const existingEvent = await this.eventRepository.findById(id);
       if (!existingEvent) {
         throw new NotFoundException("Event not found");
+      }
+
+      // Handle image upload if provided
+      let imageUrl = existingEvent.imageUrl;
+      if (file) {
+        const allowedMimes = ["image/jpeg", "image/png", "image/gif"];
+        if (!allowedMimes.includes(file.mimetype)) {
+          throw new BadRequestException(
+            "Only JPEG, PNG, and GIF images are allowed",
+          );
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          throw new BadRequestException("Image file size cannot exceed 5MB");
+        }
+        imageUrl = await this.minioService.uploadFile(file);
       }
 
       // Merge existing data with updates
@@ -566,10 +585,40 @@ export class EventController {
         ticketConfigurations,
       });
 
-      // Return formatted response
-      return await this.formatEventResponse(event);
+      // Update event with new image URL if it changed
+      if (imageUrl && imageUrl !== existingEvent.imageUrl) {
+        const updatedEvent = new EventEntity(
+          event.id,
+          event.name,
+          event.date,
+          event.location,
+          event.venueName,
+          [...event.ticketConfigurations], // Convert readonly to mutable array
+          imageUrl, // Set new image URL
+          event.details,
+          event.createdBy,
+        );
+        await this.eventRepository.update(updatedEvent);
+      }
+
+      // Return formatted response with final imageUrl
+      const finalEvent = new EventEntity(
+        event.id,
+        event.name,
+        event.date,
+        event.location,
+        event.venueName,
+        [...event.ticketConfigurations], // Convert readonly to mutable array
+        imageUrl,
+        event.details,
+        event.createdBy,
+      );
+      return await this.formatEventResponse(finalEvent);
     } catch (error) {
       if (error instanceof NotFoundException) {
+        throw error;
+      }
+      if (error instanceof BadRequestException) {
         throw error;
       }
       if (error instanceof Error) {

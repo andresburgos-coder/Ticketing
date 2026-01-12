@@ -64,10 +64,13 @@
             </span>
           </td>
           <td class="text-center">
-            <strong>{{ getTicketsSold(event.id.toString()) }}</strong>
+            <strong>
+              {{ getTicketsSoldByEvent(event) }}
+            </strong>
+
           </td>
           <td class="text-center">
-            <strong class="revenue">${{ getRevenue(event.id.toString()) | number:'1.2-2' }}</strong>
+            <strong class="revenue">${{ calculateEventRevenue(event) | number:'1.2-2' }}</strong>
           </td>
           <td>
             <div class="actions">

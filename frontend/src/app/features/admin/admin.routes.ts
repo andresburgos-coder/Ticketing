@@ -6,6 +6,7 @@ import { EventFormComponent } from './events/event-form/event-form.component';
 import { AdminUsersComponent } from './users/admin-users.component';
 import { UserFormComponent } from './users/user-form/user-form.component';
 import { adminOnlyGuard } from '../../core/guards/admin-only.guard';
+import { QRScannerComponent } from '../qr-scanner/qr-scanner.component';
 
 export const adminRoutes: Routes = [
   {
@@ -21,6 +22,10 @@ export const adminRoutes: Routes = [
       { path: 'users', component: AdminUsersComponent, canActivate: [adminOnlyGuard] },
       { path: 'users/create', component: UserFormComponent, canActivate: [adminOnlyGuard] },
       { path: 'users/edit/:id', component: UserFormComponent, canActivate: [adminOnlyGuard] },
+      {
+        path: 'qr-scanner',
+        component: QRScannerComponent
+      },
       {
         path: 'tickets',
         loadComponent: () => import('./tickets/admin-tickets.component').then(m => m.AdminTicketsComponent)

@@ -62,6 +62,7 @@ export interface ITicketRepository {
   // Admin methods for statistics and management
   findWithFilters(filters: {
     eventId?: string;
+    eventIds?: string[]; // Added to support filtering by multiple events
     status?: string;
     limit?: number;
     offset?: number;
@@ -69,6 +70,7 @@ export interface ITicketRepository {
 
   countWithFilters(filters: {
     eventId?: string;
+    eventIds?: string[]; // Added to support filtering by multiple events
     status?: string;
   }): Promise<number>;
 

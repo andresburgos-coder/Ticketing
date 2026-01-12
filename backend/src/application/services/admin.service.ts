@@ -17,13 +17,14 @@ import { ITicketRepository } from "../../domain/interfaces/ticket-repository.int
 import { IEventRepository } from "../../domain/interfaces/event-repository.interface";
 import { IReservationRepository } from "../../domain/interfaces/reservation-repository.interface";
 import { Email } from "../../domain/value-objects/email.vo";
+import { UserRole } from "../../domain/enums/user-role.enum";
 import {
   USER_REPOSITORY,
   TICKET_REPOSITORY,
   RESERVATION_REPOSITORY,
   EVENT_REPOSITORY,
 } from "../../domain/interfaces/repository-tokens";
-import * as bcrypt from "bcrypt";
+
 
 @Injectable()
 export class AdminService {
@@ -109,28 +110,120 @@ export class AdminService {
     return this.getEventStatsUseCase.execute(eventId);
   }
 
-  async getTicketStats(eventId?: string) {
+  async getTicketStats(eventId?: string, user?: any) {
+    // If user is organizer, only allow their events
+    if (user?.role === UserRole.ORGANIZER) {
+      if (eventId) {
+        const event = await this.eventRepository.findById(eventId);
+        if (!event || event.createdBy !== user.id) {
+          throw new NotFoundException(
+            "Event not found or you don't have access to it",
+          );
+        }
+        // Return stats for this specific event
+        return this.getTicketStatsUseCase.execute(eventId);
+      } else {
+        // For organizers without specific eventId, we need to aggregate stats from all their events
+        // Get all events created by this organizer
+        const organizerEvents = await this.eventRepository.findByCreatedBy(
+          user.id,
+        );
+        
+        if (organizerEvents.length === 0) {
+          return {
+            totalTicketsSold: 0,
+            totalRevenue: 0,
+            ticketsByStatus: [],
+            ticketsByType: [],
+            salesByMonth: [],
+            topSellingEvents: [],
+          };
+        }
+
+        // Aggregate stats from all organizer's events
+        const eventIds = organizerEvents.map((e) => e.id);
+        const stats = await Promise.all(
+          eventIds.map((id) => this.getTicketStatsUseCase.execute(id)),
+        );
+
+        // Aggregate the results (stats is an array of event-specific stats)
+        const totalTicketsSold = stats.reduce(
+          (sum, s: any) => sum + (s.soldTickets || 0),
+          0,
+        );
+        const totalRevenue = stats.reduce(
+          (sum, s: any) => sum + (s.revenue || 0),
+          0,
+        );
+
+        return {
+          totalTicketsSold,
+          totalRevenue,
+          events: stats,
+        };
+      }
+    }
+
     return this.getTicketStatsUseCase.execute(eventId);
   }
 
-  async getTickets(filters: {
-    eventId?: string;
-    status?: string;
-    page?: number;
-    limit?: number;
-  }) {
+  async getTickets(
+    filters: {
+      eventId?: string;
+      status?: string;
+      page?: number;
+      limit?: number;
+    },
+    user?: any,
+  ) {
     const { page = 1, limit = 10, eventId, status } = filters;
     const offset = (page - 1) * limit;
 
+    // If user is organizer, filter by their events only
+    let allowedEventIds: string[] | undefined;
+    if (user?.role === UserRole.ORGANIZER) {
+      if (eventId) {
+        // Validate organizer owns this specific event
+        const event = await this.eventRepository.findById(eventId);
+        if (!event || event.createdBy !== user.id) {
+          throw new NotFoundException(
+            "Event not found or you don't have access to it",
+          );
+        }
+        allowedEventIds = [eventId];
+      } else {
+        // Get all events created by this organizer
+        const organizerEvents = await this.eventRepository.findByCreatedBy(
+          user.id,
+        );
+        allowedEventIds = organizerEvents.map((e) => e.id);
+
+        if (allowedEventIds.length === 0) {
+          // Organizer has no events, return empty
+          return {
+            data: [],
+            pagination: {
+              page,
+              limit,
+              total: 0,
+              totalPages: 0,
+            },
+          };
+        }
+      }
+    }
+
     const tickets = await this.ticketRepository.findWithFilters({
-      eventId,
+      eventId: allowedEventIds ? undefined : eventId,
+      eventIds: allowedEventIds,
       status,
       limit,
       offset,
     });
 
     const total = await this.ticketRepository.countWithFilters({
-      eventId,
+      eventId: allowedEventIds ? undefined : eventId,
+      eventIds: allowedEventIds,
       status,
     });
 

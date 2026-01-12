@@ -112,6 +112,7 @@ export class TypeOrmTicketRepository implements ITicketRepository {
   // Admin methods for statistics and management
   async findWithFilters(filters: {
     eventId?: string;
+    eventIds?: string[]; // Added to support filtering by multiple events
     status?: string;
     limit?: number;
     offset?: number;
@@ -121,6 +122,13 @@ export class TypeOrmTicketRepository implements ITicketRepository {
     if (filters.eventId) {
       queryBuilder.andWhere("ticket.eventId = :eventId", {
         eventId: filters.eventId,
+      });
+    }
+
+    // Support filtering by multiple event IDs (for organizers)
+    if (filters.eventIds && filters.eventIds.length > 0) {
+      queryBuilder.andWhere("ticket.eventId IN (:...eventIds)", {
+        eventIds: filters.eventIds,
       });
     }
 
@@ -144,6 +152,7 @@ export class TypeOrmTicketRepository implements ITicketRepository {
 
   async countWithFilters(filters: {
     eventId?: string;
+    eventIds?: string[]; // Added to support filtering by multiple events
     status?: string;
   }): Promise<number> {
     const queryBuilder = this.repository.createQueryBuilder("ticket");
@@ -151,6 +160,13 @@ export class TypeOrmTicketRepository implements ITicketRepository {
     if (filters.eventId) {
       queryBuilder.andWhere("ticket.eventId = :eventId", {
         eventId: filters.eventId,
+      });
+    }
+
+    // Support filtering by multiple event IDs (for organizers)
+    if (filters.eventIds && filters.eventIds.length > 0) {
+      queryBuilder.andWhere("ticket.eventId IN (:...eventIds)", {
+        eventIds: filters.eventIds,
       });
     }
 
@@ -266,11 +282,11 @@ export class TypeOrmTicketRepository implements ITicketRepository {
   > {
     const result = await this.repository
       .createQueryBuilder("ticket")
-      .select("TO_CHAR(ticket.purchasedAt, 'YYYY-MM')", "month")
+      .select("TO_CHAR(ticket.purchaseDate, 'YYYY-MM')", "month")
       .addSelect("COUNT(*)", "count")
       .addSelect("SUM(ticket.price)", "revenue")
       .where("ticket.status = :status", { status: TicketStatus.PAID })
-      .groupBy("TO_CHAR(ticket.purchasedAt, 'YYYY-MM')")
+      .groupBy("TO_CHAR(ticket.purchaseDate, 'YYYY-MM')")
       .orderBy("month", "DESC")
       .getRawMany();
 
@@ -286,11 +302,11 @@ export class TypeOrmTicketRepository implements ITicketRepository {
   ): Promise<Array<{ date: string; count: number }>> {
     const result = await this.repository
       .createQueryBuilder("ticket")
-      .select("TO_CHAR(ticket.purchasedAt, 'YYYY-MM-DD')", "date")
+      .select("TO_CHAR(ticket.purchaseDate, 'YYYY-MM-DD')", "date")
       .addSelect("COUNT(*)", "count")
       .where("ticket.eventId = :eventId", { eventId })
       .andWhere("ticket.status = :status", { status: TicketStatus.PAID })
-      .groupBy("TO_CHAR(ticket.purchasedAt, 'YYYY-MM-DD')")
+      .groupBy("TO_CHAR(ticket.purchaseDate, 'YYYY-MM-DD')")
       .orderBy("date", "DESC")
       .getRawMany();
 

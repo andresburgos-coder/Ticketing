@@ -97,8 +97,36 @@ export class EventFormComponent implements OnInit {
       date: this.formatDateForInput(event.date),
       location: event.location,
       venueName: event.venueName,
-      description: event.eventDetails?.[0]?.seating || ''
+      description: event.eventDetails?.[0]?.seating || '',
+      category: event.eventDetails?.[0]?.category || ''
     });
+
+    // Load ticket configurations
+    if (event.ticketConfigurations && event.ticketConfigurations.length > 0) {
+      const generalTicket = event.ticketConfigurations.find((t: any) => t.type === 'GENERAL');
+      const vipTicket = event.ticketConfigurations.find((t: any) => t.type === 'VIP');
+
+      // Build updated ticket types
+      const ticketTypesUpdate: any = { general: {}, vip: {} };
+
+      if (generalTicket) {
+        ticketTypesUpdate.general = {
+          price: generalTicket.price,
+          quantity: generalTicket.totalQuantity
+        };
+      }
+
+      if (vipTicket) {
+        ticketTypesUpdate.vip = {
+          price: vipTicket.price,
+          quantity: vipTicket.totalQuantity
+        };
+      }
+
+      this.form.patchValue({
+        ticketTypes: ticketTypesUpdate
+      });
+    }
 
     if (event.imageUrl) {
       this.imagePreview.set(event.imageUrl);
