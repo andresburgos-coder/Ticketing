@@ -151,12 +151,6 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         continue-on-error: true
-        run: |
-          if [ -z "$SONAR_TOKEN" ]; then
-            echo "SONAR_TOKEN not set, skipping Quality Gate check.";
-            exit 0;
-          fi
-          # The action will run as normal if SONAR_TOKEN is set
 
       - name: ✅ Análisis completado
         run: echo "✓ Análisis de calidad completado"
