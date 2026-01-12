@@ -98,7 +98,6 @@ describe("AuthController Integration Tests", () => {
         .post("/auth/register")
         .send(registerDto);
 
-              password: "TestPassword123",
       expect(response.body).toHaveProperty("accessToken");
       expect(response.body).toHaveProperty("refreshToken");
       expect(response.body.accessToken).toBeTruthy();
