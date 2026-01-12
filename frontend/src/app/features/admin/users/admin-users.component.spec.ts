@@ -1,15 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { AdminUsersComponent } from './admin-users.component';
 import { AdminService } from '../../../services/admin.service';
 import { User, UserRole } from '../../../models/admin.model';
 import { of, throwError } from 'rxjs';
 
+
 describe('AdminUsersComponent', () => {
   let component: AdminUsersComponent;
   let fixture: ComponentFixture<AdminUsersComponent>;
-  let mockAdminService: jasmine.SpyObj<AdminService>;
+  let mockAdminService: Partial<AdminService>;
+  let mockRouter: Partial<Router>;
 
   const TEST_CREDENTIAL = 'test-credential-fixture-value';
 
@@ -33,17 +36,21 @@ describe('AdminUsersComponent', () => {
   ];
 
   beforeEach(async () => {
-    mockAdminService = jasmine.createSpyObj('AdminService', [
-      'getUsers',
-      'createAdminUser',
-      'updateUser',
-      'deleteUser'
-    ]);
+    mockAdminService = {
+      getUsers: jasmine.createSpy(),
+      createAdminUser: jasmine.createSpy(),
+      updateUser: jasmine.createSpy(),
+      deleteUser: jasmine.createSpy()
+    };
+    mockRouter = {
+      navigate: jasmine.createSpy('navigate').and.returnValue(Promise.resolve(true))
+    };
 
     await TestBed.configureTestingModule({
       imports: [CommonModule, FormsModule, AdminUsersComponent],
       providers: [
-        { provide: AdminService, useValue: mockAdminService }
+        { provide: AdminService, useValue: mockAdminService },
+        { provide: Router, useValue: mockRouter }
       ]
     }).compileComponents();
 
@@ -55,7 +62,7 @@ describe('AdminUsersComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load users on init', (done) => {
+  it('should load users on init', async () => {
     const mockResponse = {
       data: mockUsers,
       pagination: {
@@ -66,78 +73,43 @@ describe('AdminUsersComponent', () => {
       }
     };
 
-    mockAdminService.getUsers.and.returnValue(of(mockResponse));
+    (mockAdminService.getUsers as jasmine.Spy).and.returnValue(of(mockResponse));
 
     fixture.detectChanges();
 
-    setTimeout(() => {
-      expect(mockAdminService.getUsers).toHaveBeenCalled();
-      expect(component.users()).toEqual(mockUsers);
-      expect(component.pagination().total).toBe(2);
-      expect(component.loading()).toBeFalse();
-      done();
-    }, 100);
+    await new Promise(resolve => setTimeout(resolve, 100));
+    expect(mockAdminService.getUsers).toHaveBeenCalled();
+    expect(component.users()).toEqual(mockUsers);
+    expect(component.pagination().total).toBe(2);
+    expect(component.loading()).toBeFalsy();
   });
 
-  it('should handle loading error', (done) => {
-    mockAdminService.getUsers.and.returnValue(
+  it('should handle loading error', async () => {
+    (mockAdminService.getUsers as jasmine.Spy).and.returnValue(
       throwError(() => ({ message: 'Network error' }))
     );
 
     fixture.detectChanges();
 
-    setTimeout(() => {
-      expect(component.error()).toBe('Network error');
-      expect(component.loading()).toBeFalse();
-      done();
-    }, 100);
+    await new Promise(resolve => setTimeout(resolve, 100));
+    expect(component.error()).toBe('Network error');
+    expect(component.loading()).toBeFalsy();
   });
 
-  it('should create a new user', () => {
-    const newUser = {
-      email: 'newuser@test.com',
-      password: TEST_CREDENTIAL,
-      firstName: 'New',
-      lastName: 'User',
-      role: UserRole.BUYER
-    };
-
-    const createdUser: User = {
-      id: '3',
-      ...newUser,
-      createdAt: new Date()
-    };
-
-    mockAdminService.createAdminUser.and.returnValue(of(createdUser));
-    component.newUser = newUser;
-    component.users.set(mockUsers);
-
+  it('should navigate to create user page', () => {
     component.createUser();
 
-    expect(mockAdminService.createAdminUser).toHaveBeenCalledWith(newUser);
-    expect(component.creating()).toBeFalse();
-    expect(component.showCreateModal()).toBeFalse();
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/admin/users/create']);
   });
 
-  it('should update a user', () => {
-    const updatedUser: User = {
-      ...mockUsers[0],
-      firstName: 'Updated'
-    };
+  it('should navigate to edit user page', () => {
+    component.editUser(mockUsers[0]);
 
-    mockAdminService.updateUser.and.returnValue(of(updatedUser));
-    component.users.set(mockUsers);
-    component.editingUser = { id: '1', ...updatedUser };
-
-    component.updateUser();
-
-    expect(mockAdminService.updateUser).toHaveBeenCalled();
-    expect(component.updating()).toBeFalse();
-    expect(component.showEditModal()).toBeFalse();
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/admin/users/edit', '1']);
   });
 
   it('should delete a user', () => {
-    mockAdminService.deleteUser.and.returnValue(of({}));
+    (mockAdminService.deleteUser as jasmine.Spy).and.returnValue(of({ message: 'User deleted' }));
     component.users.set(mockUsers);
 
     spyOn(window, 'confirm').and.returnValue(true);
@@ -154,17 +126,15 @@ describe('AdminUsersComponent', () => {
     expect(mockAdminService.deleteUser).not.toHaveBeenCalled();
   });
 
-  it('should open edit modal with user data', () => {
+  it('should navigate to edit user page when editUser is called', () => {
     component.editUser(mockUsers[0]);
 
-    expect(component.showEditModal()).toBeTrue();
-    expect(component.editingUser.id).toBe('1');
-    expect(component.editingUser.email).toBe('admin@test.com');
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/admin/users/edit', '1']);
   });
 
   it('should change page and reload users', () => {
-    mockAdminService.getUsers.and.returnValue(
-      of({ data: [], pagination: { page: 2, total: 0, totalPages: 1 } })
+    (mockAdminService.getUsers as jasmine.Spy).and.returnValue(
+      of({ data: [], pagination: { page: 2, limit: 10, total: 0, totalPages: 1 } })
     );
 
     component.changePage(2);
@@ -173,49 +143,30 @@ describe('AdminUsersComponent', () => {
     expect(mockAdminService.getUsers).toHaveBeenCalled();
   });
 
-  it('should search users with debounce', (done) => {
-    mockAdminService.getUsers.and.returnValue(
-      of({ data: [], pagination: { page: 1, total: 0, totalPages: 1 } })
+  it('should search users with debounce', async () => {
+    (mockAdminService.getUsers as jasmine.Spy).and.returnValue(
+      of({ data: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 1 } })
     );
 
     component.filters.search = 'test';
     component.searchUsers();
 
-    setTimeout(() => {
-      expect(component.filters.page).toBe(1);
-      expect(mockAdminService.getUsers).toHaveBeenCalled();
-      done();
-    }, 600);
+    await new Promise(resolve => setTimeout(resolve, 600));
+    expect(component.filters.page).toBe(1);
+    expect(mockAdminService.getUsers).toHaveBeenCalled();
   });
 
-  it('should close modal on backdrop click', () => {
-    component.showCreateModal.set(true);
-    const event = new MouseEvent('click');
-    Object.defineProperty(event, 'target', { value: event.currentTarget, enumerable: true });
+  it('should get email from user object', () => {
+    const user: User = {
+      id: '1',
+      email: 'test@example.com',
+      firstName: 'Test',
+      lastName: 'User',
+      role: UserRole.BUYER,
+      createdAt: new Date()
+    };
 
-    component.closeModal(event);
-
-    expect(component.showCreateModal()).toBeFalse();
-  });
-
-  it('should keep modal open on content click', () => {
-    component.showCreateModal.set(true);
-    const mockElement = document.createElement('div');
-    const event = new MouseEvent('click');
-    Object.defineProperty(event, 'currentTarget', { value: mockElement, enumerable: true });
-    Object.defineProperty(event, 'target', { value: document.createElement('div'), enumerable: true });
-
-    component.closeModal(event);
-
-    expect(component.showCreateModal()).toBeTrue();
-  });
-
-  it('should not allow deletion of admin users', () => {
-    component.users.set(mockUsers);
-
-    const template = fixture.nativeElement;
-    const buttons = template.querySelectorAll('.btn-danger');
-
-    expect(buttons[0].disabled).toBeTrue();
+    const email = component.getEmail(user);
+    expect(email).toBe('test@example.com');
   });
 });

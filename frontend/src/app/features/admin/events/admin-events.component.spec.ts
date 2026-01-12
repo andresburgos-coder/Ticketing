@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { ActivatedRoute } from '@angular/router';
+
 import { AdminEventsComponent } from './admin-events.component';
 import { EventService } from '../../../services/event.service';
 import { AdminService } from '../../../services/admin.service';
@@ -14,12 +15,12 @@ describe('AdminEventsComponent', () => {
   const eventServiceMock: Partial<EventService> = {
     events: signal([]),
     events$: new Subject().asObservable(),
-    loadEvents: vi.fn(),
-    deleteEvent: vi.fn(() => of(void 0)) as any
+    loadEvents: jasmine.createSpy(),
+    deleteEvent: jasmine.createSpy('deleteEvent').and.returnValue(of(void 0))
   } as any;
 
   const adminServiceMock: Partial<AdminService> = {
-    getTicketStats: vi.fn(() => of({ totalTicketsSold: 0, totalRevenue: 0 }))
+    getTicketStats: jasmine.createSpy('getTicketStats').and.returnValue(of({ totalTicketsSold: 0, totalRevenue: 0 }))
   } as any;
 
   beforeEach(async () => {
@@ -34,7 +35,8 @@ describe('AdminEventsComponent', () => {
       imports: [AdminEventsComponent],
       providers: [
         { provide: EventService, useValue: mockEventService },
-        { provide: AdminService, useValue: adminServiceMock }
+        { provide: AdminService, useValue: adminServiceMock },
+        { provide: ActivatedRoute, useValue: { queryParams: of({}) } }
       ]
     }).compileComponents();
 

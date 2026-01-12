@@ -15,11 +15,12 @@ export class ValidateQRDto {
   qrToken!: string;
 
   @ApiProperty({
-    description: "Event ID where the ticket is being validated (Event code format: TICK0009-XXX)",
+    description:
+      "Event ID where the ticket is being validated (Event code format: TICK0009-XXX)",
     example: "TICK0009-004",
   })
   @Matches(/^TICK0009-\d{3}$/, {
-    message: "eventId must be a valid event code in format TICK0009-XXX"
+    message: "eventId must be a valid event code in format TICK0009-XXX",
   })
   @IsNotEmpty()
   eventId!: string;

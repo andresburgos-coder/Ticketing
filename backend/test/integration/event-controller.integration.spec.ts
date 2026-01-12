@@ -16,6 +16,8 @@ import { EventDetailsOrmEntity } from "../../src/infrastructure/persistence/enti
 import { TicketType } from "../../src/domain/value-objects/ticket-type.vo";
 import { EVENT_REPOSITORY } from "../../src/domain/interfaces/repository-tokens";
 import { MinioService } from "../../src/infrastructure/external/minio.service";
+import { EventIdGeneratorService } from "../../src/application/services/event-id-generator.service";
+import { TicketAvailabilityService } from "../../src/infrastructure/websocket/ticket-availability.service";
 
 // Mock MinioService for testing
 class MockMinioService {
@@ -70,6 +72,8 @@ class MockMinioService {
     GetAllEventsUseCase,
     UpdateEventUseCase,
     DeleteEventUseCase,
+    EventIdGeneratorService,
+    TicketAvailabilityService,
     {
       provide: EVENT_REPOSITORY,
       useClass: TypeOrmEventRepository,
@@ -102,7 +106,9 @@ describe("EventController Integration Tests", () => {
     if (dataSource && dataSource.isInitialized) {
       await dataSource.destroy();
     }
-    await app.close();
+    if (app) {
+      await app.close();
+    }
   });
 
   beforeEach(async () => {

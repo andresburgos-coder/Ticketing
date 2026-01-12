@@ -1,18 +1,23 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AdminLayoutComponent } from './admin-layout.component';
-import { AuthService } from '../../../services/auth.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { Router } from '@angular/router';
-import { of } from 'rxjs';
+import { signal } from '@angular/core';
 
 describe('AdminLayoutComponent', () => {
   let component: AdminLayoutComponent;
   let fixture: ComponentFixture<AdminLayoutComponent>;
-  let authService: jasmine.SpyObj<AuthService>;
-  let router: jasmine.SpyObj<Router>;
+  let authService: Partial<AuthService>;
+  let router: Partial<Router>;
 
   beforeEach(async () => {
-    const authServiceSpy = jasmine.createSpyObj('AuthService', ['logout']);
-    const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    const authServiceSpy = {
+      logout: jasmine.createSpy(),
+      currentUser: signal({ id: '1', email: 'admin@test.com', firstName: 'Admin', lastName: 'User', role: 'ADMIN' })
+    };
+    const routerSpy = {
+      navigate: jasmine.createSpy('navigate').and.returnValue(Promise.resolve(true))
+    };
 
     await TestBed.configureTestingModule({
       imports: [AdminLayoutComponent],
@@ -22,8 +27,8 @@ describe('AdminLayoutComponent', () => {
       ]
     }).compileComponents();
 
-    authService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
-    router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    authService = TestBed.inject(AuthService);
+    router = TestBed.inject(Router);
 
     fixture = TestBed.createComponent(AdminLayoutComponent);
     component = fixture.componentInstance;
@@ -34,10 +39,7 @@ describe('AdminLayoutComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should call logout and navigate when logout button is clicked', async () => {
-    authService.logout.and.returnValue(of(void 0));
-    router.navigate.and.returnValue(Promise.resolve(true));
-
+  it('should call logout and navigate when logout button is clicked', () => {
     component.logout();
 
     expect(authService.logout).toHaveBeenCalled();

@@ -1,11 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Checkout } from './checkout';
 import { CheckoutService } from '../../features/checkout/services/checkout.service';
 import { ContactForm } from '../../features/checkout/components/contact-form/contact-form';
 import { PaymentForm } from '../../features/checkout/components/payment-form/payment-form';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+
 import { signal } from '@angular/core';
+import { of } from 'rxjs';
 
 describe('Checkout', () => {
   let component: Checkout;
@@ -15,7 +16,9 @@ describe('Checkout', () => {
 
   beforeEach(async () => {
     const routerMock = {
-      navigate: vi.fn()
+      navigate: jasmine.createSpy(),
+      createUrlTree: jasmine.createSpy('createUrlTree').and.returnValue({}),
+      serializeUrl: jasmine.createSpy('serializeUrl').and.returnValue('/')
     };
 
     checkoutService = {
@@ -25,14 +28,20 @@ describe('Checkout', () => {
       isLoading: signal(false),
       reservation: signal(null),
       cartItemCount: signal(2),
-      confirmOrder: vi.fn()
+      confirmOrder: jasmine.createSpy(),
+      createReservations: jasmine.createSpy().and.returnValue(Promise.resolve(true)),
+      setEventInfo: jasmine.createSpy(),
+      reservationExpired: signal(false),
+      completedOrder: signal(null),
+      resetExpiredState: jasmine.createSpy()
     };
 
     await TestBed.configureTestingModule({
       imports: [Checkout],
       providers: [
         { provide: Router, useValue: routerMock },
-        { provide: CheckoutService, useValue: checkoutService }
+        { provide: CheckoutService, useValue: checkoutService },
+        { provide: ActivatedRoute, useValue: { queryParams: of({}) } }
       ]
     }).compileComponents();
 
@@ -68,7 +77,7 @@ describe('Checkout', () => {
 
     it('should move to payment step when contact form is valid', () => {
       component.contactForm = {
-        validate: vi.fn().mockReturnValue(true)
+        validate: jasmine.createSpy().and.returnValue(true)
       } as any;
 
       component.nextStep();
@@ -78,7 +87,7 @@ describe('Checkout', () => {
 
     it('should not move to payment step when contact form is invalid', () => {
       component.contactForm = {
-        validate: vi.fn().mockReturnValue(false)
+        validate: jasmine.createSpy().and.returnValue(false)
       } as any;
 
       component.nextStep();
@@ -89,7 +98,7 @@ describe('Checkout', () => {
     it('should confirm order when payment form is valid', () => {
       component.step = 'payment';
       component.paymentForm = {
-        validate: vi.fn().mockReturnValue(true)
+        validate: jasmine.createSpy().and.returnValue(true)
       } as any;
 
       component.nextStep();
@@ -114,17 +123,17 @@ describe('Checkout', () => {
 
   describe('confirmOrder', () => {
     it('should confirm order and navigate to confirmation', async () => {
-      vi.useFakeTimers();
+      jasmine.clock().install();
 
       component.confirmOrder();
 
       expect(checkoutService.confirmOrder).toHaveBeenCalledWith('stripe');
 
-      vi.advanceTimersByTime(1000);
+      jasmine.clock().tick(1000);
 
       expect(router.navigate).toHaveBeenCalledWith(['/confirmation']);
 
-      vi.useRealTimers();
+      jasmine.clock().uninstall();
     });
   });
 });

@@ -740,15 +740,15 @@ export class EventController {
   })
   async findAll(@Request() req?: any): Promise<EventResponse[]> {
     let events: Event[];
-    
+
     // If user is authenticated and is an organizer, filter by their events
-    if (req?.user?.id && req?.user?.role === 'ORGANIZER') {
+    if (req?.user?.id && req?.user?.role === "ORGANIZER") {
       events = await this.eventRepository.findByCreatedBy(req.user.id);
     } else {
       // For admins and public access, return all events
       events = await this.getAllEventsUseCase.execute();
     }
-    
+
     return await Promise.all(
       events.map((event) => this.formatEventResponse(event)),
     );

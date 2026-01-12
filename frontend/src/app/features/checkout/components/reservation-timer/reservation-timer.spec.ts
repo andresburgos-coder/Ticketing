@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReservationTimer } from './reservation-timer';
 import { CheckoutService } from '../../services/checkout.service';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+
 import { signal } from '@angular/core';
 
 describe('ReservationTimer', () => {

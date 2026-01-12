@@ -1,21 +1,21 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { describe, it, expect, beforeEach } from 'vitest';
 import { AdminTicketsComponent } from './admin-tickets.component';
 import { AdminService } from '../../../services/admin.service';
 import { EventService } from '../../../services/event.service';
 import { of } from 'rxjs';
+import { signal } from '@angular/core';
 
 describe('AdminTicketsComponent', () => {
   let component: AdminTicketsComponent;
   let fixture: ComponentFixture<AdminTicketsComponent>;
 
   const adminServiceMock = {
-    getTickets: () => of({ data: [], pagination: { page: 1, totalPages: 1, total: 0 } })
+    getTickets: jasmine.createSpy('getTickets').and.returnValue(of({ data: [], pagination: { page: 1, totalPages: 1, total: 0, limit: 10 } }))
   };
 
   const eventServiceMock = {
-    events: () => [],
-    loadEvents: () => {}
+    events: signal([]),
+    loadEvents: jasmine.createSpy('loadEvents')
   };
 
   beforeEach(async () => {

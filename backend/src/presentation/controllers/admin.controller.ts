@@ -101,7 +101,10 @@ export class AdminController {
 
   @UseGuards(AdminOrOrganizerGuard)
   @Get("tickets")
-  @ApiOperation({ summary: "Get all tickets with filters (Admins: all events, Organizers: only their events)" })
+  @ApiOperation({
+    summary:
+      "Get all tickets with filters (Admins: all events, Organizers: only their events)",
+  })
   @ApiResponse({ status: 200, description: "Tickets retrieved successfully" })
   async getTickets(
     @Req() req: any,
@@ -118,15 +121,15 @@ export class AdminController {
 
   @UseGuards(AdminOrOrganizerGuard)
   @Get("tickets/stats")
-  @ApiOperation({ summary: "Get ticket statistics (Admins: all events, Organizers: only their events)" })
+  @ApiOperation({
+    summary:
+      "Get ticket statistics (Admins: all events, Organizers: only their events)",
+  })
   @ApiResponse({
     status: 200,
     description: "Ticket stats retrieved successfully",
   })
-  async getTicketStats(
-    @Req() req: any,
-    @Query("eventId") eventId?: string,
-  ) {
+  async getTicketStats(@Req() req: any, @Query("eventId") eventId?: string) {
     return this.adminService.getTicketStats(eventId, req.user);
   }
 

@@ -1,45 +1,40 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClient, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
-import { ErrorInterceptor } from './error.interceptor';
+import { errorInterceptor } from './error.interceptor';
 import { AuthService } from '../services/auth.service';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-describe('ErrorInterceptor', () => {
+
+describe('errorInterceptor', () => {
   let httpMock: HttpTestingController;
   let httpClient: HttpClient;
   let router: Router;
-  let authService: Partial<AuthService>;
+  let authService: AuthService;
 
   beforeEach(() => {
     const routerMock = {
-      navigate: vi.fn()
-    };
-
-    authService = {
-      logout: vi.fn()
+      navigate: jasmine.createSpy()
     };
 
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
       providers: [
-        { provide: Router, useValue: routerMock },
-        { provide: AuthService, useValue: authService },
-        {
-          provide: HTTP_INTERCEPTORS,
-          useClass: ErrorInterceptor,
-          multi: true
-        }
+        provideHttpClient(withInterceptors([errorInterceptor])),
+        provideHttpClientTesting(),
+        AuthService,
+        { provide: Router, useValue: routerMock }
       ]
     });
 
     httpMock = TestBed.inject(HttpTestingController);
     httpClient = TestBed.inject(HttpClient);
     router = TestBed.inject(Router);
+    authService = TestBed.inject(AuthService);
   });
 
   it('should handle 401 errors by logging out', async () => {
+    const logoutSpy = spyOn(authService, 'logout');
+
     const promise = httpClient.get('/api/test').toPromise().catch(err => err);
 
     const req = httpMock.expectOne('/api/test');
@@ -47,7 +42,7 @@ describe('ErrorInterceptor', () => {
 
     await promise;
 
-    expect(authService.logout).toHaveBeenCalled();
+    expect(logoutSpy).toHaveBeenCalled();
     expect(router.navigate).toHaveBeenCalledWith(['/login']);
   });
 
@@ -84,5 +79,6 @@ describe('ErrorInterceptor', () => {
 
   afterEach(() => {
     httpMock.verify();
+    ;
   });
 });

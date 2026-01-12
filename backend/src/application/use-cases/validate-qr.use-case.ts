@@ -70,7 +70,8 @@ export class ValidateQRUseCase {
     if (ticket.status !== TicketStatus.PAID) {
       return {
         valid: false,
-        message: "Esta entrada no está confirmada. Por favor, contacta al organizador",
+        message:
+          "Esta entrada no está confirmada. Por favor, contacta al organizador",
       };
     }
 
@@ -112,17 +113,17 @@ export class ValidateQRUseCase {
 
   private formatDateForUser(date: Date): string {
     const options: Intl.DateTimeFormatOptions = {
-      hour: '2-digit',
-      minute: '2-digit',
+      hour: "2-digit",
+      minute: "2-digit",
       hour12: true,
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
     };
-    
-    const formatted = date.toLocaleString('es-ES', options);
+
+    const formatted = date.toLocaleString("es-ES", options);
     // Format: "HH:MM AM/PM - DD/MM/YYYY"
-    const [datePart, timePart] = formatted.split(', ');
+    const [datePart, timePart] = formatted.split(", ");
     return `${timePart} - ${datePart}`;
   }
 }

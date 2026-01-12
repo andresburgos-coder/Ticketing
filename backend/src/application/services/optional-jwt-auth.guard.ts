@@ -26,7 +26,9 @@ export class OptionalJwtAuthGuard implements CanActivate {
       this.extractTokenFromCookie(request);
 
     if (!token) {
-      this.logger.debug("No token provided - proceeding without authentication");
+      this.logger.debug(
+        "No token provided - proceeding without authentication",
+      );
       return true;
     }
 
@@ -59,7 +61,9 @@ export class OptionalJwtAuthGuard implements CanActivate {
       return true;
     } catch (error) {
       const err = error as Error;
-      this.logger.warn(`Token verification failed: ${err.message} - proceeding without authentication`);
+      this.logger.warn(
+        `Token verification failed: ${err.message} - proceeding without authentication`,
+      );
       return true; // Don't fail, just proceed without auth
     }
   }

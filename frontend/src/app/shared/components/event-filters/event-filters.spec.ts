@@ -2,7 +2,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { EventFiltersComponent } from './event-filters';
 import { EventService } from '../../../services/event.service';
 import { FormsModule } from '@angular/forms';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 describe('EventFiltersComponent', () => {
   let component: EventFiltersComponent;
@@ -29,14 +28,14 @@ describe('EventFiltersComponent', () => {
   });
 
   it('should apply filters when applyFilters is called', () => {
-    const updateFiltersSpy = vi.spyOn(eventService, 'updateFilters');
+    const updateFiltersSpy = spyOn(eventService, 'updateFilters');
     component.searchQuery = 'concert';
     component.applyFilters();
     expect(updateFiltersSpy).toHaveBeenCalled();
   });
 
   it('should clear filters when clearFilters is called', () => {
-    const clearFiltersSpy = vi.spyOn(eventService, 'clearFilters');
+    const clearFiltersSpy = spyOn(eventService, 'clearFilters');
     component.clearFilters();
     expect(clearFiltersSpy).toHaveBeenCalled();
     expect(component.searchQuery).toBe('');

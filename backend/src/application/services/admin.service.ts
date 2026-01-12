@@ -25,7 +25,6 @@ import {
   EVENT_REPOSITORY,
 } from "../../domain/interfaces/repository-tokens";
 
-
 @Injectable()
 export class AdminService {
   constructor(
@@ -128,7 +127,7 @@ export class AdminService {
         const organizerEvents = await this.eventRepository.findByCreatedBy(
           user.id,
         );
-        
+
         if (organizerEvents.length === 0) {
           return {
             totalTicketsSold: 0,

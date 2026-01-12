@@ -80,7 +80,11 @@ describe("TypeOrmEventRepository Integration Tests", () => {
         "Concierto de Rock",
         new Date("2025-03-15T20:00:00Z"),
         "Estadio Nacional",
+        "Estadio Nacional",
         ticketConfigs,
+        undefined, // imageUrl
+        undefined, // details
+        undefined  // createdBy
       );
 
       // Act
@@ -112,7 +116,11 @@ describe("TypeOrmEventRepository Integration Tests", () => {
         "Festival de Música",
         new Date("2025-04-20T18:00:00Z"),
         "Parque Central",
+        "Parque Central",
         ticketConfigs,
+        undefined, // imageUrl
+        undefined, // details
+        undefined  // createdBy
       );
 
       // Save event first
@@ -145,6 +153,7 @@ describe("TypeOrmEventRepository Integration Tests", () => {
         "Concierto 1",
         new Date("2025-03-15T20:00:00Z"),
         "Lugar 1",
+        "Lugar 1",
         [
           new TicketConfiguration(
             TicketType.VIP,
@@ -153,12 +162,16 @@ describe("TypeOrmEventRepository Integration Tests", () => {
             100,
           ),
         ],
+        undefined, // imageUrl
+        undefined, // details
+        undefined  // createdBy
       );
 
       const event2 = new Event(
         uuidv4(),
         "Concierto 2",
         new Date("2025-04-20T20:00:00Z"),
+        "Lugar 2",
         "Lugar 2",
         [
           new TicketConfiguration(
@@ -168,6 +181,9 @@ describe("TypeOrmEventRepository Integration Tests", () => {
             200,
           ),
         ],
+        undefined, // imageUrl
+        undefined, // details
+        undefined  // createdBy
       );
 
       // Save events
@@ -201,6 +217,7 @@ describe("TypeOrmEventRepository Integration Tests", () => {
         "Original Name",
         new Date("2025-03-15T20:00:00Z"),
         "Original Location",
+        "Original Location",
         [
           new TicketConfiguration(
             TicketType.VIP,
@@ -209,6 +226,9 @@ describe("TypeOrmEventRepository Integration Tests", () => {
             100,
           ),
         ],
+        undefined, // imageUrl
+        undefined, // details
+        undefined  // createdBy
       );
 
       // Save original event
@@ -220,6 +240,7 @@ describe("TypeOrmEventRepository Integration Tests", () => {
         "Updated Name",
         new Date("2025-03-15T20:00:00Z"),
         "Updated Location",
+        "Updated Location",
         [
           new TicketConfiguration(
             TicketType.VIP,
@@ -228,6 +249,9 @@ describe("TypeOrmEventRepository Integration Tests", () => {
             100,
           ),
         ],
+        undefined, // imageUrl
+        undefined, // details
+        undefined  // createdBy
       );
 
       // Act

@@ -18,6 +18,8 @@ import { ReservationOrmEntity } from "../../src/infrastructure/persistence/entit
 import { TicketOrmEntity } from "../../src/infrastructure/persistence/entities/ticket.orm-entity";
 import { EventDetailsOrmEntity } from "../../src/infrastructure/persistence/entities/event-details.orm-entity";
 import { TicketType } from "../../src/domain/value-objects/ticket-type.vo";
+import { EventIdGeneratorService } from "../../src/application/services/event-id-generator.service";
+import { TicketAvailabilityService } from "../../src/infrastructure/websocket/ticket-availability.service";
 import {
   EVENT_REPOSITORY,
   RESERVATION_REPOSITORY,
@@ -89,6 +91,8 @@ class MockPaymentGateway implements IPaymentGateway {
     CreateReservationUseCase,
     CreateEventUseCase,
     ProcessPaymentUseCase,
+    EventIdGeneratorService,
+    TicketAvailabilityService,
     {
       provide: EVENT_REPOSITORY,
       useClass: TypeOrmEventRepository,
@@ -133,7 +137,9 @@ describe("ReservationController Integration Tests", () => {
     if (dataSource && dataSource.isInitialized) {
       await dataSource.destroy();
     }
-    await app.close();
+    if (app) {
+      await app.close();
+    }
   });
 
   beforeEach(async () => {

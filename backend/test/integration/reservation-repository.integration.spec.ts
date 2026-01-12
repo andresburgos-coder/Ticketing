@@ -212,7 +212,7 @@ describe("TypeOrmReservationRepository Integration Tests", () => {
 
       // Act - Confirm the reservation
       reservation.confirm();
-      const updatedReservation = await repository.update(reservation);
+      const updatedReservation = await repository.update(reservation.id, { status: reservation.status });
 
       // Assert
       expect(updatedReservation.id).toBe(reservationId);
@@ -243,7 +243,7 @@ describe("TypeOrmReservationRepository Integration Tests", () => {
 
       // Act - Expire the reservation
       reservation.expire();
-      const updatedReservation = await repository.update(reservation);
+      const updatedReservation = await repository.update(reservation.id, { status: reservation.status });
 
       // Assert
       expect(updatedReservation.status).toBe("EXPIRED");
@@ -273,7 +273,7 @@ describe("TypeOrmReservationRepository Integration Tests", () => {
 
       // Act - Cancel the reservation
       reservation.cancel();
-      const updatedReservation = await repository.update(reservation);
+      const updatedReservation = await repository.update(reservation.id, { status: reservation.status });
 
       // Assert
       expect(updatedReservation.status).toBe("CANCELLED");

@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { signal } from '@angular/core';
 import { checkoutGuard } from './checkout.guard';
 import { CheckoutService } from '../../features/checkout/services/checkout.service';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+
 
 describe('checkoutGuard', () => {
   let router: Router;
@@ -11,7 +11,7 @@ describe('checkoutGuard', () => {
 
   beforeEach(() => {
     const routerMock = {
-      navigate: vi.fn()
+      navigate: jasmine.createSpy()
     };
 
     TestBed.configureTestingModule({

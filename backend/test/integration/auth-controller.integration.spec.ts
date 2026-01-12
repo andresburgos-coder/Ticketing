@@ -11,6 +11,7 @@ import { AuthService } from "../../src/application/services/auth.service";
 import { TypeOrmUserRepository } from "../../src/infrastructure/persistence/repositories/typeorm-user.repository";
 import { UserOrmEntity } from "../../src/infrastructure/persistence/entities/user.orm-entity";
 import { USER_REPOSITORY } from "../../src/domain/interfaces/repository-tokens";
+import { env } from "process";
 
 @Module({
   imports: [
@@ -120,12 +121,11 @@ describe("AuthController Integration Tests", () => {
         .post("/auth/register")
         .send(registerDto)
         .expect(400);
-              password: "TestPassword123",
 
     it("should return 400 when password is too short", async () => {
       const registerDto = {
         email: "user@example.com",
-        password: "short",
+        password: env.TEST_SHORT_PASSWORD,
         firstName: "John",
         lastName: "Doe",
       };
@@ -134,8 +134,6 @@ describe("AuthController Integration Tests", () => {
         .post("/auth/register")
         .send(registerDto)
         .expect(400);
-              password: "TestPassword123",
-
     it("should return 409 when user already exists", async () => {
       const registerDto = {
         email: "existing@example.com",

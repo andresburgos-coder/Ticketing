@@ -63,6 +63,7 @@ describe("TypeOrmTicketRepository Integration Tests", () => {
         Email.create("buyer@example.com"),
         Money.create(150000, "COP"),
         new Date("2025-03-15T20:00:00Z"),
+        "qr-token-abc123",
       );
 
       // Act
@@ -91,6 +92,7 @@ describe("TypeOrmTicketRepository Integration Tests", () => {
         buyerEmail,
         Money.create(150000, "COP"),
         new Date("2025-03-15T20:00:00Z"),
+        "qr-token-001",
       );
 
       const ticket2 = new Ticket(
@@ -101,6 +103,7 @@ describe("TypeOrmTicketRepository Integration Tests", () => {
         buyerEmail,
         Money.create(100000, "COP"),
         new Date("2025-03-16T20:00:00Z"),
+        "qr-token-002",
       );
 
       const otherBuyerEmail = Email.create("other@example.com");
@@ -112,6 +115,7 @@ describe("TypeOrmTicketRepository Integration Tests", () => {
         otherBuyerEmail,
         Money.create(80000, "COP"),
         new Date("2025-03-17T20:00:00Z"),
+        "qr-token-003",
       );
 
       // Save all tickets
@@ -155,6 +159,7 @@ describe("TypeOrmTicketRepository Integration Tests", () => {
           buyerEmail,
           Money.create(150000, "COP"),
           new Date("2025-03-15T20:00:00Z"),
+          "qr-token-001",
         ),
         new Ticket(
           uuidv4(),
@@ -164,6 +169,7 @@ describe("TypeOrmTicketRepository Integration Tests", () => {
           buyerEmail,
           Money.create(100000, "COP"),
           new Date("2025-03-15T20:00:00Z"),
+          "qr-token-002",
         ),
         new Ticket(
           uuidv4(),
@@ -173,6 +179,7 @@ describe("TypeOrmTicketRepository Integration Tests", () => {
           buyerEmail,
           Money.create(80000, "COP"),
           new Date("2025-03-15T20:00:00Z"),
+          "qr-token-003",
         ),
       ];
 
@@ -206,6 +213,7 @@ describe("TypeOrmTicketRepository Integration Tests", () => {
         Email.create("buyer1@example.com"),
         Money.create(150000, "COP"),
         new Date("2025-03-15T20:00:00Z"),
+        "qr-token-001",
       );
 
       const ticket2 = new Ticket(
@@ -216,6 +224,7 @@ describe("TypeOrmTicketRepository Integration Tests", () => {
         Email.create("buyer2@example.com"),
         Money.create(100000, "COP"),
         new Date("2025-03-15T20:00:00Z"),
+        "qr-token-002",
       );
 
       const ticket3 = new Ticket(
@@ -226,6 +235,7 @@ describe("TypeOrmTicketRepository Integration Tests", () => {
         Email.create("buyer3@example.com"),
         Money.create(150000, "COP"),
         new Date("2025-03-15T20:00:00Z"),
+        "qr-token-003",
       );
 
       // Save all tickets

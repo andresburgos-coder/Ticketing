@@ -273,9 +273,13 @@ export class CheckoutService {
   }
 
   updateQuantity(ticketTypeId: number, quantity: number): void {
+    if (quantity <= 0) {
+      this.removeFromCart(ticketTypeId);
+      return;
+    }
     const cart = this._cart();
     const updatedCart = cart.map(item => {
-      if (item.ticketTypeId === ticketTypeId && quantity > 0) {
+      if (item.ticketTypeId === ticketTypeId) {
         return { ...item, quantity: quantity };
       }
       return item;

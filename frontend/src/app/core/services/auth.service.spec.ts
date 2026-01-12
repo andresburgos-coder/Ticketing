@@ -3,7 +3,6 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 import { Router } from '@angular/router';
 import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -12,7 +11,7 @@ describe('AuthService', () => {
 
   beforeEach(() => {
     const routerMock = {
-      navigate: vi.fn()
+      navigate: jasmine.createSpy('navigate')
     };
 
     TestBed.configureTestingModule({
@@ -90,7 +89,7 @@ describe('AuthService', () => {
     it('should clear user data and navigate to login', () => {
       // Setup: login first
       localStorage.setItem('auth_token', 'test-token');
-      service['_currentUser'].set({ id: '1', email: 'test@example.com', firstName: 'Test', lastName: 'User' });
+      service['_currentUser'].set({ id: '1', email: 'test@example.com', firstName: 'Test', lastName: 'User', role: 'BUYER' });
       service['_accessToken'].set('test-token');
 
       service.logout();
@@ -115,7 +114,7 @@ describe('AuthService', () => {
 
   describe('loadFromStorage', () => {
     it('should restore auth state from localStorage', () => {
-      const mockUser = { id: '1', email: 'stored@example.com', firstName: 'Stored', lastName: 'User' };
+      const mockUser = { id: '1', email: 'stored@example.com', firstName: 'Stored', lastName: 'User', role: 'BUYER' };
       localStorage.setItem('auth_token', 'stored-token');
       localStorage.setItem('auth_user', JSON.stringify(mockUser));
 

@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { signal } from '@angular/core';
 import { authGuard } from './auth.guard';
 import { AuthService } from '../services/auth.service';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+
 
 describe('authGuard', () => {
   let router: Router;
@@ -11,7 +11,7 @@ describe('authGuard', () => {
 
   beforeEach(() => {
     const routerMock = {
-      navigate: vi.fn()
+      navigate: jasmine.createSpy()
     };
 
     TestBed.configureTestingModule({

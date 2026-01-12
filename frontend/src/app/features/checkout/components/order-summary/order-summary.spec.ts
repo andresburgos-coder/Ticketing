@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { OrderSummary } from './order-summary';
 import { CheckoutService } from '../../services/checkout.service';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+
 import { signal } from '@angular/core';
 
 describe('OrderSummary', () => {
@@ -18,7 +18,7 @@ describe('OrderSummary', () => {
       subtotal: signal(250),
       tax: signal(25),
       total: signal(275),
-      removeFromCart: vi.fn()
+      removeFromCart: jasmine.createSpy()
     };
 
     await TestBed.configureTestingModule({
