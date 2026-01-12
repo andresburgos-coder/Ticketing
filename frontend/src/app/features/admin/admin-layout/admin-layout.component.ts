@@ -1,7 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+
+interface MenuItem {
+  path: string;
+  label: string;
+  icon: string;
+  adminOnly?: boolean;
+}
 
 @Component({
   selector: 'app-admin-layout',
@@ -11,10 +18,34 @@ import { AuthService } from '../../../core/services/auth.service';
   styleUrl: './admin-layout.component.css'
 })
 export class AdminLayoutComponent {
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+
+  readonly currentUser = this.authService.currentUser;
+
+  readonly menuItems: MenuItem[] = [
+    { path: '/admin/dashboard', label: 'Dashboard', icon: 'icon-dashboard', adminOnly: true },
+    { path: '/admin/events', label: 'Eventos', icon: 'icon-events' },
+    { path: '/admin/tickets', label: 'Tickets', icon: 'icon-tickets' },
+    { path: '/admin/users', label: 'Usuarios', icon: 'icon-users', adminOnly: true },
+    { path: '/admin/reservations', label: 'Reservas', icon: 'icon-reservations', adminOnly: true },
+    { path: '/admin/reports', label: 'Reportes', icon: 'icon-reports', adminOnly: true }
+  ];
+
+  readonly visibleMenuItems = computed(() => {
+    const user = this.currentUser();
+    if (!user) return [];
+
+    return this.menuItems.filter(item => {
+      if (item.adminOnly && user.role !== 'ADMIN') {
+        return false;
+      }
+      return true;
+    });
+  });
+
+  readonly isAdmin = computed(() => this.currentUser()?.role === 'ADMIN');
+  readonly isOrganizer = computed(() => this.currentUser()?.role === 'ORGANIZER');
 
   logout() {
     this.authService.logout();

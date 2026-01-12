@@ -97,9 +97,7 @@ export interface ITicketRepository {
     eventId: string,
   ): Promise<Array<{ date: string; count: number }>>;
 
-  getTopSellingEvents(
-    limit: number,
-  ): Promise<
+  getTopSellingEvents(limit: number): Promise<
     Array<{
       eventId: string;
       eventName: string;

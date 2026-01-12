@@ -306,9 +306,7 @@ export class TypeOrmTicketRepository implements ITicketRepository {
     return this.getSalesByDateForEvent(eventId);
   }
 
-  async getTopSellingEvents(
-    limit: number,
-  ): Promise<
+  async getTopSellingEvents(limit: number): Promise<
     Array<{
       eventId: string;
       eventName: string;

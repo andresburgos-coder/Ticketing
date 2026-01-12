@@ -53,6 +53,21 @@ export class AuthService {
     this.loadFromStorage();
   }
 
+  /**
+   * Get the default redirect route based on user role
+   */
+  getDefaultRouteForUser(user: User): string {
+    switch (user.role) {
+      case 'ADMIN':
+        return '/admin/dashboard';
+      case 'ORGANIZER':
+        return '/admin/events';
+      case 'BUYER':
+      default:
+        return '/';
+    }
+  }
+
   login(credentials: LoginRequest): Observable<AuthResponse> {
     console.log('[AuthService.login] ===== LOGIN START =====');
     console.log('[AuthService.login] Email:', credentials.email);
