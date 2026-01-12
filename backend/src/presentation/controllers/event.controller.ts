@@ -46,6 +46,7 @@ import {
 import { IUserRepository } from "../../domain/interfaces/user-repository.interface";
 import { User } from "../../domain/entities/user.entity";
 import { MinioService } from "../../infrastructure/external/minio.service";
+import { OptionalJwtAuthGuard } from "../../application/services/optional-jwt-auth.guard";
 import { JwtAuthGuard } from "../../application/services/jwt-auth.guard";
 
 /**
@@ -632,16 +633,18 @@ export class EventController {
 
   /**
    * GET /events
-   * Retrieves all events
+   * Retrieves all events or events filtered by current user (for organizers)
    *
-   * @returns Array of all events with their ticket configurations
+   * @param req - Request object containing user info from JWT
+   * @returns Array of events with their ticket configurations
    */
   @Get()
+  @UseGuards(OptionalJwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: "Get all events",
     description:
-      "Retrieves all events with their ticket configurations and current availability",
+      "Retrieves all events with their ticket configurations and current availability. For organizers, returns only their own events.",
   })
   @ApiResponse({
     status: 200,
@@ -686,8 +689,17 @@ export class EventController {
       },
     },
   })
-  async findAll(): Promise<EventResponse[]> {
-    const events = await this.getAllEventsUseCase.execute();
+  async findAll(@Request() req?: any): Promise<EventResponse[]> {
+    let events: Event[];
+    
+    // If user is authenticated and is an organizer, filter by their events
+    if (req?.user?.id && req?.user?.role === 'ORGANIZER') {
+      events = await this.eventRepository.findByCreatedBy(req.user.id);
+    } else {
+      // For admins and public access, return all events
+      events = await this.getAllEventsUseCase.execute();
+    }
+    
     return await Promise.all(
       events.map((event) => this.formatEventResponse(event)),
     );

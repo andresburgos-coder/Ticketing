@@ -101,6 +101,20 @@ export class TypeOrmEventRepository implements IEventRepository {
   }
 
   /**
+   * Finds events created by a specific user
+   * @param createdBy - The ID of the user who created the events
+   * @returns Promise resolving to an array of Events created by the user
+   */
+  async findByCreatedBy(createdBy: string): Promise<Event[]> {
+    const ormEntities = await this.repository.find({
+      where: { createdBy },
+      relations: ["ticketConfigurations", "details"],
+    });
+
+    return ormEntities.map((ormEntity) => EventMapper.toDomain(ormEntity));
+  }
+
+  /**
    * Updates an existing event in the database
    * @param event - The Event entity with updated data
    * @returns Promise resolving to the updated Event

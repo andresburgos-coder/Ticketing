@@ -33,6 +33,13 @@ export interface IEventRepository {
   findAll(): Promise<Event[]>;
 
   /**
+   * Finds events created by a specific user
+   * @param createdBy - The ID of the user who created the events
+   * @returns Promise resolving to an array of Events created by the user
+   */
+  findByCreatedBy(createdBy: string): Promise<Event[]>;
+
+  /**
    * Updates an existing event in the repository
    * @param event - The Event entity with updated data
    * @returns Promise resolving to the updated Event

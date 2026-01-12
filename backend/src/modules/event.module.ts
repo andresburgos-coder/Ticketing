@@ -14,6 +14,7 @@ import { EventDetailsOrmEntity } from "../infrastructure/persistence/entities/ev
 import { MinioService } from "../infrastructure/external/minio.service";
 import { EventIdGeneratorService } from "../application/services/event-id-generator.service";
 import { JwtAuthGuard } from "../application/services/jwt-auth.guard";
+import { OptionalJwtAuthGuard } from "../application/services/optional-jwt-auth.guard";
 import {
   EVENT_REPOSITORY,
   USER_REPOSITORY,
@@ -55,6 +56,7 @@ import { UserOrmEntity } from "../infrastructure/persistence/entities/user.orm-e
     MinioService,
     EventIdGeneratorService,
     JwtAuthGuard,
+    OptionalJwtAuthGuard,
     {
       provide: EVENT_REPOSITORY,
       useClass: TypeOrmEventRepository,

@@ -11,6 +11,7 @@ import { environment } from '../../../environments/environment';
 export enum EventCategory {
   CUALQUIER_CATEGORIA = 'Cualquier categoría',
   ACCION_EXTREMO = 'Acción Extremo',
+  CINE = 'Cine',
   CIRCO = 'Circo',
   COMEDIA = 'Comedia',
   COMFAMA = 'Comfama',
@@ -21,6 +22,7 @@ export enum EventCategory {
   FESTIVAL = 'Festival',
   INMERSIONES_CENTROS_EXPERIENCIAS = 'Inmersiones a los centros de experiencias',
   MUSICAL = 'Musical',
+  OTROS = 'Otros',
   PODCAST = 'Podcast',
   RECREATIVO = 'Recreativo',
   STAND_UP_COMEDY = 'Stand-Up Comedy',

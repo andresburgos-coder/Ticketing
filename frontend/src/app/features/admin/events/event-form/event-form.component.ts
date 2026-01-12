@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { ToastService } from '../../../../core/services/toast.service';
 import { AdminService } from '../../../../services/admin.service';
+import { EventCategory } from '../../../../models/admin.model';
 
 @Component({
   selector: 'app-event-form',
@@ -26,7 +27,27 @@ export class EventFormComponent implements OnInit {
   selectedImage: File | null = null;
   imagePreview = signal<string | null>(null);
 
-  categories = ['Concierto', 'Deportes', 'Teatro', 'Cine', 'Otros'];
+  //// HUMAN REVIEW: Se refectoriza para mejorar la manejabilidad de los tipos de entradas
+  categories = [
+    EventCategory.CONCIERTO,
+    EventCategory.DEPORTES,
+    EventCategory.TEATRO,
+    EventCategory.CINE,
+    EventCategory.COMEDIA,
+    EventCategory.MUSICAL,
+    EventCategory.FESTIVAL,
+    EventCategory.CULTURAL,
+    EventCategory.RECREATIVO,
+    EventCategory.STAND_UP_COMEDY,
+    EventCategory.PODCAST,
+    EventCategory.CIRCO,
+    EventCategory.FERIA,
+    EventCategory.TURISMO,
+    EventCategory.ACCION_EXTREMO,
+    EventCategory.INMERSIONES,
+    EventCategory.COMFAMA,
+    EventCategory.OTROS
+  ];
 
   ngOnInit() {
     this.initForm();
