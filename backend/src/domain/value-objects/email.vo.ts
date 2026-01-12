@@ -1,4 +1,4 @@
-import { InvalidEmailException } from '../exceptions/invalid-email.exception';
+import { InvalidEmailException } from "../exceptions/invalid-email.exception";
 
 /**
  * Email Value Object - Immutable representation of email addresses.
@@ -21,11 +21,11 @@ export class Email {
    */
   static create(value: string): Email {
     const trimmed = value.trim().toLowerCase();
-    
+
     if (!Email.EMAIL_REGEX.test(trimmed)) {
       throw new InvalidEmailException(`Invalid email format: ${value}`);
     }
-    
+
     return new Email(trimmed);
   }
 

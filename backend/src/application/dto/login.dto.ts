@@ -1,25 +1,25 @@
-import { IsEmail, IsString, MinLength } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsString, MinLength } from "class-validator";
+import { ApiProperty } from "@nestjs/swagger";
 
 /**
  * LoginDto
  * Data Transfer Object for user login
- * 
+ *
  * Requirements: 9.2
  */
 export class LoginDto {
   @ApiProperty({
-    description: 'User email address',
-    example: 'user@example.com',
-    format: 'email'
+    description: "User email address",
+    example: "user@example.com",
+    format: "email",
   })
   @IsEmail()
   email!: string;
 
   @ApiProperty({
-    description: 'User password (minimum 8 characters)',
-    example: 'SecurePass123',
-    minLength: 8
+    description: "User password (minimum 8 characters)",
+    example: "SecurePass123",
+    minLength: 8,
   })
   @IsString()
   @MinLength(8)

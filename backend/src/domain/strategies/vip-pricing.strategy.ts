@@ -1,6 +1,6 @@
-import { Money } from '../value-objects/money.vo';
-import { TicketType } from '../value-objects/ticket-type.vo';
-import { IPricingStrategy } from './pricing-strategy.interface';
+import { Money } from "../value-objects/money.vo";
+import { TicketType } from "../value-objects/ticket-type.vo";
+import { IPricingStrategy } from "./pricing-strategy.interface";
 
 /**
  * VIP Pricing Strategy - Applies a 1.5x multiplier to the base price.

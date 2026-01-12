@@ -1,4 +1,4 @@
-import { Reservation } from '../entities/reservation.entity';
+import { Reservation } from "../entities/reservation.entity";
 
 export interface IReservationRepository {
   save(reservation: Reservation): Promise<Reservation>;
@@ -14,11 +14,9 @@ export interface IReservationRepository {
     offset?: number;
   }): Promise<Reservation[]>;
 
-  countWithFilters(filters: {
-    status?: string;
-  }): Promise<number>;
+  countWithFilters(filters: { status?: string }): Promise<number>;
 
   countActive(): Promise<number>;
 }
 
-export const RESERVATION_REPOSITORY = Symbol('RESERVATION_REPOSITORY');
+export const RESERVATION_REPOSITORY = Symbol("RESERVATION_REPOSITORY");

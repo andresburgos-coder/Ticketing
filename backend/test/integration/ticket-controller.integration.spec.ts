@@ -1,27 +1,35 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe, Module } from '@nestjs/common';
-import * as request from 'supertest';
-import { DataSource } from 'typeorm';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { v4 as uuidv4 } from 'uuid';
-import { TicketController } from '../../src/presentation/controllers/ticket.controller';
-import { EventController } from '../../src/presentation/controllers/event.controller';
-import { ReservationController } from '../../src/presentation/controllers/reservation.controller';
-import { CreateEventUseCase } from '../../src/application/use-cases/create-event.use-case';
-import { CreateReservationUseCase } from '../../src/application/use-cases/create-reservation.use-case';
-import { ProcessPaymentUseCase } from '../../src/application/use-cases/process-payment.use-case';
-import { GetBuyerTicketsUseCase } from '../../src/application/use-cases/get-buyer-tickets.use-case';
-import { TypeOrmEventRepository } from '../../src/infrastructure/persistence/repositories/typeorm-event.repository';
-import { TypeOrmReservationRepository } from '../../src/infrastructure/persistence/repositories/typeorm-reservation.repository';
-import { TypeOrmTicketRepository } from '../../src/infrastructure/persistence/repositories/typeorm-ticket.repository';
-import { EventOrmEntity } from '../../src/infrastructure/persistence/entities/event.orm-entity';
-import { TicketConfigurationOrmEntity } from '../../src/infrastructure/persistence/entities/ticket-configuration.orm-entity';
-import { ReservationOrmEntity } from '../../src/infrastructure/persistence/entities/reservation.orm-entity';
-import { TicketOrmEntity } from '../../src/infrastructure/persistence/entities/ticket.orm-entity';
-import { EventDetailsOrmEntity } from '../../src/infrastructure/persistence/entities/event-details.orm-entity';
-import { TicketType } from '../../src/domain/value-objects/ticket-type.vo';
-import { EVENT_REPOSITORY, RESERVATION_REPOSITORY, TICKET_REPOSITORY } from '../../src/domain/interfaces/repository-tokens';
-import { IPaymentGateway, PaymentResult, PaymentData } from '../../src/domain/interfaces/payment-gateway.interface';
+import { Test, TestingModule } from "@nestjs/testing";
+import { INestApplication, ValidationPipe, Module } from "@nestjs/common";
+import * as request from "supertest";
+import { DataSource } from "typeorm";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { v4 as uuidv4 } from "uuid";
+import { TicketController } from "../../src/presentation/controllers/ticket.controller";
+import { EventController } from "../../src/presentation/controllers/event.controller";
+import { ReservationController } from "../../src/presentation/controllers/reservation.controller";
+import { CreateEventUseCase } from "../../src/application/use-cases/create-event.use-case";
+import { CreateReservationUseCase } from "../../src/application/use-cases/create-reservation.use-case";
+import { ProcessPaymentUseCase } from "../../src/application/use-cases/process-payment.use-case";
+import { GetBuyerTicketsUseCase } from "../../src/application/use-cases/get-buyer-tickets.use-case";
+import { TypeOrmEventRepository } from "../../src/infrastructure/persistence/repositories/typeorm-event.repository";
+import { TypeOrmReservationRepository } from "../../src/infrastructure/persistence/repositories/typeorm-reservation.repository";
+import { TypeOrmTicketRepository } from "../../src/infrastructure/persistence/repositories/typeorm-ticket.repository";
+import { EventOrmEntity } from "../../src/infrastructure/persistence/entities/event.orm-entity";
+import { TicketConfigurationOrmEntity } from "../../src/infrastructure/persistence/entities/ticket-configuration.orm-entity";
+import { ReservationOrmEntity } from "../../src/infrastructure/persistence/entities/reservation.orm-entity";
+import { TicketOrmEntity } from "../../src/infrastructure/persistence/entities/ticket.orm-entity";
+import { EventDetailsOrmEntity } from "../../src/infrastructure/persistence/entities/event-details.orm-entity";
+import { TicketType } from "../../src/domain/value-objects/ticket-type.vo";
+import {
+  EVENT_REPOSITORY,
+  RESERVATION_REPOSITORY,
+  TICKET_REPOSITORY,
+} from "../../src/domain/interfaces/repository-tokens";
+import {
+  IPaymentGateway,
+  PaymentResult,
+  PaymentData,
+} from "../../src/domain/interfaces/payment-gateway.interface";
 
 /**
  * Mock Payment Gateway for testing
@@ -39,12 +47,12 @@ class MockPaymentGateway implements IPaymentGateway {
 @Module({
   imports: [
     TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
+      type: "postgres",
+      host: "localhost",
       port: 5433,
-      username: 'test_user',
-      password: 'test_pass',
-      database: 'ticket_sales_test',
+      username: "test_user",
+      password: "test_pass",
+      database: "ticket_sales_test",
       entities: [
         EventOrmEntity,
         TicketConfigurationOrmEntity,
@@ -82,14 +90,14 @@ class MockPaymentGateway implements IPaymentGateway {
       useClass: TypeOrmTicketRepository,
     },
     {
-      provide: 'IPaymentGateway',
+      provide: "IPaymentGateway",
       useClass: MockPaymentGateway,
     },
   ],
 })
 class TestTicketModule {}
 
-describe('TicketController Integration Tests', () => {
+describe("TicketController Integration Tests", () => {
   let app: INestApplication;
   let dataSource: DataSource;
   let eventId: string;
@@ -125,9 +133,9 @@ describe('TicketController Integration Tests', () => {
     futureDate.setDate(futureDate.getDate() + 30);
 
     const createEventDto = {
-      name: 'Test Concert',
+      name: "Test Concert",
       date: futureDate.toISOString(),
-      location: 'Test Venue',
+      location: "Test Venue",
       ticketConfigurations: [
         {
           type: TicketType.VIP,
@@ -143,26 +151,30 @@ describe('TicketController Integration Tests', () => {
     };
 
     const eventResponse = await request(app.getHttpServer())
-      .post('/events')
+      .post("/events")
       .send(createEventDto);
 
     if (eventResponse.status !== 201) {
-      console.log('Event creation failed:', eventResponse.status, eventResponse.body);
+      console.log(
+        "Event creation failed:",
+        eventResponse.status,
+        eventResponse.body,
+      );
       throw new Error(`Failed to create event: ${eventResponse.status}`);
     }
 
     eventId = eventResponse.body.id;
   });
 
-  describe('GET /tickets', () => {
-    it('should return tickets for buyer when they have purchased tickets', async () => {
+  describe("GET /tickets", () => {
+    it("should return tickets for buyer when they have purchased tickets", async () => {
       // Skip this test if event creation failed in beforeEach
       if (!eventId) {
-        console.log('Skipping test: event creation failed in beforeEach');
+        console.log("Skipping test: event creation failed in beforeEach");
         return;
       }
 
-      const buyerEmail = 'buyer@example.com';
+      const buyerEmail = "buyer@example.com";
 
       // Create a reservation
       const createReservationDto = {
@@ -173,11 +185,15 @@ describe('TicketController Integration Tests', () => {
       };
 
       const reservationResponse = await request(app.getHttpServer())
-        .post('/reservations')
+        .post("/reservations")
         .send(createReservationDto);
 
       if (reservationResponse.status !== 201) {
-        console.log('Skipping test: reservation creation failed', reservationResponse.status, reservationResponse.body);
+        console.log(
+          "Skipping test: reservation creation failed",
+          reservationResponse.status,
+          reservationResponse.body,
+        );
         return;
       }
 
@@ -203,18 +219,18 @@ describe('TicketController Integration Tests', () => {
 
       expect(ticketsResponse.body).toBeInstanceOf(Array);
       expect(ticketsResponse.body.length).toBe(2);
-      expect(ticketsResponse.body[0]).toHaveProperty('code');
-      expect(ticketsResponse.body[0]).toHaveProperty('eventId');
-      expect(ticketsResponse.body[0]).toHaveProperty('type');
-      expect(ticketsResponse.body[0]).toHaveProperty('buyerEmail');
-      expect(ticketsResponse.body[0]).toHaveProperty('price');
-      expect(ticketsResponse.body[0]).toHaveProperty('purchaseDate');
+      expect(ticketsResponse.body[0]).toHaveProperty("code");
+      expect(ticketsResponse.body[0]).toHaveProperty("eventId");
+      expect(ticketsResponse.body[0]).toHaveProperty("type");
+      expect(ticketsResponse.body[0]).toHaveProperty("buyerEmail");
+      expect(ticketsResponse.body[0]).toHaveProperty("price");
+      expect(ticketsResponse.body[0]).toHaveProperty("purchaseDate");
       expect(ticketsResponse.body[0].type).toBe(TicketType.VIP);
       expect(ticketsResponse.body[0].buyerEmail).toBe(buyerEmail);
     });
 
-    it('should return empty list when buyer has no tickets', async () => {
-      const buyerEmail = 'no-tickets@example.com';
+    it("should return empty list when buyer has no tickets", async () => {
+      const buyerEmail = "no-tickets@example.com";
 
       const ticketsResponse = await request(app.getHttpServer())
         .get(`/tickets?email=${encodeURIComponent(buyerEmail)}`)
@@ -224,17 +240,16 @@ describe('TicketController Integration Tests', () => {
       expect(ticketsResponse.body.length).toBe(0);
     });
 
-    it('should return 400 when email query parameter is missing', async () => {
-      await request(app.getHttpServer())
-        .get('/tickets')
-        .expect(400);
+    it("should return 400 when email query parameter is missing", async () => {
+      await request(app.getHttpServer()).get("/tickets").expect(400);
     });
 
-    it('should return 400 when email format is invalid', async () => {
-      const invalidEmail = 'invalid-email';
+    it("should return 400 when email format is invalid", async () => {
+      const invalidEmail = "invalid-email";
 
-      const response = await request(app.getHttpServer())
-        .get(`/tickets?email=${encodeURIComponent(invalidEmail)}`);
+      const response = await request(app.getHttpServer()).get(
+        `/tickets?email=${encodeURIComponent(invalidEmail)}`,
+      );
 
       expect(response.status).toBe(400);
     });

@@ -5,6 +5,6 @@
 export class InvalidQuantityException extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'InvalidQuantityException';
+    this.name = "InvalidQuantityException";
   }
 }

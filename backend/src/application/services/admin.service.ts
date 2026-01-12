@@ -1,19 +1,29 @@
-import { Injectable, Inject, NotFoundException, ConflictException } from '@nestjs/common';
-import { CreateAdminUserUseCase } from '../use-cases/create-admin-user.use-case';
-import { GetUsersUseCase } from '../use-cases/get-users.use-case';
-import { GetEventStatsUseCase } from '../use-cases/get-event-stats.use-case';
-import { GetTicketStatsUseCase } from '../use-cases/get-ticket-stats.use-case';
-import { GetDashboardStatsUseCase } from '../use-cases/get-dashboard-stats.use-case';
-import { CreateAdminUserDto } from '../../presentation/dtos/create-admin-user.dto';
-import { UpdateUserDto } from '../../presentation/dtos/update-user.dto';
-import { GetUsersQueryDto } from '../../presentation/dtos/get-users-query.dto';
-import { IUserRepository } from '../../domain/interfaces/user-repository.interface';
-import { ITicketRepository } from '../../domain/interfaces/ticket-repository.interface';
-import { IEventRepository } from '../../domain/interfaces/event-repository.interface';
-import { IReservationRepository } from '../../domain/interfaces/reservation-repository.interface';
-import { Email } from '../../domain/value-objects/email.vo';
-import { USER_REPOSITORY, TICKET_REPOSITORY, RESERVATION_REPOSITORY, EVENT_REPOSITORY } from '../../domain/interfaces/repository-tokens';
-import * as bcrypt from 'bcrypt';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  ConflictException,
+} from "@nestjs/common";
+import { CreateAdminUserUseCase } from "../use-cases/create-admin-user.use-case";
+import { GetUsersUseCase } from "../use-cases/get-users.use-case";
+import { GetEventStatsUseCase } from "../use-cases/get-event-stats.use-case";
+import { GetTicketStatsUseCase } from "../use-cases/get-ticket-stats.use-case";
+import { GetDashboardStatsUseCase } from "../use-cases/get-dashboard-stats.use-case";
+import { CreateAdminUserDto } from "../../presentation/dtos/create-admin-user.dto";
+import { UpdateUserDto } from "../../presentation/dtos/update-user.dto";
+import { GetUsersQueryDto } from "../../presentation/dtos/get-users-query.dto";
+import { IUserRepository } from "../../domain/interfaces/user-repository.interface";
+import { ITicketRepository } from "../../domain/interfaces/ticket-repository.interface";
+import { IEventRepository } from "../../domain/interfaces/event-repository.interface";
+import { IReservationRepository } from "../../domain/interfaces/reservation-repository.interface";
+import { Email } from "../../domain/value-objects/email.vo";
+import {
+  USER_REPOSITORY,
+  TICKET_REPOSITORY,
+  RESERVATION_REPOSITORY,
+  EVENT_REPOSITORY,
+} from "../../domain/interfaces/repository-tokens";
+import * as bcrypt from "bcrypt";
 
 @Injectable()
 export class AdminService {
@@ -38,7 +48,7 @@ export class AdminService {
     const emailObj = Email.create(createAdminUserDto.email);
     const existingUser = await this.userRepository.findByEmail(emailObj);
     if (existingUser) {
-      throw new ConflictException('Email already exists');
+      throw new ConflictException("Email already exists");
     }
 
     return this.createAdminUserUseCase.execute(createAdminUserDto);
@@ -51,9 +61,9 @@ export class AdminService {
   async getUserById(id: string) {
     const user = await this.userRepository.findById(id);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
-    
+
     // Remove password from response
     const { passwordHash, ...userWithoutPassword } = user;
     return userWithoutPassword;
@@ -62,16 +72,17 @@ export class AdminService {
   async updateUser(id: string, updateUserDto: UpdateUserDto) {
     const user = await this.userRepository.findById(id);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
 
     // Check if email is being changed and if it already exists
-    const currentEmailValue = typeof user.email === 'string' ? user.email : user.email.value;
+    const currentEmailValue =
+      typeof user.email === "string" ? user.email : user.email.value;
     if (updateUserDto.email && updateUserDto.email !== currentEmailValue) {
       const emailObj = Email.create(updateUserDto.email);
       const existingUser = await this.userRepository.findByEmail(emailObj);
       if (existingUser) {
-        throw new ConflictException('Email already exists');
+        throw new ConflictException("Email already exists");
       }
     }
 
@@ -83,11 +94,11 @@ export class AdminService {
   async deleteUser(id: string) {
     const user = await this.userRepository.findById(id);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
 
     await this.userRepository.delete(id);
-    return { message: 'User deleted successfully' };
+    return { message: "User deleted successfully" };
   }
 
   async getDashboardStats() {
@@ -124,7 +135,7 @@ export class AdminService {
     });
 
     // Resolve event names for returned tickets (handles mixed IDs)
-    const uniqueEventIds = Array.from(new Set(tickets.map(t => t.eventId)));
+    const uniqueEventIds = Array.from(new Set(tickets.map((t) => t.eventId)));
     const eventNameMap = new Map<string, string>();
     for (const id of uniqueEventIds) {
       try {
@@ -135,13 +146,14 @@ export class AdminService {
       } catch {}
     }
 
-    const enriched = tickets.map(t => ({
+    const enriched = tickets.map((t) => ({
       id: t.id,
       code: t.code,
       eventId: t.eventId,
-      eventName: eventNameMap.get(t.eventId) || 'Evento no encontrado',
+      eventName: eventNameMap.get(t.eventId) || "Evento no encontrado",
       type: t.type,
-      buyerEmail: typeof t.buyerEmail === 'string' ? t.buyerEmail : t.buyerEmail.value,
+      buyerEmail:
+        typeof t.buyerEmail === "string" ? t.buyerEmail : t.buyerEmail.value,
       price: {
         amount: t.price.amount,
         currency: t.price.currency,

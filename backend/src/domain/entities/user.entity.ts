@@ -1,6 +1,6 @@
-import * as bcrypt from 'bcrypt';
-import { Email } from '../value-objects/email.vo';
-import { UserRole } from '../enums/user-role.enum';
+import * as bcrypt from "bcrypt";
+import { Email } from "../value-objects/email.vo";
+import { UserRole } from "../enums/user-role.enum";
 
 /**
  * User Entity - Represents a user in the system.
@@ -17,7 +17,7 @@ export class User {
     public readonly firstName: string,
     public readonly lastName: string,
     public readonly role: UserRole,
-    public readonly createdAt: Date = new Date()
+    public readonly createdAt: Date = new Date(),
   ) {}
 
   /**
@@ -35,7 +35,10 @@ export class User {
    * @param hashedPassword - The hashed password to compare against
    * @returns Promise<boolean> - True if password matches, false otherwise
    */
-  async verifyPassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
+  async verifyPassword(
+    plainPassword: string,
+    hashedPassword: string,
+  ): Promise<boolean> {
     return bcrypt.compare(plainPassword, hashedPassword);
   }
 }

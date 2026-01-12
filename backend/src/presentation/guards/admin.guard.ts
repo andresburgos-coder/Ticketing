@@ -1,5 +1,10 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
-import { UserRole } from '../../domain/enums/user-role.enum';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+} from "@nestjs/common";
+import { UserRole } from "../../domain/enums/user-role.enum";
 
 @Injectable()
 export class AdminGuard implements CanActivate {
@@ -8,11 +13,11 @@ export class AdminGuard implements CanActivate {
     const user = request.user;
 
     if (!user) {
-      throw new ForbiddenException('User not authenticated');
+      throw new ForbiddenException("User not authenticated");
     }
 
     if (user.role !== UserRole.ADMIN) {
-      throw new ForbiddenException('Access denied. Admin role required.');
+      throw new ForbiddenException("Access denied. Admin role required.");
     }
 
     return true;

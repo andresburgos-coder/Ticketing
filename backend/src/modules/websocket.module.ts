@@ -1,6 +1,6 @@
-import { Module, Global } from '@nestjs/common';
-import { TicketAvailabilityService } from '../infrastructure/websocket/ticket-availability.service';
-import { TicketAvailabilityGateway } from '../presentation/gateways/ticket-availability.gateway';
+import { Module, Global } from "@nestjs/common";
+import { TicketAvailabilityService } from "../infrastructure/websocket/ticket-availability.service";
+import { TicketAvailabilityGateway } from "../presentation/gateways/ticket-availability.gateway";
 
 /**
  * WebSocketModule
@@ -10,12 +10,7 @@ import { TicketAvailabilityGateway } from '../presentation/gateways/ticket-avail
  */
 @Global()
 @Module({
-  providers: [
-    TicketAvailabilityService,
-    TicketAvailabilityGateway,
-  ],
-  exports: [
-    TicketAvailabilityService,
-  ],
+  providers: [TicketAvailabilityService, TicketAvailabilityGateway],
+  exports: [TicketAvailabilityService],
 })
 export class WebSocketModule {}

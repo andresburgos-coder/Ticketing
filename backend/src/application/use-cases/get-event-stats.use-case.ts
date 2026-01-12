@@ -1,7 +1,10 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { IEventRepository } from '../../domain/interfaces/event-repository.interface';
-import { ITicketRepository } from '../../domain/interfaces/ticket-repository.interface';
-import { EVENT_REPOSITORY, TICKET_REPOSITORY } from '../../domain/interfaces/repository-tokens';
+import { Injectable, Inject } from "@nestjs/common";
+import { IEventRepository } from "../../domain/interfaces/event-repository.interface";
+import { ITicketRepository } from "../../domain/interfaces/ticket-repository.interface";
+import {
+  EVENT_REPOSITORY,
+  TICKET_REPOSITORY,
+} from "../../domain/interfaces/repository-tokens";
 
 @Injectable()
 export class GetEventStatsUseCase {
@@ -21,19 +24,14 @@ export class GetEventStatsUseCase {
   }
 
   private async getEventSpecificStats(eventId: string) {
-    const [
-      event,
-      ticketsSold,
-      revenue,
-      ticketsByType,
-      salesByDate,
-    ] = await Promise.all([
-      this.eventRepository.findById(eventId),
-      this.ticketRepository.countByEvent(eventId),
-      this.ticketRepository.getRevenueByEvent(eventId),
-      this.ticketRepository.getTicketsByTypeForEvent(eventId),
-      this.ticketRepository.getSalesByDateForEvent(eventId),
-    ]);
+    const [event, ticketsSold, revenue, ticketsByType, salesByDate] =
+      await Promise.all([
+        this.eventRepository.findById(eventId),
+        this.ticketRepository.countByEvent(eventId),
+        this.ticketRepository.getRevenueByEvent(eventId),
+        this.ticketRepository.getTicketsByTypeForEvent(eventId),
+        this.ticketRepository.getSalesByDateForEvent(eventId),
+      ]);
 
     return {
       event,
@@ -45,17 +43,13 @@ export class GetEventStatsUseCase {
   }
 
   private async getAllEventsStats() {
-    const [
-      eventsByCategory,
-      eventsByMonth,
-      upcomingEvents,
-      pastEvents,
-    ] = await Promise.all([
-      this.eventRepository.getEventsByCategory(),
-      this.eventRepository.getEventsByMonth(),
-      this.eventRepository.findUpcoming(10),
-      this.eventRepository.findPast(10),
-    ]);
+    const [eventsByCategory, eventsByMonth, upcomingEvents, pastEvents] =
+      await Promise.all([
+        this.eventRepository.getEventsByCategory(),
+        this.eventRepository.getEventsByMonth(),
+        this.eventRepository.findUpcoming(10),
+        this.eventRepository.findPast(10),
+      ]);
 
     return {
       eventsByCategory,

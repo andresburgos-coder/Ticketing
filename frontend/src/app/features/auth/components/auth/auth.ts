@@ -84,9 +84,10 @@ export class AuthComponent {
             return;
           }
 
-          // Default navigation by role
-          if (user?.role === 'ADMIN') {
-            this.router.navigate(['/admin/dashboard']);
+          // Role-based navigation using AuthService method
+          if (user) {
+            const defaultRoute = this.authService.getDefaultRouteForUser(user);
+            this.router.navigate([defaultRoute]);
           } else {
             this.router.navigate(['/']);
           }

@@ -3,7 +3,9 @@
  */
 export class InsufficientTicketsException extends Error {
   constructor(ticketType: string, requested: number, available: number) {
-    super(`Requested ${requested} ${ticketType} tickets but only ${available} available`);
-    this.name = 'InsufficientTicketsException';
+    super(
+      `Requested ${requested} ${ticketType} tickets but only ${available} available`,
+    );
+    this.name = "InsufficientTicketsException";
   }
 }

@@ -1,7 +1,7 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class AddQRTokenAndStatusToTickets1736281200000 implements MigrationInterface {
-  name = 'AddQRTokenAndStatusToTickets1736281200000';
+  name = "AddQRTokenAndStatusToTickets1736281200000";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Add qr_token column (UUID, unique, not null)

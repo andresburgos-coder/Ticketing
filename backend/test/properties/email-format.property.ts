@@ -1,13 +1,13 @@
-import * as fc from 'fast-check';
-import { Email } from '../../src/domain/value-objects/email.vo';
-import { InvalidEmailException } from '../../src/domain/exceptions/invalid-email.exception';
+import * as fc from "fast-check";
+import { Email } from "../../src/domain/value-objects/email.vo";
+import { InvalidEmailException } from "../../src/domain/exceptions/invalid-email.exception";
 import {
   validEmailArbitrary,
   mixedCaseEmailArbitrary,
   paddedEmailArbitrary,
   invalidEmailArbitrary,
   emailNormalizationArbitrary,
-} from './generators/email.generator';
+} from "./generators/email.generator";
 
 /**
  * Feature: ticket-sales-system
@@ -17,42 +17,46 @@ import {
  * *For any* email address, the Email value object should validate format,
  * normalize to lowercase, trim whitespace, and ensure equality works correctly.
  */
-describe('Property 10: Email Format Validation', () => {
+describe("Property 10: Email Format Validation", () => {
   const PROPERTY_CONFIG: fc.Parameters<unknown> = {
     numRuns: 100,
     verbose: fc.VerbosityLevel.VeryVerbose,
   };
 
-  describe('Email creation and validation', () => {
-    it('should create Email for any valid email format', () => {
+  describe("Email creation and validation", () => {
+    it("should create Email for any valid email format", () => {
       fc.assert(
         fc.property(validEmailArbitrary, (emailString) => {
           // Act & Assert - should not throw
           const email = Email.create(emailString);
-          
+
           // Verify the email was created with normalized value
           expect(email.value).toBe(emailString.trim().toLowerCase());
-          expect(typeof email.value).toBe('string');
+          expect(typeof email.value).toBe("string");
           expect(email.value.length).toBeGreaterThan(0);
         }),
         PROPERTY_CONFIG,
       );
     });
 
-    it('should reject any invalid email format', () => {
+    it("should reject any invalid email format", () => {
       fc.assert(
         fc.property(invalidEmailArbitrary, (invalidEmailString) => {
           // Act & Assert - should throw InvalidEmailException
-          expect(() => Email.create(invalidEmailString)).toThrow(InvalidEmailException);
-          expect(() => Email.create(invalidEmailString)).toThrow('Invalid email format:');
+          expect(() => Email.create(invalidEmailString)).toThrow(
+            InvalidEmailException,
+          );
+          expect(() => Email.create(invalidEmailString)).toThrow(
+            "Invalid email format:",
+          );
         }),
         PROPERTY_CONFIG,
       );
     });
   });
 
-  describe('Email normalization properties', () => {
-    it('should normalize any email to lowercase', () => {
+  describe("Email normalization properties", () => {
+    it("should normalize any email to lowercase", () => {
       fc.assert(
         fc.property(mixedCaseEmailArbitrary, (mixedCaseEmail) => {
           // Act
@@ -66,7 +70,7 @@ describe('Property 10: Email Format Validation', () => {
       );
     });
 
-    it('should trim whitespace from any email', () => {
+    it("should trim whitespace from any email", () => {
       fc.assert(
         fc.property(paddedEmailArbitrary, (paddedEmail) => {
           // Act
@@ -81,7 +85,7 @@ describe('Property 10: Email Format Validation', () => {
       );
     });
 
-    it('should normalize and trim any email consistently', () => {
+    it("should normalize and trim any email consistently", () => {
       fc.assert(
         fc.property(emailNormalizationArbitrary, ({ original, normalized }) => {
           // Act
@@ -95,8 +99,8 @@ describe('Property 10: Email Format Validation', () => {
     });
   });
 
-  describe('Email equality properties', () => {
-    it('should be reflexive: email.equals(email) is always true', () => {
+  describe("Email equality properties", () => {
+    it("should be reflexive: email.equals(email) is always true", () => {
       fc.assert(
         fc.property(validEmailArbitrary, (emailString) => {
           // Arrange
@@ -109,25 +113,29 @@ describe('Property 10: Email Format Validation', () => {
       );
     });
 
-    it('should be symmetric: if email1.equals(email2) then email2.equals(email1)', () => {
+    it("should be symmetric: if email1.equals(email2) then email2.equals(email1)", () => {
       fc.assert(
-        fc.property(validEmailArbitrary, validEmailArbitrary, (emailString1, emailString2) => {
-          // Arrange
-          const email1 = Email.create(emailString1);
-          const email2 = Email.create(emailString2);
+        fc.property(
+          validEmailArbitrary,
+          validEmailArbitrary,
+          (emailString1, emailString2) => {
+            // Arrange
+            const email1 = Email.create(emailString1);
+            const email2 = Email.create(emailString2);
 
-          // Act
-          const equals1to2 = email1.equals(email2);
-          const equals2to1 = email2.equals(email1);
+            // Act
+            const equals1to2 = email1.equals(email2);
+            const equals2to1 = email2.equals(email1);
 
-          // Assert
-          expect(equals1to2).toBe(equals2to1);
-        }),
+            // Assert
+            expect(equals1to2).toBe(equals2to1);
+          },
+        ),
         PROPERTY_CONFIG,
       );
     });
 
-    it('should be transitive: if email1.equals(email2) and email2.equals(email3) then email1.equals(email3)', () => {
+    it("should be transitive: if email1.equals(email2) and email2.equals(email3) then email1.equals(email3)", () => {
       fc.assert(
         fc.property(
           validEmailArbitrary,
@@ -151,7 +159,7 @@ describe('Property 10: Email Format Validation', () => {
       );
     });
 
-    it('should treat normalized emails as equal regardless of original format', () => {
+    it("should treat normalized emails as equal regardless of original format", () => {
       fc.assert(
         fc.property(validEmailArbitrary, (baseEmail) => {
           // Arrange - create variations of the same email
@@ -173,8 +181,8 @@ describe('Property 10: Email Format Validation', () => {
     });
   });
 
-  describe('Email immutability properties', () => {
-    it('should be immutable: Email value cannot be changed after creation', () => {
+  describe("Email immutability properties", () => {
+    it("should be immutable: Email value cannot be changed after creation", () => {
       fc.assert(
         fc.property(validEmailArbitrary, (emailString) => {
           // Arrange
@@ -193,7 +201,7 @@ describe('Property 10: Email Format Validation', () => {
       );
     });
 
-    it('should create new instances: Email.create() always returns different object references', () => {
+    it("should create new instances: Email.create() always returns different object references", () => {
       fc.assert(
         fc.property(validEmailArbitrary, (emailString) => {
           // Act

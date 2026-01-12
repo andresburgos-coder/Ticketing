@@ -1,14 +1,14 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { Event } from '../../domain/entities/event.entity';
-import { TicketConfiguration } from '../../domain/entities/ticket-configuration.entity';
-import { TicketType } from '../../domain/value-objects/ticket-type.vo';
-import { Money } from '../../domain/value-objects/money.vo';
-import { IEventRepository } from '../../domain/interfaces/event-repository.interface';
-import { EVENT_REPOSITORY } from '../../domain/interfaces/repository-tokens';
+import { Injectable, Inject } from "@nestjs/common";
+import { Event } from "../../domain/entities/event.entity";
+import { TicketConfiguration } from "../../domain/entities/ticket-configuration.entity";
+import { TicketType } from "../../domain/value-objects/ticket-type.vo";
+import { Money } from "../../domain/value-objects/money.vo";
+import { IEventRepository } from "../../domain/interfaces/event-repository.interface";
+import { EVENT_REPOSITORY } from "../../domain/interfaces/repository-tokens";
 
 /**
  * UpdateEventUseCase
- * 
+ *
  * Use case for updating existing events.
  * Validates that the event exists and updates its information.
  */
@@ -37,7 +37,7 @@ export class UpdateEventUseCase {
 
   /**
    * Executes the use case to update an existing event.
-   * 
+   *
    * @param input - The input data for updating an event
    * @returns Promise resolving to the updated Event
    * @throws Error if event not found or validation fails
@@ -49,17 +49,18 @@ export class UpdateEventUseCase {
     // Check if event exists
     const existingEvent = await this.eventRepository.findById(input.id);
     if (!existingEvent) {
-      throw new Error('Event not found');
+      throw new Error("Event not found");
     }
 
     // Create updated ticket configurations
     const ticketConfigurations = input.ticketConfigurations.map(
-      config => new TicketConfiguration(
-        config.type,
-        Money.create(config.price, config.currency),
-        config.quantity,
-        config.quantity // Reset available quantity to total when updating
-      )
+      (config) =>
+        new TicketConfiguration(
+          config.type,
+          Money.create(config.price, config.currency),
+          config.quantity,
+          config.quantity, // Reset available quantity to total when updating
+        ),
     );
 
     // Create updated event entity
@@ -71,7 +72,7 @@ export class UpdateEventUseCase {
       input.venueName,
       ticketConfigurations,
       input.imageUrl,
-      input.eventDetails || []
+      input.eventDetails || [],
     );
 
     // Update event
@@ -82,37 +83,39 @@ export class UpdateEventUseCase {
 
   /**
    * Validates the input data for event update.
-   * 
+   *
    * @param input - The input to validate
    * @throws Error if validation fails
    */
   private validateInput(input: UpdateEventInput): void {
     if (!input.id || input.id.trim().length === 0) {
-      throw new Error('Event ID is required');
+      throw new Error("Event ID is required");
     }
 
     if (!input.name || input.name.trim().length === 0) {
-      throw new Error('Event name is required and cannot be empty');
+      throw new Error("Event name is required and cannot be empty");
     }
 
     if (!input.date) {
-      throw new Error('Event date is required');
+      throw new Error("Event date is required");
     }
 
     if (input.date < new Date()) {
-      throw new Error('Event date cannot be in the past');
+      throw new Error("Event date cannot be in the past");
     }
 
     if (!input.location || input.location.trim().length === 0) {
-      throw new Error('Event location is required and cannot be empty');
+      throw new Error("Event location is required and cannot be empty");
     }
-
 
     if (!input.venueName || input.venueName.trim().length === 0) {
-      throw new Error('Venue name is required and cannot be empty');
+      throw new Error("Venue name is required and cannot be empty");
     }
-    if (!input.ticketConfigurations || input.ticketConfigurations.length === 0) {
-      throw new Error('At least one ticket configuration is required');
+    if (
+      !input.ticketConfigurations ||
+      input.ticketConfigurations.length === 0
+    ) {
+      throw new Error("At least one ticket configuration is required");
     }
 
     // Validate each ticket configuration

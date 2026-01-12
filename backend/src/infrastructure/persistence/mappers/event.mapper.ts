@@ -1,15 +1,15 @@
-import { Event } from '../../../domain/entities/event.entity';
-import { TicketConfiguration } from '../../../domain/entities/ticket-configuration.entity';
-import { EventOrmEntity } from '../entities/event.orm-entity';
-import { TicketConfigurationOrmEntity } from '../entities/ticket-configuration.orm-entity';
-import { EventDetailsOrmEntity } from '../entities/event-details.orm-entity';
-import { Money } from '../../../domain/value-objects/money.vo';
+import { Event } from "../../../domain/entities/event.entity";
+import { TicketConfiguration } from "../../../domain/entities/ticket-configuration.entity";
+import { EventOrmEntity } from "../entities/event.orm-entity";
+import { TicketConfigurationOrmEntity } from "../entities/ticket-configuration.orm-entity";
+import { EventDetailsOrmEntity } from "../entities/event-details.orm-entity";
+import { Money } from "../../../domain/value-objects/money.vo";
 
 /**
  * EventMapper
  * Converts between domain Event entities and ORM EventOrmEntity
  * Implements the Mapper pattern for clean separation of concerns
- * 
+ *
  * Requirements: 8.3 (Persistence round-trip)
  */
 export class EventMapper {
@@ -20,20 +20,21 @@ export class EventMapper {
    */
   static toDomain(ormEntity: EventOrmEntity): Event {
     const ticketConfigurations = ormEntity.ticketConfigurations.map((config) =>
-      this.ticketConfigToDomain(config)
+      this.ticketConfigToDomain(config),
     );
     // Map event details if present
-    const details = ormEntity.details?.map((d: EventDetailsOrmEntity) => ({
-      id: d.id,
-      category: d.category,
-      minAge: d.minAge,
-      seating: d.seating,
-      capacity: d.capacity,
-      foodSale: d.foodSale,
-      liquorSale: d.liquorSale,
-      reducedMobilityAccess: d.reducedMobilityAccess,
-      pregnantAccess: d.pregnantAccess,
-    })) || [];
+    const details =
+      ormEntity.details?.map((d: EventDetailsOrmEntity) => ({
+        id: d.id,
+        category: d.category,
+        minAge: d.minAge,
+        seating: d.seating,
+        capacity: d.capacity,
+        foodSale: d.foodSale,
+        liquorSale: d.liquorSale,
+        reducedMobilityAccess: d.reducedMobilityAccess,
+        pregnantAccess: d.pregnantAccess,
+      })) || [];
 
     return new Event(
       ormEntity.id,
@@ -44,7 +45,7 @@ export class EventMapper {
       ticketConfigurations,
       ormEntity.imageUrl,
       details,
-      ormEntity.createdBy
+      ormEntity.createdBy,
     );
   }
 
@@ -62,14 +63,19 @@ export class EventMapper {
     ormEntity.venueName = domainEvent.venueName;
     ormEntity.imageUrl = domainEvent.imageUrl;
     ormEntity.createdBy = domainEvent.createdBy;
-    
+
     // Create ticket configurations with proper relationships
-    ormEntity.ticketConfigurations = domainEvent.ticketConfigurations.map((config) => {
-      const ormConfig = this.ticketConfigToPersistence(config, domainEvent.id);
-      ormConfig.event = ormEntity; // Set the event relationship
-      return ormConfig;
-    });
-    
+    ormEntity.ticketConfigurations = domainEvent.ticketConfigurations.map(
+      (config) => {
+        const ormConfig = this.ticketConfigToPersistence(
+          config,
+          domainEvent.id,
+        );
+        ormConfig.event = ormEntity; // Set the event relationship
+        return ormConfig;
+      },
+    );
+
     // Map event details if present
     if (domainEvent.details && domainEvent.details.length > 0) {
       ormEntity.details = domainEvent.details.map((d: any) => {
@@ -100,19 +106,20 @@ export class EventMapper {
    * @returns Domain TicketConfiguration
    */
   private static ticketConfigToDomain(
-    ormConfig: TicketConfigurationOrmEntity
+    ormConfig: TicketConfigurationOrmEntity,
   ): TicketConfiguration {
     // Handle decimal values that may come as strings from the database
-    const price = typeof ormConfig.price === 'string' 
-      ? parseFloat(ormConfig.price) 
-      : ormConfig.price;
-    
+    const price =
+      typeof ormConfig.price === "string"
+        ? parseFloat(ormConfig.price)
+        : ormConfig.price;
+
     return new TicketConfiguration(
       ormConfig.type,
-      Money.create(price, ormConfig.currency || 'USD'),
+      Money.create(price, ormConfig.currency || "USD"),
       ormConfig.totalQuantity,
       ormConfig.availableQuantity,
-      ormConfig.id // Preserve the ID
+      ormConfig.id, // Preserve the ID
     );
   }
 
@@ -124,15 +131,15 @@ export class EventMapper {
    */
   private static ticketConfigToPersistence(
     domainConfig: TicketConfiguration,
-    eventId: string
+    eventId: string,
   ): TicketConfigurationOrmEntity {
     const ormConfig = new TicketConfigurationOrmEntity();
-    
+
     // Preserve the ID if it exists (for updates)
     if (domainConfig.id) {
       ormConfig.id = domainConfig.id;
     }
-    
+
     ormConfig.type = domainConfig.type;
     ormConfig.price = domainConfig.price.amount;
     ormConfig.currency = domainConfig.price.currency;

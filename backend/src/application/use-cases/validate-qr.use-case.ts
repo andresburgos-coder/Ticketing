@@ -1,14 +1,17 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { ITicketRepository } from '../../domain/interfaces/ticket-repository.interface';
-import { IEventRepository } from '../../domain/interfaces/event-repository.interface';
-import { TICKET_REPOSITORY, EVENT_REPOSITORY } from '../../domain/interfaces/repository-tokens';
-import { TicketStatus } from '../../domain/entities/ticket.entity';
-import { ValidateQRResponse } from '../dto/validate-qr.dto';
+import { Injectable, Inject } from "@nestjs/common";
+import { ITicketRepository } from "../../domain/interfaces/ticket-repository.interface";
+import { IEventRepository } from "../../domain/interfaces/event-repository.interface";
+import {
+  TICKET_REPOSITORY,
+  EVENT_REPOSITORY,
+} from "../../domain/interfaces/repository-tokens";
+import { TicketStatus } from "../../domain/entities/ticket.entity";
+import { ValidateQRResponse } from "../dto/validate-qr.dto";
 
 /**
  * ValidateQRUseCase
  * Handles QR code validation at event entrance
- * 
+ *
  * Requirements:
  * - Find ticket by QR token
  * - Validate ticket exists and is PAID
@@ -31,11 +34,11 @@ export class ValidateQRUseCase {
   }): Promise<ValidateQRResponse> {
     // 1. Find ticket by QR token
     const ticket = await this.ticketRepository.findByQRToken(params.qrToken);
-    
+
     if (!ticket) {
       return {
         valid: false,
-        message: 'Ticket not found',
+        message: "Ticket not found",
       };
     }
 
@@ -43,7 +46,7 @@ export class ValidateQRUseCase {
     if (ticket.eventId !== params.eventId) {
       return {
         valid: false,
-        message: 'Ticket is not valid for this event',
+        message: "Ticket is not valid for this event",
       };
     }
 
@@ -65,7 +68,7 @@ export class ValidateQRUseCase {
     if (ticket.status !== TicketStatus.PAID) {
       return {
         valid: false,
-        message: 'Ticket is not in PAID status',
+        message: "Ticket is not in PAID status",
       };
     }
 
@@ -74,7 +77,7 @@ export class ValidateQRUseCase {
     if (!event) {
       return {
         valid: false,
-        message: 'Event not found',
+        message: "Event not found",
       };
     }
 
@@ -83,7 +86,7 @@ export class ValidateQRUseCase {
     if (event.date < now) {
       return {
         valid: false,
-        message: 'Event has already ended',
+        message: "Event has already ended",
       };
     }
 
@@ -94,7 +97,7 @@ export class ValidateQRUseCase {
     // 6. Return success response
     return {
       valid: true,
-      message: 'Ticket validated successfully',
+      message: "Ticket validated successfully",
       ticket: {
         id: usedTicket.id,
         code: usedTicket.code,

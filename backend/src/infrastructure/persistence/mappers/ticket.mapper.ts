@@ -1,13 +1,13 @@
-import { Ticket } from '../../../domain/entities/ticket.entity';
-import { TicketOrmEntity } from '../entities/ticket.orm-entity';
-import { Email } from '../../../domain/value-objects/email.vo';
-import { Money } from '../../../domain/value-objects/money.vo';
+import { Ticket } from "../../../domain/entities/ticket.entity";
+import { TicketOrmEntity } from "../entities/ticket.orm-entity";
+import { Email } from "../../../domain/value-objects/email.vo";
+import { Money } from "../../../domain/value-objects/money.vo";
 
 /**
  * TicketMapper
  * Converts between domain Ticket entities and ORM TicketOrmEntity
  * Implements the Mapper pattern for clean separation of concerns
- * 
+ *
  * Requirements: 8.3 (Persistence round-trip)
  */
 export class TicketMapper {
@@ -18,9 +18,10 @@ export class TicketMapper {
    */
   static toDomain(ormEntity: TicketOrmEntity): Ticket {
     // Handle decimal values that may come as strings from the database
-    const price = typeof ormEntity.price === 'string' 
-      ? parseFloat(ormEntity.price) 
-      : ormEntity.price;
+    const price =
+      typeof ormEntity.price === "string"
+        ? parseFloat(ormEntity.price)
+        : ormEntity.price;
 
     return new Ticket(
       ormEntity.id,
@@ -32,7 +33,7 @@ export class TicketMapper {
       ormEntity.purchaseDate,
       ormEntity.qrToken,
       ormEntity.status,
-      ormEntity.usedAt
+      ormEntity.usedAt,
     );
   }
 

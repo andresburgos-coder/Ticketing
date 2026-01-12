@@ -1,7 +1,7 @@
-import { IsOptional, IsString, IsNumber, IsEnum, Min } from 'class-validator';
-import { Type } from 'class-transformer';
-import { ApiProperty } from '@nestjs/swagger';
-import { UserRole } from '../../domain/enums/user-role.enum';
+import { IsOptional, IsString, IsNumber, IsEnum, Min } from "class-validator";
+import { Type } from "class-transformer";
+import { ApiProperty } from "@nestjs/swagger";
+import { UserRole } from "../../domain/enums/user-role.enum";
 
 export class GetUsersQueryDto {
   @ApiProperty({ required: false, example: 1 })
@@ -18,7 +18,7 @@ export class GetUsersQueryDto {
   @Min(1)
   limit?: number = 10;
 
-  @ApiProperty({ required: false, example: 'john@example.com' })
+  @ApiProperty({ required: false, example: "john@example.com" })
   @IsOptional()
   @IsString()
   email?: string;
@@ -28,7 +28,7 @@ export class GetUsersQueryDto {
   @IsEnum(UserRole)
   role?: UserRole;
 
-  @ApiProperty({ required: false, example: 'John' })
+  @ApiProperty({ required: false, example: "John" })
   @IsOptional()
   @IsString()
   search?: string;

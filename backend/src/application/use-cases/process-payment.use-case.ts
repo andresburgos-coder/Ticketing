@@ -1,20 +1,28 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { Reservation } from '../../domain/entities/reservation.entity';
-import { Ticket } from '../../domain/entities/ticket.entity';
-import { IPaymentGateway, PaymentResult, PaymentData } from '../../domain/interfaces/payment-gateway.interface';
-import { IReservationRepository } from '../../domain/interfaces/reservation-repository.interface';
-import { ITicketRepository } from '../../domain/interfaces/ticket-repository.interface';
-import { IEventRepository } from '../../domain/interfaces/event-repository.interface';
-import { EVENT_REPOSITORY, RESERVATION_REPOSITORY, TICKET_REPOSITORY } from '../../domain/interfaces/repository-tokens';
-import { v4 as uuidv4 } from 'uuid';
+import { Injectable, Inject } from "@nestjs/common";
+import { Reservation } from "../../domain/entities/reservation.entity";
+import { Ticket } from "../../domain/entities/ticket.entity";
+import {
+  IPaymentGateway,
+  PaymentResult,
+  PaymentData,
+} from "../../domain/interfaces/payment-gateway.interface";
+import { IReservationRepository } from "../../domain/interfaces/reservation-repository.interface";
+import { ITicketRepository } from "../../domain/interfaces/ticket-repository.interface";
+import { IEventRepository } from "../../domain/interfaces/event-repository.interface";
+import {
+  EVENT_REPOSITORY,
+  RESERVATION_REPOSITORY,
+  TICKET_REPOSITORY,
+} from "../../domain/interfaces/repository-tokens";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * ProcessPaymentUseCase
- * 
+ *
  * Use case for processing payments for ticket reservations.
  * Implements atomic transaction: validate payment → process → confirm/cancel → generate/release tickets.
  * Follows the Single Responsibility Principle - only responsible for payment processing logic.
- * 
+ *
  * Requirements: 4.1, 4.2, 4.3, 4.4, 4.5
  * - 4.1: Process payment with amount validation
  * - 4.2: Successful payment updates payment status to COMPLETED
@@ -38,19 +46,19 @@ export interface ProcessPaymentOutput {
 @Injectable()
 export class ProcessPaymentUseCase {
   constructor(
-    @Inject('IPaymentGateway')
+    @Inject("IPaymentGateway")
     private readonly paymentGateway: IPaymentGateway,
     @Inject(RESERVATION_REPOSITORY)
     private readonly reservationRepository: IReservationRepository,
     @Inject(TICKET_REPOSITORY)
     private readonly ticketRepository: ITicketRepository,
     @Inject(EVENT_REPOSITORY)
-    private readonly eventRepository: IEventRepository
+    private readonly eventRepository: IEventRepository,
   ) {}
 
   /**
    * Executes the use case to process a payment for a reservation.
-   * 
+   *
    * Atomic transaction flow:
    * 1. Validate input and load reservation
    * 2. Validate payment amount matches reservation total
@@ -65,7 +73,7 @@ export class ProcessPaymentUseCase {
    *    - Cancel reservation
    *    - Release tickets back to event availability
    *    - Update reservation status
-   * 
+   *
    * @param input - The input data for processing payment
    * @returns Promise resolving to ProcessPaymentOutput with success/failure info
    * @throws Error if validation fails or repositories fail
@@ -75,24 +83,26 @@ export class ProcessPaymentUseCase {
     this.validateInput(input);
 
     // Load reservation from repository
-    const reservation = await this.reservationRepository.findById(input.reservationId);
+    const reservation = await this.reservationRepository.findById(
+      input.reservationId,
+    );
     if (!reservation) {
-      throw new Error('Reservation not found');
+      throw new Error("Reservation not found");
     }
 
     // Validate payment amount matches reservation total
     if (input.amount !== reservation.totalAmount.amount) {
-      throw new Error('Payment amount does not match reservation total');
+      throw new Error("Payment amount does not match reservation total");
     }
 
     if (input.currency !== reservation.totalAmount.currency) {
-      throw new Error('Payment currency does not match reservation currency');
+      throw new Error("Payment currency does not match reservation currency");
     }
 
     // Load event to access ticket configuration
     const event = await this.eventRepository.findById(reservation.eventId);
     if (!event) {
-      throw new Error('Event not found');
+      throw new Error("Event not found");
     }
 
     // Prepare payment data
@@ -117,14 +127,14 @@ export class ProcessPaymentUseCase {
       return await this.handleSuccessfulPayment(
         reservation,
         event,
-        paymentResult.transactionId
+        paymentResult.transactionId,
       );
     } else {
       return await this.handleFailedPayment(
         reservation,
         event,
         paymentResult.errorCode,
-        paymentResult.errorMessage
+        paymentResult.errorMessage,
       );
     }
   }
@@ -134,13 +144,13 @@ export class ProcessPaymentUseCase {
    * - Confirms reservation
    * - Generates tickets
    * - Persists tickets and updates reservation
-   * 
+   *
    * Requirements: 4.2, 4.3, 4.4
    */
   private async handleSuccessfulPayment(
     reservation: Reservation,
     event: any,
-    transactionId: string
+    transactionId: string,
   ): Promise<ProcessPaymentOutput> {
     // Confirm reservation (changes state to CONFIRMED)
     reservation.confirm();
@@ -152,7 +162,9 @@ export class ProcessPaymentUseCase {
     await this.ticketRepository.saveMany(tickets);
 
     // Update reservation status in repository
-    await this.reservationRepository.update(reservation.id, { status: 'CONFIRMED' });
+    await this.reservationRepository.update(reservation.id, {
+      status: "CONFIRMED",
+    });
 
     return {
       success: true,
@@ -165,14 +177,14 @@ export class ProcessPaymentUseCase {
    * - Cancels reservation
    * - Releases tickets back to event
    * - Updates reservation and event
-   * 
+   *
    * Requirements: 4.5, 5.1, 5.2
    */
   private async handleFailedPayment(
     reservation: Reservation,
     event: any,
     errorCode: string,
-    errorMessage: string
+    errorMessage: string,
   ): Promise<ProcessPaymentOutput> {
     // Cancel reservation (changes state to CANCELLED)
     reservation.cancel();
@@ -181,7 +193,9 @@ export class ProcessPaymentUseCase {
     event.releaseTickets(reservation.ticketType, reservation.quantity.value);
 
     // Update reservation status in repository
-    await this.reservationRepository.update(reservation.id, { status: 'CANCELLED' });
+    await this.reservationRepository.update(reservation.id, {
+      status: "CANCELLED",
+    });
 
     // Update event with released tickets
     await this.eventRepository.update(event);
@@ -196,17 +210,19 @@ export class ProcessPaymentUseCase {
   /**
    * Generates tickets for a successful payment
    * Creates one ticket per quantity with unique code
-   * 
+   *
    * Requirements: 4.4 - Generate tickets with unique code, event, type and buyer data
    */
   private generateTickets(reservation: Reservation, event: any): Ticket[] {
     const tickets: Ticket[] = [];
     const ticketConfig = event.ticketConfigurations.find(
-      (config: any) => config.type === reservation.ticketType
+      (config: any) => config.type === reservation.ticketType,
     );
 
     if (!ticketConfig) {
-      throw new Error(`Ticket configuration for type ${reservation.ticketType} not found`);
+      throw new Error(
+        `Ticket configuration for type ${reservation.ticketType} not found`,
+      );
     }
 
     for (let i = 0; i < reservation.quantity.value; i++) {
@@ -218,7 +234,7 @@ export class ProcessPaymentUseCase {
         reservation.buyerEmail,
         ticketConfig.price,
         new Date(),
-        uuidv4() // QR token
+        uuidv4(), // QR token
       );
       tickets.push(ticket);
     }
@@ -238,21 +254,25 @@ export class ProcessPaymentUseCase {
 
   /**
    * Validates the input data for payment processing
-   * 
+   *
    * @param input - The input to validate
    * @throws Error if validation fails
    */
   private validateInput(input: ProcessPaymentInput): void {
     if (!input.reservationId || input.reservationId.trim().length === 0) {
-      throw new Error('Reservation ID is required and cannot be empty');
+      throw new Error("Reservation ID is required and cannot be empty");
     }
 
-    if (input.amount === undefined || input.amount === null || input.amount < 0) {
-      throw new Error('Amount must be a non-negative number');
+    if (
+      input.amount === undefined ||
+      input.amount === null ||
+      input.amount < 0
+    ) {
+      throw new Error("Amount must be a non-negative number");
     }
 
     if (!input.currency || input.currency.trim().length !== 3) {
-      throw new Error('Currency must be a 3-letter code');
+      throw new Error("Currency must be a 3-letter code");
     }
   }
 }

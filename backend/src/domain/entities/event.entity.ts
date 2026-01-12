@@ -1,6 +1,6 @@
-import { TicketConfiguration } from './ticket-configuration.entity';
-import { TicketType } from '../value-objects/ticket-type.vo';
-import { TicketTypeNotFoundException } from '../exceptions/ticket-type-not-found.exception';
+import { TicketConfiguration } from "./ticket-configuration.entity";
+import { TicketType } from "../value-objects/ticket-type.vo";
+import { TicketTypeNotFoundException } from "../exceptions/ticket-type-not-found.exception";
 
 /**
  * Event Entity - Aggregate Root.
@@ -34,7 +34,9 @@ export class Event {
    * @returns The available quantity, or 0 if the ticket type doesn't exist
    */
   getAvailability(ticketType: TicketType): number {
-    const config = this._ticketConfigurations.find(c => c.type === ticketType);
+    const config = this._ticketConfigurations.find(
+      (c) => c.type === ticketType,
+    );
     return config?.availableQuantity ?? 0;
   }
 
@@ -46,7 +48,9 @@ export class Event {
    * @throws InsufficientTicketsException if not enough tickets are available
    */
   reserveTickets(ticketType: TicketType, quantity: number): void {
-    const config = this._ticketConfigurations.find(c => c.type === ticketType);
+    const config = this._ticketConfigurations.find(
+      (c) => c.type === ticketType,
+    );
     if (!config) {
       throw new TicketTypeNotFoundException(ticketType);
     }
@@ -60,7 +64,9 @@ export class Event {
    * @param quantity - The quantity to release
    */
   releaseTickets(ticketType: TicketType, quantity: number): void {
-    const config = this._ticketConfigurations.find(c => c.type === ticketType);
+    const config = this._ticketConfigurations.find(
+      (c) => c.type === ticketType,
+    );
     if (config) {
       config.incrementAvailability(quantity);
     }
