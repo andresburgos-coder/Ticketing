@@ -135,6 +135,7 @@ jobs:
 
       # SonarQube Scan
       - name: 🔬 Análisis SonarQube Cloud
+        if: secrets.SONAR_TOKEN != ''
         uses: SonarSource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -145,6 +146,7 @@ jobs:
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
 
       - name: 🚦 Verificar Quality Gate
+        if: secrets.SONAR_TOKEN != ''
         uses: sonarsource/sonarqube-quality-gate-action@master
         timeout-minutes: 5
         env:
