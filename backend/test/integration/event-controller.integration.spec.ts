@@ -48,7 +48,7 @@ class MockMinioService {
       host: "localhost",
       port: 5433,
       username: "test_user",
-      password: "test_pass",
+      password: process.env.TEST_PASS,
       database: "ticket_sales_test",
       entities: [
         EventOrmEntity,

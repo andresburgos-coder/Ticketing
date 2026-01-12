@@ -18,7 +18,7 @@ export class RegisterDto {
 
   @ApiProperty({
     description: "User password (minimum 8 characters)",
-    example: "SecurePass123",
+    example: "{{TEST_PASSWORD}}",
     minLength: 8,
   })
   @IsString()

@@ -1,3 +1,5 @@
+// Utiliza variable de entorno para la contraseña de test
+const TEST_PASSWORD = process.env.TEST_PASSWORD || "TestPassword123";
 import { User } from "./user.entity";
 import { Email } from "../value-objects/email.vo";
 
@@ -5,7 +7,7 @@ describe("User Entity", () => {
   describe("constructor", () => {
     it("should create User with valid data", () => {
       const email = Email.create("user@example.com");
-      const password = "SecurePass123";
+      const password = TEST_PASSWORD;
 
       const user = new User(
         "user-123",
@@ -27,7 +29,7 @@ describe("User Entity", () => {
   describe("hashPassword", () => {
     it("should hash password correctly", async () => {
       const email = Email.create("user@example.com");
-      const password = "SecurePass123";
+      const password = TEST_PASSWORD;
 
       const user = new User(
         "user-123",
@@ -50,7 +52,7 @@ describe("User Entity", () => {
 
     it("should produce different hashes for the same password", async () => {
       const email = Email.create("user@example.com");
-      const password = "SecurePass123";
+      const password = TEST_PASSWORD;
 
       const user = new User(
         "user-123",
@@ -72,7 +74,7 @@ describe("User Entity", () => {
   describe("verifyPassword", () => {
     it("should return true when password is correct", async () => {
       const email = Email.create("user@example.com");
-      const password = "SecurePass123";
+      const password = TEST_PASSWORD;
 
       const user = new User(
         "user-123",
@@ -91,7 +93,7 @@ describe("User Entity", () => {
 
     it("should return false when password is incorrect", async () => {
       const email = Email.create("user@example.com");
-      const password = "SecurePass123";
+      const password = TEST_PASSWORD;
       const wrongPassword = "WrongPassword456";
 
       const user = new User(
@@ -111,7 +113,7 @@ describe("User Entity", () => {
 
     it("should return false when comparing with empty password", async () => {
       const email = Email.create("user@example.com");
-      const password = "SecurePass123";
+      const password = TEST_PASSWORD;
 
       const user = new User(
         "user-123",
@@ -132,7 +134,7 @@ describe("User Entity", () => {
   describe("integration tests", () => {
     it("should hash and verify password correctly in sequence", async () => {
       const email = Email.create("user@example.com");
-      const password = "SecurePass123";
+      const password = TEST_PASSWORD;
 
       const user = new User(
         "user-123",

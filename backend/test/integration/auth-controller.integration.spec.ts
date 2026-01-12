@@ -1,3 +1,5 @@
+// Utiliza variable de entorno para la contraseña de test
+const TEST_PASSWORD = process.env.TEST_PASSWORD || "TestPassword123";
 import { Test, TestingModule } from "@nestjs/testing";
 import { INestApplication, ValidationPipe, Module } from "@nestjs/common";
 import * as request from "supertest";
@@ -17,7 +19,7 @@ import { USER_REPOSITORY } from "../../src/domain/interfaces/repository-tokens";
       host: "localhost",
       port: 5433,
       username: "test_user",
-      password: "test_pass",
+      password: process.env.TEST_PASS,
       database: "ticket_sales_test",
       entities: [UserOrmEntity],
       synchronize: true,
@@ -87,7 +89,7 @@ describe("AuthController Integration Tests", () => {
     it("should create user and return 201", async () => {
       const registerDto = {
         email: "newuser@example.com",
-        password: "SecurePass123",
+        password: TEST_PASSWORD,
         firstName: "John",
         lastName: "Doe",
       };
@@ -96,7 +98,7 @@ describe("AuthController Integration Tests", () => {
         .post("/auth/register")
         .send(registerDto);
 
-      expect(response.status).toBe(201);
+              password: "TestPassword123",
       expect(response.body).toHaveProperty("accessToken");
       expect(response.body).toHaveProperty("refreshToken");
       expect(response.body.accessToken).toBeTruthy();
@@ -110,7 +112,7 @@ describe("AuthController Integration Tests", () => {
 
     it("should return 400 when email is missing", async () => {
       const registerDto = {
-        password: "SecurePass123",
+        password: TEST_PASSWORD,
         firstName: "John",
         lastName: "Doe",
       };
@@ -119,7 +121,7 @@ describe("AuthController Integration Tests", () => {
         .post("/auth/register")
         .send(registerDto)
         .expect(400);
-    });
+              password: "TestPassword123",
 
     it("should return 400 when password is too short", async () => {
       const registerDto = {
@@ -133,12 +135,12 @@ describe("AuthController Integration Tests", () => {
         .post("/auth/register")
         .send(registerDto)
         .expect(400);
-    });
+              password: "TestPassword123",
 
     it("should return 409 when user already exists", async () => {
       const registerDto = {
         email: "existing@example.com",
-        password: "SecurePass123",
+        password: TEST_PASSWORD,
         firstName: "John",
         lastName: "Doe",
       };
@@ -158,12 +160,12 @@ describe("AuthController Integration Tests", () => {
     });
   });
 
-  describe("POST /auth/login", () => {
+              password: "TestPassword123",
     beforeEach(async () => {
       // Create a user for login tests
       const registerDto = {
         email: "testuser@example.com",
-        password: "SecurePass123",
+        password: TEST_PASSWORD,
         firstName: "Test",
         lastName: "User",
       };
@@ -171,12 +173,12 @@ describe("AuthController Integration Tests", () => {
       await request(app.getHttpServer())
         .post("/auth/register")
         .send(registerDto);
-    }, 10000); // Increase timeout for user creation
+              password: "TestPassword123",
 
     it("should return tokens with 200 on valid credentials", async () => {
       const loginDto = {
         email: "testuser@example.com",
-        password: "SecurePass123",
+        password: TEST_PASSWORD,
       };
 
       const response = await request(app.getHttpServer())
@@ -190,19 +192,19 @@ describe("AuthController Integration Tests", () => {
       expect(response.body.refreshToken).toBeTruthy();
       expect(response.body.user).toHaveProperty("id");
       expect(response.body.user.email).toBe("testuser@example.com");
-    });
+              password: "TestPassword123",
 
     it("should return 401 with invalid email", async () => {
       const loginDto = {
         email: "nonexistent@example.com",
-        password: "SecurePass123",
+        password: TEST_PASSWORD,
       };
 
       const response = await request(app.getHttpServer())
         .post("/auth/login")
         .send(loginDto);
 
-      expect(response.status).toBe(401);
+              password: "TestPassword123",
     });
 
     it("should return 401 with invalid password", async () => {
@@ -217,10 +219,10 @@ describe("AuthController Integration Tests", () => {
 
       expect(response.status).toBe(401);
     });
-
+              password: "TestPassword123",
     it("should return 400 when email is missing", async () => {
       const loginDto = {
-        password: "SecurePass123",
+        password: TEST_PASSWORD,
       };
 
       await request(app.getHttpServer())
@@ -237,7 +239,7 @@ describe("AuthController Integration Tests", () => {
       // Create a user and get tokens
       const registerDto = {
         email: "refreshuser@example.com",
-        password: "SecurePass123",
+        password: TEST_PASSWORD,
         firstName: "Refresh",
         lastName: "User",
       };

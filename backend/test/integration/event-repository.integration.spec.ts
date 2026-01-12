@@ -25,7 +25,7 @@ describe("TypeOrmEventRepository Integration Tests", () => {
       host: process.env.TEST_DATABASE_HOST ?? "localhost",
       port: parseInt(process.env.TEST_DATABASE_PORT ?? "5433", 10),
       username: process.env.TEST_DATABASE_USER ?? "test_user",
-      password: process.env.TEST_DATABASE_PASSWORD ?? "test_pass",
+      password: process.env.TEST_PASS,
       database: process.env.TEST_DATABASE_NAME ?? "ticket_sales_test",
       entities: [
         EventOrmEntity,
