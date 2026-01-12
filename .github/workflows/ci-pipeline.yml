@@ -135,7 +135,6 @@ jobs:
 
       # SonarQube Scan
       - name: 🔬 Análisis SonarQube Cloud
-        if: ${{ secrets.SONAR_TOKEN != '' }}
         uses: SonarSource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
