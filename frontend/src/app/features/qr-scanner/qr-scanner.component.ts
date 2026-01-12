@@ -54,9 +54,9 @@ export class QRScannerComponent implements OnInit, OnDestroy {
   readonly currentUser = this.authService.currentUser;
 
   // Computed
-  readonly canScan = computed(() => 
-    this.cameraSupported() && 
-    this.selectedEventId() && 
+  readonly canScan = computed(() =>
+    this.cameraSupported() &&
+    this.selectedEventId() &&
     !this.isLoading()
   );
 
@@ -86,13 +86,13 @@ export class QRScannerComponent implements OnInit, OnDestroy {
   private async checkCameraSupport() {
     const supported = await this.qrScannerService.checkCameraSupport();
     this.cameraSupported.set(supported);
-    
+
     if (!supported) {
       const isHttps = window.location.protocol === 'https:';
       const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      
+
       let message = 'No se puede acceder a la cámara. ';
-      
+
       if (!isHttps && !isLocalhost) {
         message += 'Necesitas usar HTTPS para acceder a la cámara desde otro dispositivo. ';
         message += 'Para desarrollo, usa: npm run start:ssl';
@@ -101,7 +101,7 @@ export class QRScannerComponent implements OnInit, OnDestroy {
       } else {
         message += 'Verifica que tu dispositivo tenga cámara y permisos habilitados.';
       }
-      
+
       this.toastService.show(message, 'warning');
     }
   }
@@ -139,7 +139,7 @@ export class QRScannerComponent implements OnInit, OnDestroy {
 
       // Get camera stream
       this.stream = await navigator.mediaDevices.getUserMedia({
-        video: { 
+        video: {
           facingMode: 'environment', // Prefer back camera
           width: { ideal: 1280 },
           height: { ideal: 720 }
@@ -154,7 +154,7 @@ export class QRScannerComponent implements OnInit, OnDestroy {
 
       // Initialize QR Scanner
       await this.initQRScanner();
-      
+
       this.isCameraActive.set(true);
       this.isLoading.set(false);
       this.toastService.show('Cámara iniciada. Apunta al código QR', 'success');
@@ -206,13 +206,13 @@ export class QRScannerComponent implements OnInit, OnDestroy {
     try {
       // Validate the QR token
       const response = await this.qrScannerService.validateQR(
-        qrData, 
+        qrData,
         this.selectedEventId()
       ).toPromise();
 
       if (response) {
         this.addScanResult(response);
-        
+
         if (response.valid) {
           this.toastService.show('¡Entrada válida! Acceso permitido', 'success');
           // Play success sound (optional)
@@ -227,7 +227,7 @@ export class QRScannerComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Error validating QR:', error);
       this.toastService.show('Error al validar el código QR', 'error');
-      
+
       // Create a manual scan result for connection errors
       const errorResult: ScanResult = {
         success: false,
@@ -257,7 +257,7 @@ export class QRScannerComponent implements OnInit, OnDestroy {
   private playSound(type: 'success' | 'error') {
     try {
       const audio = new Audio();
-      audio.src = type === 'success' 
+      audio.src = type === 'success'
         ? 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTuR2O/Eeyw='
         : 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTuR2O/Eeyw=';
       audio.volume = 0.3;

@@ -28,18 +28,35 @@ export class WebSocketService {
   private connect(): void {
     try {
       // Use baseUrl instead of apiUrl for Socket.IO connection
-      const baseUrl = environment.baseUrl || environment.apiUrl.replace('/api', '');
-      console.log('[WebSocket] Connecting to:', baseUrl);
+      let baseUrl = environment.baseUrl || environment.apiUrl.replace('/api', '');
+      
+      // Detectar si estamos usando una IP específica
+      const hostname = window.location.hostname;
+      const isSpecificIP = hostname !== 'localhost' && 
+                          hostname !== '127.0.0.1' && 
+                          /^\d+\.\d+\.\d+\.\d+$/.test(hostname);
+      
+      // Si es una IP específica, forzar HTTP
+      if (isSpecificIP && baseUrl.startsWith('https://')) {
+        baseUrl = baseUrl.replace('https://', 'http://');
+      }
 
       this.socket = io(baseUrl, {
         transports: ['websocket', 'polling'],
         reconnection: true,
         reconnectionDelay: 1000,
         reconnectionAttempts: 5,
+        forceNew: true,
+        // Para IPs específicas, nunca usar SSL
+        secure: !isSpecificIP && baseUrl.startsWith('https://'),
+        rejectUnauthorized: false, // Para desarrollo con certificados auto-firmados
+        // Configuración adicional para IPs específicas
+        upgrade: true,
+        rememberUpgrade: false
       });
 
       this.socket.on('connect', () => {
-        console.log('[WebSocket] Connected - Socket ID:', this.socket?.id);
+        console.log('[WebSocket] Connected');
         this.isConnected.set(true);
       });
 

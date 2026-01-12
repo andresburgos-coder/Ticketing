@@ -1,6 +1,7 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { Event } from '../models/event.model';
 import { environment } from '../../environments/environment';
 
@@ -10,14 +11,19 @@ import { environment } from '../../environments/environment';
 export class Events {
   private apiUrl = `${environment.apiUrl}/events`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   getEvents(): Observable<Event[]> {
-    return this.http.get<Event[]>(this.apiUrl);
+    return this.http.get<Event[]>(this.apiUrl).pipe(
+      catchError(this.handleError('getEvents'))
+    );
   }
 
   getEvent(id: number | string): Observable<Event> {
-    return this.http.get<Event>(`${this.apiUrl}/${id}`);
+    const url = `${this.apiUrl}/${id}`;
+    return this.http.get<Event>(url).pipe(
+      catchError(this.handleError('getEvent'))
+    );
   }
 
   /**
@@ -26,7 +32,9 @@ export class Events {
    * @returns Observable<Event> - The created event with imageUrl
    */
   createEvent(formData: FormData): Observable<Event> {
-    return this.http.post<Event>(this.apiUrl, formData);
+    return this.http.post<Event>(this.apiUrl, formData).pipe(
+      catchError(this.handleError('createEvent'))
+    );
   }
 
   /**
@@ -36,6 +44,26 @@ export class Events {
    * @returns Observable<Event> - The updated event
    */
   updateEvent(id: string | number, formData: FormData): Observable<Event> {
-    return this.http.put<Event>(`${this.apiUrl}/${id}`, formData);
+    return this.http.put<Event>(`${this.apiUrl}/${id}`, formData).pipe(
+      catchError(this.handleError('updateEvent'))
+    );
+  }
+
+  private handleError(operation = 'operation') {
+    return (error: HttpErrorResponse): Observable<never> => {
+      console.error(`[Events Service] ${operation} failed:`, error.message);
+      
+      let errorMessage = 'Unknown error occurred';
+      
+      if (error.error instanceof ErrorEvent) {
+        // Client-side error
+        errorMessage = `Client error: ${error.error.message}`;
+      } else {
+        // Server-side error
+        errorMessage = `Server error: ${error.status} ${error.statusText}`;
+      }
+      
+      return throwError(() => new Error(errorMessage));
+    };
   }
 }

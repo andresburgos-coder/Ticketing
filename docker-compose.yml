@@ -1,4 +1,20 @@
 services:
+  # Proxy reverso NGINX con HTTPS
+  nginx:
+    image: nginx:alpine
+    container_name: ticket-nginx
+    ports:
+      - "0.0.0.0:443:443"
+      - "0.0.0.0:80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx-ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - ticket-network
+
   postgres:
     image: postgres:15-alpine
     container_name: ticket-db
@@ -7,7 +23,7 @@ services:
       POSTGRES_PASSWORD: ticket_pass
       POSTGRES_DB: ticket_sales
     ports:
-      - "5432:5432"
+      - "0.0.0.0:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -38,8 +54,9 @@ services:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin123
       MINIO_EXTERNAL_URL: http://127.0.0.1:9001
-    ports:
-      - "3000:3000"
+    # Puerto interno solamente - NGINX se encargará del tráfico externo
+    # ports:
+    #   - "0.0.0.0:3000:3000"
     volumes:
       - ./backend/src:/app/src
     depends_on:
@@ -61,8 +78,9 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: ticket-frontend
-    ports:
-      - "4200:4200"
+    # Puerto interno solamente - NGINX se encargará del tráfico externo 
+    # ports:
+    #   - "0.0.0.0:4200:4200"
     volumes:
       - ./frontend/src:/app/src
       - ./frontend/public:/app/public
@@ -70,7 +88,7 @@ services:
       - backend
     networks:
       - ticket-network
-    command: npm run start -- --host 0.0.0.0
+    command: npm run start -- --host 0.0.0.0 --configuration docker
 
   test-db:
     image: postgres:15-alpine
@@ -94,8 +112,8 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin123
     ports:
-      - "9000:9000"      # API endpoint
-      - "9001:9001"      # Console Web UI
+      - "0.0.0.0:9000:9000"      # API endpoint
+      - "0.0.0.0:9001:9001"      # Console Web UI
     volumes:
       - minio_data:/minio_data
     command: server /minio_data --console-address ":9001"
@@ -116,7 +134,7 @@ services:
       PGADMIN_DEFAULT_PASSWORD: Admin123!
       PGADMIN_CONFIG_SERVER_MODE: 'False'
     ports:
-      - "5050:80"
+      - "0.0.0.0:5050:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     networks:
@@ -135,7 +153,7 @@ services:
       PORT: 3001
       UPLOAD_DIR: /uploads
     ports:
-      - "3001:3001"
+      - "0.0.0.0:3001:3001"
     volumes:
       - file_uploads:/uploads
       - ./file-server/server.js:/app/server.js

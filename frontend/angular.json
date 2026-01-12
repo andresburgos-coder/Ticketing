@@ -61,6 +61,17 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": false
+            },
+            "docker": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.docker.ts"
+                }
+              ],
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": false
             }
           },
           "defaultConfiguration": "production"
@@ -68,7 +79,10 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "options": {
-            "hmr": false
+            "hmr": false,
+            "host": "0.0.0.0",
+            "port": 4200,
+            "allowedHosts": true
           },
           "configurations": {
             "production": {
@@ -76,6 +90,12 @@
             },
             "development": {
               "buildTarget": "frontend:build:development"
+            },
+            "docker": {
+              "buildTarget": "frontend:build:docker",
+              "host": "0.0.0.0",
+              "port": 4200,
+              "allowedHosts": true
             }
           },
           "defaultConfiguration": "development"

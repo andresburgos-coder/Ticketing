@@ -57,9 +57,7 @@ export class AdminService {
 
   // Dashboard Statistics
   getDashboardStats(): Observable<DashboardStats> {
-    console.log('[AdminService] Calling getDashboardStats from:', `${this.apiUrl}/dashboard/stats`);
     return this.http.get<DashboardStats>(`${this.apiUrl}/dashboard/stats`).pipe(
-      tap(data => console.log('[AdminService] Dashboard stats received:', data)),
       catchError(error => {
         console.error('[AdminService] Error getting dashboard stats:', error);
         throw error;
@@ -106,11 +104,21 @@ export class AdminService {
 
   // Event Management
   getEvents(): Observable<any[]> {
-    return this.http.get<any[]>(`${environment.apiUrl}/events`);
+    return this.http.get<any[]>(`${environment.apiUrl}/events`).pipe(
+      catchError(error => {
+        console.error('[AdminService] getEvents failed:', error);
+        throw error;
+      })
+    );
   }
 
   getEvent(id: string): Observable<any> {
-    return this.http.get<any>(`${environment.apiUrl}/events/${id}`);
+    return this.http.get<any>(`${environment.apiUrl}/events/${id}`).pipe(
+      catchError(error => {
+        console.error('[AdminService] getEvent failed:', error);
+        throw error;
+      })
+    );
   }
 
   createEvent(formData: FormData): Observable<any> {

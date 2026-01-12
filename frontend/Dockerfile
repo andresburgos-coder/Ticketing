@@ -15,8 +15,8 @@ COPY . .
 # Exponer el puerto de desarrollo
 EXPOSE 4200
 
-# Comando por defecto
-CMD ["npm", "run", "start", "--", "--host", "0.0.0.0", "--poll"]
+# Comando por defecto - usar configuración Docker
+CMD ["npm", "run", "start", "--", "--host", "0.0.0.0", "--poll", "--configuration", "docker"]
 
 # Etapa de construcción
 FROM node:20-alpine as build

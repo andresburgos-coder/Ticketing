@@ -44,6 +44,11 @@ export class QRScannerService {
    */
   async checkCameraSupport(): Promise<boolean> {
     try {
+      // Check if running in secure context
+      if (!window.isSecureContext) {
+        return false;
+      }
+
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         return false;
       }
@@ -56,8 +61,7 @@ export class QRScannerService {
       // Stop the stream immediately after checking
       stream.getTracks().forEach(track => track.stop());
       return true;
-    } catch (error) {
-      console.warn('Camera access not available:', error);
+    } catch (error: any) {
       return false;
     }
   }
@@ -70,8 +74,7 @@ export class QRScannerService {
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
       return devices.filter(device => device.kind === 'videoinput');
-    } catch (error) {
-      console.error('Error getting camera devices:', error);
+    } catch (error: any) {
       return [];
     }
   }
