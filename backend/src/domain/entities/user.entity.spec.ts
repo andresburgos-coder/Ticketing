@@ -94,7 +94,7 @@ describe("User Entity", () => {
     it("should return false when password is incorrect", async () => {
       const email = Email.create("user@example.com");
       const password = TEST_PASSWORD;
-      const wrongPassword = "WrongPassword456";
+      const wrongPassword = process.env.TEST_WRONG_PASSWORD;
 
       const user = new User(
         "user-123",

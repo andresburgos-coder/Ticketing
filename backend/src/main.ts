@@ -84,13 +84,10 @@ async function bootstrap(): Promise<void> {
 
   app.enableCors({
     origin: [
-      "http://localhost:4200",
-      "http://127.0.0.1:4200",
-      "http://0.0.0.0:4200",
-      "http://192.168.1.5:4200",
-      "http://172.20.192.1:4200",
       "https://localhost:4200",
       "https://127.0.0.1:4200",
+      "https://192.168.1.5:4200",
+      "https://172.20.192.1:4200",
       "https://192.168.1.5:4200", 
       "https://172.20.192.1:4200",
       "https://strong-badgers-try.loca.lt",
