@@ -71,6 +71,11 @@ services:
       SUPPORT_EMAIL: soporte@ticketsales.com
       COMPANY_NAME: TicketSales
       FRONTEND_URL: http://localhost:4200
+      # Email Attachments Configuration
+      EMAIL_ATTACH_PDF: true
+      EMAIL_ATTACH_PNG: true
+      # Mock Payment Gateway Configuration
+      MOCK_PAYMENT_SUCCESS_RATE: 1.0
       # Zona horaria de Colombia
       TZ: America/Bogota
     # Puerto interno solamente - NGINX se encargará del tráfico externo
@@ -88,7 +93,7 @@ services:
       - ticket-network
     command: npm run start:dev
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
