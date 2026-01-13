@@ -48,7 +48,7 @@ export class Checkout implements OnInit, OnDestroy {
 
   // Store form data between steps
   private contactData?: { firstName: string; lastName: string; email: string; phone: string };
-  private paymentData?: { cardNumber: string; expiryDate: string; cvv: string };
+  private paymentData?: { cardNumber: string; expiryDate: string; cvv: string; cardholderName: string };
 
   constructor() {
     // Watch for reservation expiration
@@ -126,6 +126,7 @@ export class Checkout implements OnInit, OnDestroy {
           cardNumber: formData.cardNumber,
           expiryDate: formData.expiryDate,
           cvv: formData.cvv,
+          cardholderName: formData.cardholderName || `${this.contactData?.firstName} ${this.contactData?.lastName}` || 'Cardholder'
         };
         this.confirmOrder();
       }
