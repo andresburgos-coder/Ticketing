@@ -15,7 +15,7 @@ describe('AdminEventsComponent', () => {
   const eventServiceMock: Partial<EventService> = {
     events: signal([]),
     events$: new Subject().asObservable(),
-    loadEvents: jasmine.createSpy(),
+    loadEvents: jasmine.createSpy('loadEvents').and.returnValue(undefined),
     deleteEvent: jasmine.createSpy('deleteEvent').and.returnValue(of(void 0))
   } as any;
 
@@ -42,6 +42,8 @@ describe('AdminEventsComponent', () => {
 
     fixture = TestBed.createComponent(AdminEventsComponent);
     component = fixture.componentInstance;
+    // Emit an empty array to simulate event loading
+    eventsSubject.next([]);
     fixture.detectChanges();
   });
 

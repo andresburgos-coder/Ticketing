@@ -17,6 +17,7 @@ describe('OrderSummary', () => {
       ]),
       subtotal: signal(250),
       tax: signal(25),
+      processingFee: signal(5),
       total: signal(275),
       removeFromCart: jasmine.createSpy()
     };

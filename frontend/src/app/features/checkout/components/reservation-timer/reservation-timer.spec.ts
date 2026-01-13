@@ -59,4 +59,26 @@ describe('ReservationTimer', () => {
 
     expect(component.displayTime).toBe('00:00');
   });
+
+    it('should set isExpired to true when time is 0', () => {
+      (checkoutService as any).timeRemaining = signal(0);
+      fixture.detectChanges();
+      component['updateDisplayTime']();
+      expect(component.isExpired).toBeTrue();
+    });
+
+    it('should set isExpired to false when time is positive', () => {
+      (checkoutService as any).timeRemaining = signal(120);
+      fixture.detectChanges();
+      component['updateDisplayTime']();
+      expect(component.isExpired).toBeFalse();
+    });
+
+    it('should subscribe and unsubscribe timer in ngOnInit/ngOnDestroy', () => {
+      spyOn(component as any, 'updateDisplayTime').and.callThrough();
+      component.ngOnInit();
+      expect((component as any).timerSubscription).toBeTruthy();
+      component.ngOnDestroy();
+      expect((component as any).timerSubscription.closed).toBeTrue();
+    });
 });

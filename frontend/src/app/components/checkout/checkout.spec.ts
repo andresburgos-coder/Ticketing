@@ -18,7 +18,8 @@ describe('Checkout', () => {
     const routerMock = {
       navigate: jasmine.createSpy(),
       createUrlTree: jasmine.createSpy('createUrlTree').and.returnValue({}),
-      serializeUrl: jasmine.createSpy('serializeUrl').and.returnValue('/')
+      serializeUrl: jasmine.createSpy('serializeUrl').and.returnValue('/'),
+      events: of({})
     };
 
     checkoutService = {
@@ -33,7 +34,11 @@ describe('Checkout', () => {
       setEventInfo: jasmine.createSpy(),
       reservationExpired: signal(false),
       completedOrder: signal(null),
-      resetExpiredState: jasmine.createSpy()
+      resetExpiredState: jasmine.createSpy(),
+      subtotal: signal(200),
+      tax: signal(10),
+      total: signal(210),
+      processingFee: signal(5)
     };
 
     await TestBed.configureTestingModule({
@@ -77,7 +82,8 @@ describe('Checkout', () => {
 
     it('should move to payment step when contact form is valid', () => {
       component.contactForm = {
-        validate: jasmine.createSpy().and.returnValue(true)
+        validate: jasmine.createSpy().and.returnValue(true),
+        getFormData: jasmine.createSpy().and.returnValue({ firstName: 'John', lastName: 'Doe', email: 'john@example.com' })
       } as any;
 
       component.nextStep();
@@ -87,7 +93,8 @@ describe('Checkout', () => {
 
     it('should not move to payment step when contact form is invalid', () => {
       component.contactForm = {
-        validate: jasmine.createSpy().and.returnValue(false)
+        validate: jasmine.createSpy().and.returnValue(false),
+        getFormData: jasmine.createSpy()
       } as any;
 
       component.nextStep();
@@ -98,12 +105,14 @@ describe('Checkout', () => {
     it('should confirm order when payment form is valid', () => {
       component.step = 'payment';
       component.paymentForm = {
-        validate: jasmine.createSpy().and.returnValue(true)
+        validate: jasmine.createSpy().and.returnValue(true),
+        getFormData: jasmine.createSpy().and.returnValue({ cardNumber: '1234', expiryDate: '12/25', cvv: '123' })
       } as any;
+      (component as any).contactData = { firstName: 'John', lastName: 'Doe', email: 'john@example.com', phone: '123456789' };
 
       component.nextStep();
 
-      expect(checkoutService.confirmOrder).toHaveBeenCalledWith('stripe');
+      expect(checkoutService.confirmOrder).toHaveBeenCalledWith('stripe', 'john@example.com', { cardNumber: '1234', expiryDate: '12/25', cvv: '123' });
     });
 
     it('should go back from payment to contact', () => {
@@ -122,18 +131,24 @@ describe('Checkout', () => {
   });
 
   describe('confirmOrder', () => {
-    it('should confirm order and navigate to confirmation', async () => {
+    beforeEach(() => {
       jasmine.clock().install();
+    });
+    afterEach(() => {
+      jasmine.clock().uninstall();
+    });
+
+    it('should confirm order and navigate to confirmation', async () => {
+      (component as any).contactData = { firstName: 'John', lastName: 'Doe', email: 'john@example.com', phone: '123456789' };
+      (component as any).paymentData = { cardNumber: '1234', expiryDate: '12/25', cvv: '123' };
 
       component.confirmOrder();
 
-      expect(checkoutService.confirmOrder).toHaveBeenCalledWith('stripe');
+      expect(checkoutService.confirmOrder).toHaveBeenCalledWith('stripe', 'john@example.com', { cardNumber: '1234', expiryDate: '12/25', cvv: '123' });
 
       jasmine.clock().tick(1000);
 
-      expect(router.navigate).toHaveBeenCalledWith(['/confirmation']);
-
-      jasmine.clock().uninstall();
+      expect(router.navigate).toHaveBeenCalledWith(['/confirmation'], { queryParams: {} });
     });
   });
 });

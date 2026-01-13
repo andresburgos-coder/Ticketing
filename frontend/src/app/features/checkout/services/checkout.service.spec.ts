@@ -22,11 +22,6 @@ describe('CheckoutService', () => {
     });
 
     service = TestBed.inject(CheckoutService);
-    jasmine.clock().install();
-  });
-
-  afterEach(() => {
-    jasmine.clock().uninstall();
   });
 
   it('should be created', () => {
@@ -117,6 +112,9 @@ describe('CheckoutService', () => {
   });
 
   describe('reservation', () => {
+        afterEach(() => {
+          try { jasmine.clock().uninstall(); } catch {}
+        });
     it('should set reservation with countdown timer', () => {
       const mockReservation = {
         id: '1',
@@ -135,46 +133,51 @@ describe('CheckoutService', () => {
       expect(service.timeRemaining()).toBeGreaterThan(0);
     });
 
-    it('should update time remaining', () => {
+    it('should update time remaining', (done) => {
+      jasmine.clock().install();
       const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
-      const mockReservation = { 
-        id: '1', 
+      const mockReservation = {
+        id: '1',
         eventId: '1',
         ticketType: 'VIP',
         quantity: 2,
         totalAmount: 200,
-        expiresAt, 
+        expiresAt,
         status: 'active'
       };
       service.setReservation(mockReservation as any);
 
       const initialTime = service.timeRemaining();
-
-      jasmine.clock().tick(1000);
-
-      expect(service.timeRemaining()).toBeLessThan(initialTime);
+      setTimeout(() => {
+        expect(service.timeRemaining()).toBeLessThan(initialTime);
+        jasmine.clock().uninstall();
+        done();
+      }, 1100);
+      jasmine.clock().tick(1100);
     });
 
-    it('should clear cart when reservation expires', () => {
+    it('should set reservationExpired when reservation expires', (done) => {
+      jasmine.clock().install();
       service.addToCart(1, 'VIP Ticket', 2, 100);
-      const expiresAt = new Date(Date.now() + 5000).toISOString();
-      const mockReservation = { 
-        id: '1', 
+      const expiresAt = new Date(Date.now() + 1000).toISOString();
+      const mockReservation = {
+        id: '1',
         eventId: '1',
         ticketType: 'VIP',
         quantity: 2,
         totalAmount: 200,
-        expiresAt, 
+        expiresAt,
         status: 'active'
       };
       service.setReservation(mockReservation as any);
 
-      jasmine.clock().tick(6000);
-
-      // Note: The service doesn't automatically clear cart on expiration,
-      // it just sets the expired flag. The component handles the redirect.
-      expect(service.reservationExpired()).toBe(true);
-      expect(service.timeRemaining()).toBe(0);
+      setTimeout(() => {
+        expect(service.reservationExpired()).toBe(true);
+        expect(service.timeRemaining()).toBe(0);
+        jasmine.clock().uninstall();
+        done();
+      }, 1100);
+      jasmine.clock().tick(1100);
     });
   });
 

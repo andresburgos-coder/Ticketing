@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AdminLayoutComponent } from './admin-layout.component';
 import { AuthService } from '../../../core/services/auth.service';
+import { ActivatedRoute } from '@angular/router';
 import { Router } from '@angular/router';
 import { signal } from '@angular/core';
 
@@ -23,7 +24,8 @@ describe('AdminLayoutComponent', () => {
       imports: [AdminLayoutComponent],
       providers: [
         { provide: AuthService, useValue: authServiceSpy },
-        { provide: Router, useValue: routerSpy }
+        { provide: Router, useValue: routerSpy },
+        { provide: ActivatedRoute, useValue: {} }
       ]
     }).compileComponents();
 

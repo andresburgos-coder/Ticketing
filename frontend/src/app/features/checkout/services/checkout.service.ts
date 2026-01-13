@@ -132,7 +132,6 @@ export class CheckoutService {
   resumePendingCheckout(): boolean {
     const raw = localStorage.getItem(PENDING_CHECKOUT_KEY);
     if (!raw) return false;
-
     try {
       const payload: { items: CartItem[]; eventId?: string | number; eventName?: string } = JSON.parse(raw);
 
@@ -150,7 +149,7 @@ export class CheckoutService {
       // Remove pending flag
       localStorage.removeItem(PENDING_CHECKOUT_KEY);
       return true;
-    } catch {
+    } catch (e) {
       // Invalidate corrupted payload
       localStorage.removeItem(PENDING_CHECKOUT_KEY);
       return false;
@@ -191,14 +190,14 @@ export class CheckoutService {
         };
 
         console.log('📤 [CheckoutService] Creating reservation:', reservationDto);
-        
+
         const response = await this.http.post<any>(
           `${environment.apiUrl}/reservations`,
           reservationDto
         ).toPromise();
 
         console.log('✅ [CheckoutService] Reservation created:', response);
-        
+
         reservations.push({
           id: response.id,
           eventId: response.eventId,
@@ -212,7 +211,7 @@ export class CheckoutService {
 
       // Store reservations
       localStorage.setItem(RESERVATIONS_KEY, JSON.stringify(reservations));
-      
+
       // Set the first reservation for the timer (all should have same expiration)
       if (reservations.length > 0) {
         this._reservation.set(reservations[0]);
@@ -224,12 +223,12 @@ export class CheckoutService {
     } catch (error: any) {
       console.error('❌ [CheckoutService] Error creating reservations:', error);
       this._isLoading.set(false);
-      
+
       // If reservation fails due to insufficient tickets, show error
       if (error?.error?.message?.includes('Insufficient')) {
         throw new Error(error.error.message);
       }
-      
+
       return false;
     }
   }
@@ -239,7 +238,12 @@ export class CheckoutService {
    */
   getReservations(): Reservation[] {
     const stored = localStorage.getItem(RESERVATIONS_KEY);
-    return stored ? JSON.parse(stored) : [];
+    if (!stored) return [];
+    try {
+      return JSON.parse(stored);
+    } catch (e) {
+      return [];
+    }
   }
 
   /**
@@ -305,17 +309,17 @@ export class CheckoutService {
   private startReservationTimer(): void {
     // Clear any existing timer
     this.stopReservationTimer();
-    
+
     const reservation = this._reservation();
     if (!reservation) return;
 
     const expiresAt = new Date(reservation.expiresAt).getTime();
-    
+
     // Initial calculation
     const now = Date.now();
     const remaining = Math.max(0, Math.floor((expiresAt - now) / 1000));
     this._timeRemaining.set(remaining);
-    
+
     console.log(`⏱️ [CheckoutService] Timer started. Expires at: ${new Date(expiresAt).toISOString()}, Remaining: ${remaining}s`);
 
     if (remaining <= 0) {
@@ -487,14 +491,14 @@ export class CheckoutService {
       // Invalidate cache for each ticket type purchased
       cart.forEach(item => {
         this.cacheInvalidationService.invalidateAfterPurchase(
-          String(eventId), 
+          String(eventId),
           item.ticketTypeName
         );
       });
-      
+
       // Also invalidate the general event cache
       this.cacheInvalidationService.invalidateEvent(String(eventId));
-      
+
       console.log('🔄 [CheckoutService] Cache invalidated after purchase for event:', eventId);
     }
 
@@ -511,7 +515,12 @@ export class CheckoutService {
 
   private loadCart(): CartItem[] {
     const savedCart = localStorage.getItem(CART_STORAGE_KEY);
-    return savedCart ? JSON.parse(savedCart) : [];
+    if (!savedCart) return [];
+    try {
+      return JSON.parse(savedCart);
+    } catch (e) {
+      return [];
+    }
   }
 
   private saveCart(cart: CartItem[]): void {

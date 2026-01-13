@@ -2,7 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AdminTicketsComponent } from './admin-tickets.component';
 import { AdminService } from '../../../services/admin.service';
 import { EventService } from '../../../services/event.service';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
+const eventsSubject = new Subject<any[]>();
 import { signal } from '@angular/core';
 
 describe('AdminTicketsComponent', () => {
@@ -15,7 +16,8 @@ describe('AdminTicketsComponent', () => {
 
   const eventServiceMock = {
     events: signal([]),
-    loadEvents: jasmine.createSpy('loadEvents')
+    events$: eventsSubject.asObservable(),
+    loadEvents: jasmine.createSpy('loadEvents').and.returnValue(undefined)
   };
 
   beforeEach(async () => {
