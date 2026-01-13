@@ -26,10 +26,13 @@ export class TicketAvailabilityGateway
   @WebSocketServer()
   server!: Server;
 
-  constructor(private ticketAvailabilityService: TicketAvailabilityService) {}
+  constructor(private ticketAvailabilityService: TicketAvailabilityService) {
+    console.log("[WebSocket] TicketAvailabilityGateway constructor called");
+  }
 
   afterInit(server: Server): void {
     console.log("[WebSocket] Gateway initialized");
+    console.log("[WebSocket] Server object:", !!server);
     this.ticketAvailabilityService.setServer(server);
   }
 

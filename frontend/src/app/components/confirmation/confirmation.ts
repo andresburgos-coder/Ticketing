@@ -6,6 +6,7 @@ import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { CheckoutService } from '../../features/checkout/services/checkout.service';
 import { TicketsService } from '../../core/services/tickets.service';
 import { AuthService } from '../../core/services/auth.service';
+import { EmailService } from '../../services/email.service';
 import { Events } from '../../services/events';
 import { forkJoin } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -57,6 +58,7 @@ export class Confirmation implements OnInit {
   private readonly ticketsService = inject(TicketsService);
   private readonly authService = inject(AuthService);
   private readonly eventsService = inject(Events);
+  private readonly emailService = inject(EmailService);
   readonly router = inject(Router); // Make router public for template
   private readonly route = inject(ActivatedRoute);
 
@@ -68,6 +70,8 @@ export class Confirmation implements OnInit {
   private readonly _buyerName = signal<string>('');
   private readonly _buyerEmail = signal<string>('');
   private readonly _ticketCount = signal<number>(0);
+  private readonly _emailSending = signal(false);
+  private readonly _emailSent = signal(false);
 
   readonly tickets = this._tickets.asReadonly();
   readonly isLoading = this._isLoading.asReadonly();
@@ -75,6 +79,8 @@ export class Confirmation implements OnInit {
   readonly showAuthWarning = this._showAuthWarning.asReadonly();
   readonly buyerName = this._buyerName.asReadonly();
   readonly buyerEmail = this._buyerEmail.asReadonly();
+  readonly emailSending = this._emailSending.asReadonly();
+  readonly emailSent = this._emailSent.asReadonly();
   readonly ticketCount = computed(() => {
     const count = this._ticketCount();
     return count > 0 ? count : this._tickets().length;
@@ -642,5 +648,37 @@ export class Confirmation implements OnInit {
       }, 'image/png');
     };
     qrImage.src = qrImageUrl;
+  }
+
+  /**
+   * Reenvía el email de confirmación con las entradas
+   */
+  resendConfirmationEmail(): void {
+    const email = this._buyerEmail();
+    if (!email) {
+      console.error('No buyer email available for resending');
+      return;
+    }
+
+    this._emailSending.set(true);
+    this._emailSent.set(false);
+
+    this.emailService.resendConfirmationEmail({ email }).subscribe({
+      next: (response) => {
+        this._emailSending.set(false);
+        if (response.success) {
+          this._emailSent.set(true);
+          console.log('✅ Email reenviado exitosamente');
+          // Reset the flag after 5 seconds
+          setTimeout(() => this._emailSent.set(false), 5000);
+        } else {
+          console.error('❌ Error al reenviar email:', response.message);
+        }
+      },
+      error: (error) => {
+        this._emailSending.set(false);
+        console.error('❌ Error al reenviar email:', error);
+      }
+    });
   }
 }

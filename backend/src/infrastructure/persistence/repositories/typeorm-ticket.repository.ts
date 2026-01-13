@@ -69,6 +69,19 @@ export class TypeOrmTicketRepository implements ITicketRepository {
   }
 
   /**
+   * Finds all tickets purchased by a specific buyer email (string version)
+   * @param email - The email string of the buyer
+   * @returns Promise resolving to array of Tickets for the buyer
+   */
+  async findByBuyerEmail(email: string): Promise<Ticket[]> {
+    const ormEntities = await this.repository.find({
+      where: { buyerEmail: email },
+    });
+
+    return ormEntities.map((ormEntity) => TicketMapper.toDomain(ormEntity));
+  }
+
+  /**
    * Finds all tickets for a specific event
    * Useful for event statistics and availability tracking
    * @param eventId - The ID of the event
@@ -77,6 +90,32 @@ export class TypeOrmTicketRepository implements ITicketRepository {
   async findByEvent(eventId: string): Promise<Ticket[]> {
     const ormEntities = await this.repository.find({
       where: { eventId },
+    });
+
+    return ormEntities.map((ormEntity) => TicketMapper.toDomain(ormEntity));
+  }
+
+  /**
+   * Finds all tickets for a specific event (alias for findByEvent)
+   * @param eventId - The ID of the event
+   * @returns Promise resolving to array of Tickets for the event
+   */
+  async findByEventId(eventId: string): Promise<Ticket[]> {
+    return this.findByEvent(eventId);
+  }
+
+  /**
+   * Finds tickets for a specific event and buyer
+   * @param eventId - The ID of the event
+   * @param buyerEmail - The email of the buyer
+   * @returns Promise resolving to array of Tickets
+   */
+  async findByEventAndBuyer(eventId: string, buyerEmail: string): Promise<Ticket[]> {
+    const ormEntities = await this.repository.find({
+      where: { 
+        eventId,
+        buyerEmail 
+      },
     });
 
     return ormEntities.map((ormEntity) => TicketMapper.toDomain(ormEntity));

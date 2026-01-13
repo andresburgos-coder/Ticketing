@@ -9,10 +9,12 @@ import { ValidateQRUseCase } from "../application/use-cases/validate-qr.use-case
 import { CreateReservationUseCase } from "../application/use-cases/create-reservation.use-case";
 import { ProcessPaymentUseCase } from "../application/use-cases/process-payment.use-case";
 import { ReleaseTicketsUseCase } from "../application/use-cases/release-tickets.use-case";
+import { ResendEmailUseCase } from "../application/use-cases/resend-email.use-case";
 import { TypeOrmTicketRepository } from "../infrastructure/persistence/repositories/typeorm-ticket.repository";
 import { TypeOrmReservationRepository } from "../infrastructure/persistence/repositories/typeorm-reservation.repository";
 import { TypeOrmEventRepository } from "../infrastructure/persistence/repositories/typeorm-event.repository";
 import { MockPaymentGateway } from "../infrastructure/external/mock-payment-gateway.service";
+import { EmailService } from "../infrastructure/external/email.service";
 import { TicketOrmEntity } from "../infrastructure/persistence/entities/ticket.orm-entity";
 import { ReservationOrmEntity } from "../infrastructure/persistence/entities/reservation.orm-entity";
 import { EventOrmEntity } from "../infrastructure/persistence/entities/event.orm-entity";
@@ -57,6 +59,7 @@ import { ReservationExpirationScheduler } from "../infrastructure/schedulers/res
     GetBuyerTicketsUseCase,
     PurchaseTicketUseCase,
     ValidateQRUseCase,
+    ResendEmailUseCase,
 
     // Reservation Use Cases
     CreateReservationUseCase,
@@ -65,6 +68,9 @@ import { ReservationExpirationScheduler } from "../infrastructure/schedulers/res
 
     // Schedulers
     ReservationExpirationScheduler,
+
+    // External Services
+    EmailService,
 
     // Repositories
     {

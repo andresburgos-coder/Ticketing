@@ -37,12 +37,34 @@ export interface ITicketRepository {
   findByBuyer(email: Email): Promise<Ticket[]>;
 
   /**
+   * Finds all tickets purchased by a specific buyer email (string version)
+   * @param email - The email string of the buyer
+   * @returns Promise resolving to array of Tickets for the buyer
+   */
+  findByBuyerEmail(email: string): Promise<Ticket[]>;
+
+  /**
    * Finds all tickets for a specific event
    * Useful for event statistics and availability tracking
    * @param eventId - The ID of the event
    * @returns Promise resolving to array of Tickets for the event
    */
   findByEvent(eventId: string): Promise<Ticket[]>;
+
+  /**
+   * Finds all tickets for a specific event (alias for findByEvent)
+   * @param eventId - The ID of the event
+   * @returns Promise resolving to array of Tickets for the event
+   */
+  findByEventId(eventId: string): Promise<Ticket[]>;
+
+  /**
+   * Finds tickets for a specific event and buyer
+   * @param eventId - The ID of the event
+   * @param buyerEmail - The email of the buyer
+   * @returns Promise resolving to array of Tickets
+   */
+  findByEventAndBuyer(eventId: string, buyerEmail: string): Promise<Ticket[]>;
 
   /**
    * Finds a ticket by its QR token

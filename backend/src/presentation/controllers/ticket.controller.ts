@@ -24,12 +24,14 @@ import {
 import { GetBuyerTicketsUseCase } from "../../application/use-cases/get-buyer-tickets.use-case";
 import { PurchaseTicketUseCase } from "../../application/use-cases/purchase-ticket.use-case";
 import { ValidateQRUseCase } from "../../application/use-cases/validate-qr.use-case";
+import { ResendEmailUseCase } from "../../application/use-cases/resend-email.use-case";
 import { Ticket, TicketStatus } from "../../domain/entities/ticket.entity";
 import { PurchaseTicketDto } from "../../application/dto/purchase-ticket.dto";
 import {
   ValidateQRDto,
   ValidateQRResponse,
 } from "../../application/dto/validate-qr.dto";
+import { ResendEmailDto, SendReminderDto } from "../../application/dto/resend-email.dto";
 import { JwtAuthGuard } from "../../application/services/jwt-auth.guard";
 
 /**
@@ -45,6 +47,7 @@ export class TicketController {
     private readonly getBuyerTicketsUseCase: GetBuyerTicketsUseCase,
     private readonly purchaseTicketUseCase: PurchaseTicketUseCase,
     private readonly validateQRUseCase: ValidateQRUseCase,
+    private readonly resendEmailUseCase: ResendEmailUseCase,
   ) {}
 
   /**
@@ -277,6 +280,106 @@ export class TicketController {
       if (error instanceof BadRequestException) {
         throw error;
       }
+      if (error instanceof Error) {
+        throw new BadRequestException(error.message);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * POST /tickets/resend-email
+   * Resends confirmation email for tickets
+   *
+   * @param resendEmailDto - Email and optional ticket ID
+   * @returns Success status
+   */
+  @Post("resend-email")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Resend confirmation email",
+    description: "Resends confirmation email with tickets for a specific buyer",
+  })
+  @ApiBody({ type: ResendEmailDto })
+  @ApiResponse({
+    status: 200,
+    description: "Email resent successfully",
+    schema: {
+      type: "object",
+      properties: {
+        success: { type: "boolean" },
+        message: { type: "string" },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Bad request - invalid email or no tickets found",
+  })
+  async resendEmail(@Body() resendEmailDto: ResendEmailDto): Promise<{ success: boolean; message: string }> {
+    try {
+      const success = await this.resendEmailUseCase.resendConfirmationEmail(
+        resendEmailDto.email,
+        resendEmailDto.ticketId,
+      );
+
+      return {
+        success,
+        message: success 
+          ? 'Email de confirmación reenviado exitosamente'
+          : 'Error al reenviar el email de confirmación',
+      };
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new BadRequestException(error.message);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * POST /tickets/send-reminder
+   * Sends event reminder emails
+   *
+   * @param sendReminderDto - Event ID and optional specific email
+   * @returns Success status
+   */
+  @Post("send-reminder")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Send event reminder",
+    description: "Sends reminder emails for an upcoming event",
+  })
+  @ApiBody({ type: SendReminderDto })
+  @ApiResponse({
+    status: 200,
+    description: "Reminders sent successfully",
+    schema: {
+      type: "object",
+      properties: {
+        success: { type: "boolean" },
+        message: { type: "string" },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Bad request - invalid event ID or no tickets found",
+  })
+  async sendReminder(@Body() sendReminderDto: SendReminderDto): Promise<{ success: boolean; message: string }> {
+    try {
+      const success = await this.resendEmailUseCase.sendEventReminder(
+        sendReminderDto.eventId,
+        sendReminderDto.email,
+      );
+
+      return {
+        success,
+        message: success 
+          ? 'Recordatorios enviados exitosamente'
+          : 'Error al enviar recordatorios',
+      };
+    } catch (error) {
       if (error instanceof Error) {
         throw new BadRequestException(error.message);
       }

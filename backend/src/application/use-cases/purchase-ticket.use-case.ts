@@ -12,6 +12,7 @@ import { Email } from "../../domain/value-objects/email.vo";
 import { Money } from "../../domain/value-objects/money.vo";
 import { TicketType } from "../../domain/value-objects/ticket-type.vo";
 import { TicketAvailabilityService } from "../../infrastructure/websocket/ticket-availability.service";
+import { EmailService } from "../../infrastructure/external/email.service";
 
 /**
  * PurchaseTicketUseCase
@@ -32,6 +33,7 @@ export class PurchaseTicketUseCase {
     private readonly eventRepository: IEventRepository,
     private readonly ticketAvailabilityService: TicketAvailabilityService,
     private readonly dataSource: DataSource,
+    private readonly emailService: EmailService,
   ) {}
 
   async execute(params: {
@@ -165,7 +167,7 @@ export class PurchaseTicketUseCase {
         "✅ [PurchaseTicketUseCase] Transacción completada exitosamente",
       );
 
-      return { savedTickets, ticketConfig };
+      return { savedTickets, ticketConfig, event };
     });
 
     // 9. Broadcast availability update via WebSocket (after transaction commits)
@@ -184,6 +186,12 @@ export class PurchaseTicketUseCase {
       availableQuantity: newAvailability,
       totalQuantity: result.ticketConfig.totalQuantity,
       timestamp: new Date().toISOString(),
+    });
+
+    // 10. Send confirmation email (async, don't wait for it)
+    this.sendConfirmationEmail(result.savedTickets, result.event, params.buyerEmail).catch((error) => {
+      console.error('❌ Error sending confirmation email:', error);
+      // Don't throw error - email failure shouldn't fail the purchase
     });
 
     return result.savedTickets;
@@ -219,5 +227,63 @@ export class PurchaseTicketUseCase {
       code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return code;
+  }
+
+  /**
+   * Sends confirmation email with tickets after successful purchase
+   * 
+   * @param tickets - Generated tickets
+   * @param event - Event information
+   * @param buyerEmail - Buyer's email address
+   */
+  private async sendConfirmationEmail(
+    tickets: Ticket[],
+    event: any,
+    buyerEmail: string,
+  ): Promise<void> {
+    try {
+      console.log('📧 Enviando email de confirmación de compra directa...');
+      
+      // Extract buyer name from email (simple approach)
+      const buyerName = this.extractNameFromEmail(buyerEmail);
+      
+      await this.emailService.sendTicketConfirmationEmail({
+        buyerEmail,
+        buyerName,
+        tickets,
+        eventName: event.name,
+        eventDate: event.date.toISOString(),
+        eventLocation: event.location,
+        eventVenueName: event.venueName,
+        eventStartTime: undefined, // Event entity doesn't have startTime
+        eventEndTime: undefined, // Event entity doesn't have endTime
+        eventImage: event.imageUrl,
+      });
+
+      console.log('✅ Email de confirmación enviado exitosamente');
+    } catch (error) {
+      console.error('❌ Error al enviar email de confirmación:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Extracts a display name from an email address
+   * Simple implementation - in production you might want to store actual names
+   * 
+   * @param email - Email address
+   * @returns Display name
+   */
+  private extractNameFromEmail(email: string): string {
+    const localPart = email.split('@')[0];
+    if (!localPart) {
+      return 'Usuario';
+    }
+    // Convert dots and underscores to spaces and capitalize
+    return localPart
+      .replace(/[._]/g, ' ')
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
   }
 }

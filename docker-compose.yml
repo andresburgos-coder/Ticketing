@@ -22,10 +22,16 @@ services:
       POSTGRES_USER: ticket_user
       POSTGRES_PASSWORD: ticket_pass
       POSTGRES_DB: ticket_sales
+      # Zona horaria de Colombia
+      TZ: America/Bogota
+      PGTZ: America/Bogota
     ports:
       - "0.0.0.0:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      # Montar zona horaria del host
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     networks:
       - ticket-network
     healthcheck:
@@ -54,11 +60,27 @@ services:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin123
       MINIO_EXTERNAL_URL: http://127.0.0.1:9001
+      # Email Configuration (Gmail SMTP)
+      SMTP_HOST: smtp.gmail.com
+      SMTP_PORT: 587
+      SMTP_SECURE: false
+      SMTP_USER: rapidoysabrosocol23@gmail.com
+      SMTP_PASSWORD: cvpidcmqaoxbfasd
+      FROM_NAME: TicketSales
+      FROM_EMAIL: rapidoysabrosocol23@gmail.com
+      SUPPORT_EMAIL: soporte@ticketsales.com
+      COMPANY_NAME: TicketSales
+      FRONTEND_URL: http://localhost:4200
+      # Zona horaria de Colombia
+      TZ: America/Bogota
     # Puerto interno solamente - NGINX se encargará del tráfico externo
     # ports:
     #   - "0.0.0.0:3000:3000"
     volumes:
       - ./backend/src:/app/src
+      # Montar zona horaria del host
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -78,12 +100,18 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: ticket-frontend
+    environment:
+      # Zona horaria de Colombia
+      TZ: America/Bogota
     # Puerto interno solamente - NGINX se encargará del tráfico externo 
     # ports:
     #   - "0.0.0.0:4200:4200"
     volumes:
       - ./frontend/src:/app/src
       - ./frontend/public:/app/public
+      # Montar zona horaria del host
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     depends_on:
       - backend
     networks:

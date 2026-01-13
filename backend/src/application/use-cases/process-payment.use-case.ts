@@ -14,6 +14,7 @@ import {
   RESERVATION_REPOSITORY,
   TICKET_REPOSITORY,
 } from "../../domain/interfaces/repository-tokens";
+import { EmailService } from "../../infrastructure/external/email.service";
 import { v4 as uuidv4 } from "uuid";
 
 /**
@@ -54,6 +55,7 @@ export class ProcessPaymentUseCase {
     private readonly ticketRepository: ITicketRepository,
     @Inject(EVENT_REPOSITORY)
     private readonly eventRepository: IEventRepository,
+    private readonly emailService: EmailService,
   ) {}
 
   /**
@@ -144,6 +146,8 @@ export class ProcessPaymentUseCase {
    * - Confirms reservation
    * - Generates tickets
    * - Persists tickets and updates reservation
+   * - Releases reservation from event (since tickets are now sold)
+   * - Sends confirmation email with tickets
    *
    * Requirements: 4.2, 4.3, 4.4
    */
@@ -161,9 +165,20 @@ export class ProcessPaymentUseCase {
     // Persist tickets
     await this.ticketRepository.saveMany(tickets);
 
+    // 🔧 FIX: The reservation is now consumed (tickets are sold)
+    // No need to release tickets back to availability since they're now sold
+    // The tickets were already deducted during reservation creation
+    console.log(`✅ [ProcessPayment] Reserva consumida exitosamente - Cantidad: ${reservation.quantity.value}, Tipo: ${reservation.ticketType}`);
+
     // Update reservation status in repository
     await this.reservationRepository.update(reservation.id, {
       status: "CONFIRMED",
+    });
+
+    // Send confirmation email with tickets (async, don't wait for it)
+    this.sendConfirmationEmail(tickets, event, reservation).catch((error) => {
+      console.error('❌ Error sending confirmation email:', error);
+      // Don't throw error - email failure shouldn't fail the payment
     });
 
     return {
@@ -274,5 +289,63 @@ export class ProcessPaymentUseCase {
     if (!input.currency || input.currency.trim().length !== 3) {
       throw new Error("Currency must be a 3-letter code");
     }
+  }
+
+  /**
+   * Sends confirmation email with tickets after successful payment
+   * 
+   * @param tickets - Generated tickets
+   * @param event - Event information
+   * @param reservation - Original reservation
+   */
+  private async sendConfirmationEmail(
+    tickets: Ticket[],
+    event: any,
+    reservation: Reservation,
+  ): Promise<void> {
+    try {
+      console.log('📧 Enviando email de confirmación...');
+      
+      // Extract buyer name from email (simple approach)
+      const buyerName = this.extractNameFromEmail(reservation.buyerEmail.value);
+      
+      await this.emailService.sendTicketConfirmationEmail({
+        buyerEmail: reservation.buyerEmail.value,
+        buyerName,
+        tickets,
+        eventName: event.name,
+        eventDate: event.date.toISOString(),
+        eventLocation: event.location,
+        eventVenueName: event.venueName,
+        eventStartTime: undefined, // Event entity doesn't have startTime
+        eventEndTime: undefined, // Event entity doesn't have endTime
+        eventImage: event.imageUrl,
+      });
+
+      console.log('✅ Email de confirmación enviado exitosamente');
+    } catch (error) {
+      console.error('❌ Error al enviar email de confirmación:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Extracts a display name from an email address
+   * Simple implementation - in production you might want to store actual names
+   * 
+   * @param email - Email address
+   * @returns Display name
+   */
+  private extractNameFromEmail(email: string): string {
+    const localPart = email.split('@')[0];
+    if (!localPart) {
+      return 'Usuario';
+    }
+    // Convert dots and underscores to spaces and capitalize
+    return localPart
+      .replace(/[._]/g, ' ')
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
   }
 }

@@ -71,6 +71,6 @@ export class QRScannerFabComponent {
   });
 
   navigateToScanner() {
-    this.router.navigate(['/qr-scanner']);
+    this.router.navigate(['/admin/qr-scanner']);
   }
 }

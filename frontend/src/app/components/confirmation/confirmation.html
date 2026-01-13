@@ -10,7 +10,15 @@
       <h1 class="text-5xl md:text-6xl font-black text-gray-900 mb-3">¡Compra Confirmada!</h1>
       <p class="text-xl text-gray-700 mb-2">Tu entrada está lista para imprimir o guardar para tu próximo evento.</p>
       @if (ticketCount() > 0) {
-        <p class="text-sm text-green-600 font-semibold">{{ ticketCount() }} Entrada(s) Confirmada(s)</p>
+        <p class="text-sm text-green-600 font-semibold mb-2">{{ ticketCount() }} Entrada(s) Confirmada(s)</p>
+      }
+      @if (buyerEmail()) {
+        <div class="bg-white/50 rounded-lg p-4 mt-4 border border-green-200">
+          <div class="flex items-center justify-center gap-2 text-sm text-gray-700">
+            <span class="material-symbols-outlined text-lg text-blue-600">email</span>
+            <span>Se ha enviado un email de confirmación a <strong>{{ buyerEmail() }}</strong></span>
+          </div>
+        </div>
       }
     </div>
 
@@ -260,6 +268,23 @@
           class="px-8 py-4 rounded-xl border-2 border-blue-600 text-blue-600 font-bold hover:bg-blue-50 transition-colors text-center">
           Ver todas mis entradas
         </a>
+        @if (buyerEmail()) {
+          <button
+            (click)="resendConfirmationEmail()"
+            [disabled]="emailSending()"
+            class="px-8 py-4 rounded-xl border-2 border-green-600 text-green-600 font-bold hover:bg-green-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            @if (emailSending()) {
+              <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
+              Enviando...
+            } @else if (emailSent()) {
+              <span class="material-symbols-outlined text-lg">check_circle</span>
+              ¡Email Enviado!
+            } @else {
+              <span class="material-symbols-outlined text-lg">email</span>
+              Reenviar Email
+            }
+          </button>
+        }
       </div>
     }
   </main>
