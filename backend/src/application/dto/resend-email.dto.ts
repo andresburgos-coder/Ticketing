@@ -1,21 +1,21 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { ApiProperty } from "@nestjs/swagger";
 
 /**
  * DTO for resending confirmation emails
  */
 export class ResendEmailDto {
   @ApiProperty({
-    description: 'Email address to resend confirmation to',
-    example: 'buyer@example.com',
+    description: "Email address to resend confirmation to",
+    example: "buyer@example.com",
   })
-  @IsEmail({}, { message: 'Must be a valid email address' })
-  @IsNotEmpty({ message: 'Email is required' })
+  @IsEmail({}, { message: "Must be a valid email address" })
+  @IsNotEmpty({ message: "Email is required" })
   email!: string;
 
   @ApiProperty({
-    description: 'Optional ticket ID to resend specific ticket',
-    example: 'uuid-ticket-id',
+    description: "Optional ticket ID to resend specific ticket",
+    example: "uuid-ticket-id",
     required: false,
   })
   @IsOptional()
@@ -28,19 +28,19 @@ export class ResendEmailDto {
  */
 export class SendReminderDto {
   @ApiProperty({
-    description: 'Event ID to send reminders for',
-    example: 'TICK0001-001',
+    description: "Event ID to send reminders for",
+    example: "TICK0001-001",
   })
   @IsString()
-  @IsNotEmpty({ message: 'Event ID is required' })
+  @IsNotEmpty({ message: "Event ID is required" })
   eventId!: string;
 
   @ApiProperty({
-    description: 'Optional specific email to send reminder to',
-    example: 'buyer@example.com',
+    description: "Optional specific email to send reminder to",
+    example: "buyer@example.com",
     required: false,
   })
   @IsOptional()
-  @IsEmail({}, { message: 'Must be a valid email address' })
+  @IsEmail({}, { message: "Must be a valid email address" })
   email?: string;
 }

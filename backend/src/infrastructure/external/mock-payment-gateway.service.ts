@@ -20,16 +20,24 @@ export class MockPaymentGateway implements IPaymentGateway {
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     // Get success rate from environment or default to always succeed in development
-    const successRate = parseFloat(this.configService.get<string>('MOCK_PAYMENT_SUCCESS_RATE', '1.0'));
+    const successRate = parseFloat(
+      this.configService.get<string>("MOCK_PAYMENT_SUCCESS_RATE", "1.0"),
+    );
     const isSuccessful = Math.random() < successRate;
 
-    console.log(`💳 [MockPaymentGateway] Processing payment for ${paymentData.amount.amount} ${paymentData.amount.currency}`);
-    console.log(`💳 [MockPaymentGateway] Success rate: ${successRate * 100}%, Result: ${isSuccessful ? 'SUCCESS' : 'FAILED'}`);
+    console.log(
+      `💳 [MockPaymentGateway] Processing payment for ${paymentData.amount.amount} ${paymentData.amount.currency}`,
+    );
+    console.log(
+      `💳 [MockPaymentGateway] Success rate: ${successRate * 100}%, Result: ${isSuccessful ? "SUCCESS" : "FAILED"}`,
+    );
 
     if (isSuccessful) {
       const transactionId = `TXN-${Date.now()}-${Math.random().toString(36).substring(7)}`;
-      console.log(`✅ [MockPaymentGateway] Payment successful: ${transactionId}`);
-      
+      console.log(
+        `✅ [MockPaymentGateway] Payment successful: ${transactionId}`,
+      );
+
       return {
         success: true,
         transactionId,
@@ -37,7 +45,7 @@ export class MockPaymentGateway implements IPaymentGateway {
       };
     } else {
       console.log(`❌ [MockPaymentGateway] Payment failed: PAYMENT_DECLINED`);
-      
+
       return {
         success: false,
         errorCode: "PAYMENT_DECLINED",
@@ -50,7 +58,9 @@ export class MockPaymentGateway implements IPaymentGateway {
     // Simulate refund processing
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    console.log(`🔄 [MockPaymentGateway] Processing refund for transaction: ${transactionId}`);
+    console.log(
+      `🔄 [MockPaymentGateway] Processing refund for transaction: ${transactionId}`,
+    );
 
     return {
       success: true,

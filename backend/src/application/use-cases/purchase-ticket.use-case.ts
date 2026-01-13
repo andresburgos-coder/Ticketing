@@ -189,8 +189,12 @@ export class PurchaseTicketUseCase {
     });
 
     // 10. Send confirmation email (async, don't wait for it)
-    this.sendConfirmationEmail(result.savedTickets, result.event, params.buyerEmail).catch((error) => {
-      console.error('❌ Error sending confirmation email:', error);
+    this.sendConfirmationEmail(
+      result.savedTickets,
+      result.event,
+      params.buyerEmail,
+    ).catch((error) => {
+      console.error("❌ Error sending confirmation email:", error);
       // Don't throw error - email failure shouldn't fail the purchase
     });
 
@@ -231,7 +235,7 @@ export class PurchaseTicketUseCase {
 
   /**
    * Sends confirmation email with tickets after successful purchase
-   * 
+   *
    * @param tickets - Generated tickets
    * @param event - Event information
    * @param buyerEmail - Buyer's email address
@@ -242,11 +246,11 @@ export class PurchaseTicketUseCase {
     buyerEmail: string,
   ): Promise<void> {
     try {
-      console.log('📧 Enviando email de confirmación de compra directa...');
-      
+      console.log("📧 Enviando email de confirmación de compra directa...");
+
       // Extract buyer name from email (simple approach)
       const buyerName = this.extractNameFromEmail(buyerEmail);
-      
+
       await this.emailService.sendTicketConfirmationEmail({
         buyerEmail,
         buyerName,
@@ -260,9 +264,9 @@ export class PurchaseTicketUseCase {
         eventImage: event.imageUrl,
       });
 
-      console.log('✅ Email de confirmación enviado exitosamente');
+      console.log("✅ Email de confirmación enviado exitosamente");
     } catch (error) {
-      console.error('❌ Error al enviar email de confirmación:', error);
+      console.error("❌ Error al enviar email de confirmación:", error);
       throw error;
     }
   }
@@ -270,20 +274,20 @@ export class PurchaseTicketUseCase {
   /**
    * Extracts a display name from an email address
    * Simple implementation - in production you might want to store actual names
-   * 
+   *
    * @param email - Email address
    * @returns Display name
    */
   private extractNameFromEmail(email: string): string {
-    const localPart = email.split('@')[0];
+    const localPart = email.split("@")[0];
     if (!localPart) {
-      return 'Usuario';
+      return "Usuario";
     }
     // Convert dots and underscores to spaces and capitalize
     return localPart
-      .replace(/[._]/g, ' ')
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
+      .replace(/[._]/g, " ")
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
   }
 }

@@ -121,19 +121,18 @@ describe("AuthController Integration Tests", () => {
         .post("/auth/register")
         .send(registerDto)
         .expect(400);
+    });
+    const registerDto = {
+      email: "user@example.com",
+      password: env.TEST_SHORT_PASSWORD,
+      firstName: "John",
+      lastName: "Doe",
+    };
 
-    it("should return 400 when password is too short", async () => {
-      const registerDto = {
-        email: "user@example.com",
-        password: env.TEST_SHORT_PASSWORD,
-        firstName: "John",
-        lastName: "Doe",
-      };
-
-      await request(app.getHttpServer())
-        .post("/auth/register")
-        .send(registerDto)
-        .expect(400);
+    await request(app.getHttpServer())
+      .post("/auth/register")
+      .send(registerDto)
+      .expect(400);
     it("should return 409 when user already exists", async () => {
       const registerDto = {
         email: "existing@example.com",
@@ -157,7 +156,7 @@ describe("AuthController Integration Tests", () => {
     });
   });
 
-              password: "TestPassword123",
+  describe("POST /auth/login", () => {
     beforeEach(async () => {
       // Create a user for login tests
       const registerDto = {
@@ -170,7 +169,7 @@ describe("AuthController Integration Tests", () => {
       await request(app.getHttpServer())
         .post("/auth/register")
         .send(registerDto);
-              password: "TestPassword123",
+    });
 
     it("should return tokens with 200 on valid credentials", async () => {
       const loginDto = {
@@ -189,7 +188,7 @@ describe("AuthController Integration Tests", () => {
       expect(response.body.refreshToken).toBeTruthy();
       expect(response.body.user).toHaveProperty("id");
       expect(response.body.user.email).toBe("testuser@example.com");
-              password: "TestPassword123",
+    });
 
     it("should return 401 with invalid email", async () => {
       const loginDto = {
@@ -201,7 +200,7 @@ describe("AuthController Integration Tests", () => {
         .post("/auth/login")
         .send(loginDto);
 
-              password: "TestPassword123",
+      expect(response.status).toBe(401);
     });
 
     it("should return 401 with invalid password", async () => {
@@ -216,7 +215,6 @@ describe("AuthController Integration Tests", () => {
 
       expect(response.status).toBe(401);
     });
-              password: "TestPassword123",
     it("should return 400 when email is missing", async () => {
       const loginDto = {
         password: TEST_PASSWORD,

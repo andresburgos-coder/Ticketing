@@ -31,7 +31,10 @@ import {
   ValidateQRDto,
   ValidateQRResponse,
 } from "../../application/dto/validate-qr.dto";
-import { ResendEmailDto, SendReminderDto } from "../../application/dto/resend-email.dto";
+import {
+  ResendEmailDto,
+  SendReminderDto,
+} from "../../application/dto/resend-email.dto";
 import { JwtAuthGuard } from "../../application/services/jwt-auth.guard";
 
 /**
@@ -316,7 +319,9 @@ export class TicketController {
     status: 400,
     description: "Bad request - invalid email or no tickets found",
   })
-  async resendEmail(@Body() resendEmailDto: ResendEmailDto): Promise<{ success: boolean; message: string }> {
+  async resendEmail(
+    @Body() resendEmailDto: ResendEmailDto,
+  ): Promise<{ success: boolean; message: string }> {
     try {
       const success = await this.resendEmailUseCase.resendConfirmationEmail(
         resendEmailDto.email,
@@ -325,9 +330,9 @@ export class TicketController {
 
       return {
         success,
-        message: success 
-          ? 'Email de confirmación reenviado exitosamente'
-          : 'Error al reenviar el email de confirmación',
+        message: success
+          ? "Email de confirmación reenviado exitosamente"
+          : "Error al reenviar el email de confirmación",
       };
     } catch (error) {
       if (error instanceof Error) {
@@ -366,7 +371,9 @@ export class TicketController {
     status: 400,
     description: "Bad request - invalid event ID or no tickets found",
   })
-  async sendReminder(@Body() sendReminderDto: SendReminderDto): Promise<{ success: boolean; message: string }> {
+  async sendReminder(
+    @Body() sendReminderDto: SendReminderDto,
+  ): Promise<{ success: boolean; message: string }> {
     try {
       const success = await this.resendEmailUseCase.sendEventReminder(
         sendReminderDto.eventId,
@@ -375,9 +382,9 @@ export class TicketController {
 
       return {
         success,
-        message: success 
-          ? 'Recordatorios enviados exitosamente'
-          : 'Error al enviar recordatorios',
+        message: success
+          ? "Recordatorios enviados exitosamente"
+          : "Error al enviar recordatorios",
       };
     } catch (error) {
       if (error instanceof Error) {

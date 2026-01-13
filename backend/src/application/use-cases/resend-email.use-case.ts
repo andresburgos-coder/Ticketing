@@ -1,12 +1,12 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { ITicketRepository } from '../../domain/interfaces/ticket-repository.interface';
-import { IEventRepository } from '../../domain/interfaces/event-repository.interface';
+import { Injectable, Inject } from "@nestjs/common";
+import { ITicketRepository } from "../../domain/interfaces/ticket-repository.interface";
+import { IEventRepository } from "../../domain/interfaces/event-repository.interface";
 import {
   TICKET_REPOSITORY,
   EVENT_REPOSITORY,
-} from '../../domain/interfaces/repository-tokens';
-import { EmailService } from '../../infrastructure/external/email.service';
-import { Email } from '../../domain/value-objects/email.vo';
+} from "../../domain/interfaces/repository-tokens";
+import { EmailService } from "../../infrastructure/external/email.service";
+import { Email } from "../../domain/value-objects/email.vo";
 
 /**
  * ResendEmailUseCase
@@ -24,32 +24,45 @@ export class ResendEmailUseCase {
 
   /**
    * Resends confirmation email for a specific buyer
-   * 
+   *
    * @param email - Buyer's email address
    * @param ticketId - Optional specific ticket ID
    * @returns Success status
    */
-  async resendConfirmationEmail(email: string, ticketId?: string): Promise<boolean> {
+  async resendConfirmationEmail(
+    email: string,
+    ticketId?: string,
+  ): Promise<boolean> {
     try {
-      console.log(`🔍 [ResendEmailUseCase] Buscando tickets para email: ${email}`);
-      
+      console.log(
+        `🔍 [ResendEmailUseCase] Buscando tickets para email: ${email}`,
+      );
+
       // Get tickets for the buyer
       let tickets;
       if (ticketId) {
-        console.log(`🎫 [ResendEmailUseCase] Buscando ticket específico: ${ticketId}`);
+        console.log(
+          `🎫 [ResendEmailUseCase] Buscando ticket específico: ${ticketId}`,
+        );
         const ticket = await this.ticketRepository.findById(ticketId);
         if (!ticket || ticket.buyerEmail.value !== email) {
-          throw new Error('Ticket not found or does not belong to this email');
+          throw new Error("Ticket not found or does not belong to this email");
         }
         tickets = [ticket];
       } else {
-        console.log(`📧 [ResendEmailUseCase] Buscando todos los tickets para: ${email}`);
+        console.log(
+          `📧 [ResendEmailUseCase] Buscando todos los tickets para: ${email}`,
+        );
         tickets = await this.ticketRepository.findByBuyerEmail(email);
-        console.log(`📊 [ResendEmailUseCase] Encontrados ${tickets.length} tickets`);
-        
+        console.log(
+          `📊 [ResendEmailUseCase] Encontrados ${tickets.length} tickets`,
+        );
+
         if (tickets.length === 0) {
-          console.log(`❌ [ResendEmailUseCase] No se encontraron tickets para: ${email}`);
-          throw new Error('No tickets found for this email');
+          console.log(
+            `❌ [ResendEmailUseCase] No se encontraron tickets para: ${email}`,
+          );
+          throw new Error("No tickets found for this email");
         }
       }
 
@@ -93,39 +106,43 @@ export class ResendEmailUseCase {
 
       return allSuccessful;
     } catch (error) {
-      console.error('Error resending confirmation email:', error);
+      console.error("Error resending confirmation email:", error);
       throw error;
     }
   }
 
   /**
    * Sends event reminder emails
-   * 
+   *
    * @param eventId - Event ID to send reminders for
    * @param specificEmail - Optional specific email to send to
    * @returns Success status
    */
-  async sendEventReminder(eventId: string, specificEmail?: string): Promise<boolean> {
+  async sendEventReminder(
+    eventId: string,
+    specificEmail?: string,
+  ): Promise<boolean> {
     try {
       // Get event information
       const event = await this.eventRepository.findById(eventId);
       if (!event) {
-        throw new Error('Event not found');
+        throw new Error("Event not found");
       }
 
       // Get tickets for the event
       let tickets;
       if (specificEmail) {
         // Find tickets by buyer email for this event
-        const allTickets = await this.ticketRepository.findByBuyerEmail(specificEmail);
-        tickets = allTickets.filter(ticket => ticket.eventId === eventId);
+        const allTickets =
+          await this.ticketRepository.findByBuyerEmail(specificEmail);
+        tickets = allTickets.filter((ticket) => ticket.eventId === eventId);
         if (tickets.length === 0) {
-          throw new Error('No tickets found for this email and event');
+          throw new Error("No tickets found for this email and event");
         }
       } else {
         tickets = await this.ticketRepository.findByEvent(eventId);
         if (tickets.length === 0) {
-          throw new Error('No tickets found for this event');
+          throw new Error("No tickets found for this event");
         }
       }
 
@@ -163,26 +180,26 @@ export class ResendEmailUseCase {
 
       return allSuccessful;
     } catch (error) {
-      console.error('Error sending event reminders:', error);
+      console.error("Error sending event reminders:", error);
       throw error;
     }
   }
 
   /**
    * Extracts a display name from an email address
-   * 
+   *
    * @param email - Email address
    * @returns Display name
    */
   private extractNameFromEmail(email: string): string {
-    const localPart = email.split('@')[0];
+    const localPart = email.split("@")[0];
     if (!localPart) {
-      return 'Usuario';
+      return "Usuario";
     }
     return localPart
-      .replace(/[._]/g, ' ')
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
+      .replace(/[._]/g, " ")
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
   }
 }

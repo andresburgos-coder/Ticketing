@@ -1,12 +1,12 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
-import * as handlebars from 'handlebars';
-import * as fs from 'fs';
-import * as path from 'path';
-import { Ticket } from '../../domain/entities/ticket.entity';
-import * as puppeteer from 'puppeteer';
-import * as QRCode from 'qrcode';
+import { Injectable, Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import * as nodemailer from "nodemailer";
+import * as handlebars from "handlebars";
+import * as fs from "fs";
+import * as path from "path";
+import { Ticket } from "../../domain/entities/ticket.entity";
+import * as puppeteer from "puppeteer";
+import * as QRCode from "qrcode";
 
 export interface EmailAttachment {
   filename: string;
@@ -40,7 +40,7 @@ export class EmailService {
   private templatesPath: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.templatesPath = path.join(__dirname, '../../templates/email');
+    this.templatesPath = path.join(__dirname, "../../templates/email");
     this.initializeTransporter();
     this.registerHandlebarsHelpers();
   }
@@ -50,17 +50,22 @@ export class EmailService {
    */
   private initializeTransporter(): void {
     const smtpConfig = {
-      service: 'gmail', // Usar servicio predefinido de Gmail
+      service: "gmail", // Usar servicio predefinido de Gmail
       auth: {
-        user: this.configService.get<string>('SMTP_USER'),
-        pass: this.configService.get<string>('SMTP_PASSWORD'),
+        user: this.configService.get<string>("SMTP_USER"),
+        pass: this.configService.get<string>("SMTP_PASSWORD"),
       },
     };
 
-    console.log('📧 [EmailService] Inicializando transporter con configuración:');
-    console.log('- Service: gmail');
-    console.log('- User:', smtpConfig.auth.user);
-    console.log('- Pass:', smtpConfig.auth.pass ? '***configurada***' : 'NO CONFIGURADA');
+    console.log(
+      "📧 [EmailService] Inicializando transporter con configuración:",
+    );
+    console.log("- Service: gmail");
+    console.log("- User:", smtpConfig.auth.user);
+    console.log(
+      "- Pass:",
+      smtpConfig.auth.pass ? "***configurada***" : "NO CONFIGURADA",
+    );
 
     this.transporter = nodemailer.createTransport(smtpConfig);
 
@@ -74,9 +79,9 @@ export class EmailService {
   private async verifyConnection(): Promise<void> {
     try {
       await this.transporter.verify();
-      this.logger.log('✅ Conexión SMTP verificada correctamente');
+      this.logger.log("✅ Conexión SMTP verificada correctamente");
     } catch (error) {
-      this.logger.error('❌ Error al verificar conexión SMTP:', error);
+      this.logger.error("❌ Error al verificar conexión SMTP:", error);
     }
   }
 
@@ -86,19 +91,19 @@ export class EmailService {
   private async generateQRCode(data: string): Promise<Buffer> {
     try {
       const qrBuffer = await QRCode.toBuffer(data, {
-        type: 'png',
+        type: "png",
         width: 200,
         margin: 2,
         color: {
-          dark: '#000000',
-          light: '#FFFFFF'
-        }
+          dark: "#000000",
+          light: "#FFFFFF",
+        },
       });
-      
+
       // Convertir Uint8Array a Buffer si es necesario
       return Buffer.from(qrBuffer);
     } catch (error) {
-      this.logger.error('Error generando QR code:', error);
+      this.logger.error("Error generando QR code:", error);
       throw error;
     }
   }
@@ -107,14 +112,14 @@ export class EmailService {
    * Genera el HTML del ticket para usar en PDF y PNG
    */
   private generateTicketHTML(
-    ticket: Ticket, 
-    eventName: string, 
-    eventDate: string, 
+    ticket: Ticket,
+    eventName: string,
+    eventDate: string,
     eventLocation: string,
     eventVenueName?: string,
     eventStartTime?: string,
     eventEndTime?: string,
-    qrBase64?: string
+    qrBase64?: string,
   ): string {
     return `
       <!DOCTYPE html>
@@ -341,21 +346,27 @@ export class EmailService {
                 <div class="event-detail">
                   <div class="detail-icon">📅</div>
                   <div class="detail-label">Fecha</div>
-                  <div class="detail-value">${new Date(eventDate).toLocaleDateString('es-ES', { 
-                    weekday: 'short', 
-                    day: 'numeric', 
-                    month: 'short', 
-                    year: 'numeric' 
+                  <div class="detail-value">${new Date(
+                    eventDate,
+                  ).toLocaleDateString("es-ES", {
+                    weekday: "short",
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
                   })}</div>
                 </div>
                 
-                ${eventStartTime ? `
+                ${
+                  eventStartTime
+                    ? `
                 <div class="event-detail">
                   <div class="detail-icon">🕐</div>
                   <div class="detail-label">Hora</div>
-                  <div class="detail-value">${eventStartTime}${eventEndTime ? ` - ${eventEndTime}` : ''}</div>
+                  <div class="detail-value">${eventStartTime}${eventEndTime ? ` - ${eventEndTime}` : ""}</div>
                 </div>
-                ` : ''}
+                `
+                    : ""
+                }
                 
                 <div class="event-detail">
                   <div class="detail-icon">📍</div>
@@ -363,13 +374,17 @@ export class EmailService {
                   <div class="detail-value">${eventLocation}</div>
                 </div>
                 
-                ${eventVenueName ? `
+                ${
+                  eventVenueName
+                    ? `
                 <div class="event-detail">
                   <div class="detail-icon">🏢</div>
                   <div class="detail-label">Venue</div>
                   <div class="detail-value">${eventVenueName}</div>
                 </div>
-                ` : ''}
+                `
+                    : ""
+                }
               </div>
             </div>
             
@@ -387,12 +402,12 @@ export class EmailService {
                 
                 <div class="ticket-detail">
                   <span class="ticket-label">Precio:</span>
-                  <span class="ticket-value">${ticket.price.amount.toLocaleString('es-ES')} ${ticket.price.currency}</span>
+                  <span class="ticket-value">${ticket.price.amount.toLocaleString("es-ES")} ${ticket.price.currency}</span>
                 </div>
                 
                 <div class="ticket-detail">
                   <span class="ticket-label">Fecha de Compra:</span>
-                  <span class="ticket-value">${ticket.purchaseDate.toLocaleDateString('es-ES')}</span>
+                  <span class="ticket-value">${ticket.purchaseDate.toLocaleDateString("es-ES")}</span>
                 </div>
               </div>
               
@@ -407,9 +422,9 @@ export class EmailService {
           
           <div class="ticket-footer">
             <div class="footer-text">
-              <strong>${this.configService.get<string>('COMPANY_NAME', 'TicketSales')}</strong><br>
+              <strong>${this.configService.get<string>("COMPANY_NAME", "TicketSales")}</strong><br>
               Este ticket es válido para un ingreso único al evento<br>
-              Soporte: ${this.configService.get<string>('SUPPORT_EMAIL', 'soporte@ticketsales.com')}
+              Soporte: ${this.configService.get<string>("SUPPORT_EMAIL", "soporte@ticketsales.com")}
             </div>
           </div>
         </div>
@@ -422,83 +437,92 @@ export class EmailService {
    * Genera un PDF profesional del ticket usando Puppeteer
    */
   private async generateTicketPDF(
-    ticket: Ticket, 
-    eventName: string, 
-    eventDate: string, 
+    ticket: Ticket,
+    eventName: string,
+    eventDate: string,
     eventLocation: string,
     eventVenueName?: string,
     eventStartTime?: string,
-    eventEndTime?: string
+    eventEndTime?: string,
   ): Promise<Buffer> {
     let browser: puppeteer.Browser | null = null;
-    
+
     try {
       // Generar QR code
       const qrBuffer = await this.generateQRCode(ticket.qrToken);
-      const qrBase64 = `data:image/png;base64,${qrBuffer.toString('base64')}`;
+      const qrBase64 = `data:image/png;base64,${qrBuffer.toString("base64")}`;
 
       // Crear HTML del ticket
-      const ticketHTML = this.generateTicketHTML(ticket, eventName, eventDate, eventLocation, eventVenueName, eventStartTime, eventEndTime, qrBase64);
+      const ticketHTML = this.generateTicketHTML(
+        ticket,
+        eventName,
+        eventDate,
+        eventLocation,
+        eventVenueName,
+        eventStartTime,
+        eventEndTime,
+        qrBase64,
+      );
 
       // Inicializar Puppeteer con configuración más robusta
       browser = await puppeteer.launch({
         headless: true,
-        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser',
+        executablePath:
+          process.env.PUPPETEER_EXECUTABLE_PATH || "/usr/bin/chromium-browser",
         args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-gpu',
-          '--disable-web-security',
-          '--disable-features=VizDisplayCompositor',
-          '--disable-extensions',
-          '--disable-plugins',
-          '--disable-background-timer-throttling',
-          '--disable-backgrounding-occluded-windows',
-          '--disable-renderer-backgrounding',
-          '--disable-ipc-flooding-protection',
-          '--memory-pressure-off'
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
+          "--disable-gpu",
+          "--disable-web-security",
+          "--disable-features=VizDisplayCompositor",
+          "--disable-extensions",
+          "--disable-plugins",
+          "--disable-background-timer-throttling",
+          "--disable-backgrounding-occluded-windows",
+          "--disable-renderer-backgrounding",
+          "--disable-ipc-flooding-protection",
+          "--memory-pressure-off",
         ],
-        ignoreDefaultArgs: ['--disable-extensions'],
-        timeout: 60000
+        ignoreDefaultArgs: ["--disable-extensions"],
+        timeout: 60000,
       });
 
       const page = await browser.newPage();
-      
+
       // Configurar el viewport
       await page.setViewport({ width: 800, height: 1200 });
-      
+
       // Cargar el HTML con timeout más largo
-      await page.setContent(ticketHTML, { 
-        waitUntil: 'networkidle0',
-        timeout: 30000 
+      await page.setContent(ticketHTML, {
+        waitUntil: "networkidle0",
+        timeout: 30000,
       });
-      
+
       // Generar PDF con timeout
       const pdfBuffer = await page.pdf({
-        format: 'A4',
+        format: "A4",
         printBackground: true,
         margin: {
-          top: '20px',
-          right: '20px',
-          bottom: '20px',
-          left: '20px'
+          top: "20px",
+          right: "20px",
+          bottom: "20px",
+          left: "20px",
         },
-        timeout: 30000
+        timeout: 30000,
       });
 
       // Convertir Uint8Array a Buffer si es necesario
       return Buffer.from(pdfBuffer);
-
     } catch (error) {
-      this.logger.error('Error generando PDF profesional:', error);
+      this.logger.error("Error generando PDF profesional:", error);
       throw error;
     } finally {
       if (browser) {
         try {
           await browser.close();
         } catch (closeError) {
-          this.logger.warn('Error cerrando navegador PDF:', closeError);
+          this.logger.warn("Error cerrando navegador PDF:", closeError);
         }
       }
     }
@@ -508,77 +532,86 @@ export class EmailService {
    * Genera una imagen PNG del ticket usando Puppeteer
    */
   private async generateTicketPNG(
-    ticket: Ticket, 
-    eventName: string, 
-    eventDate: string, 
+    ticket: Ticket,
+    eventName: string,
+    eventDate: string,
     eventLocation: string,
     eventVenueName?: string,
     eventStartTime?: string,
-    eventEndTime?: string
+    eventEndTime?: string,
   ): Promise<Buffer> {
     let browser: puppeteer.Browser | null = null;
-    
+
     try {
       // Generar QR code
       const qrBuffer = await this.generateQRCode(ticket.qrToken);
-      const qrBase64 = `data:image/png;base64,${qrBuffer.toString('base64')}`;
+      const qrBase64 = `data:image/png;base64,${qrBuffer.toString("base64")}`;
 
       // Crear HTML del ticket
-      const ticketHTML = this.generateTicketHTML(ticket, eventName, eventDate, eventLocation, eventVenueName, eventStartTime, eventEndTime, qrBase64);
+      const ticketHTML = this.generateTicketHTML(
+        ticket,
+        eventName,
+        eventDate,
+        eventLocation,
+        eventVenueName,
+        eventStartTime,
+        eventEndTime,
+        qrBase64,
+      );
 
       // Inicializar Puppeteer con configuración más robusta
       browser = await puppeteer.launch({
         headless: true,
-        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser',
+        executablePath:
+          process.env.PUPPETEER_EXECUTABLE_PATH || "/usr/bin/chromium-browser",
         args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-gpu',
-          '--disable-web-security',
-          '--disable-features=VizDisplayCompositor',
-          '--disable-extensions',
-          '--disable-plugins',
-          '--disable-background-timer-throttling',
-          '--disable-backgrounding-occluded-windows',
-          '--disable-renderer-backgrounding',
-          '--disable-ipc-flooding-protection',
-          '--memory-pressure-off'
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
+          "--disable-gpu",
+          "--disable-web-security",
+          "--disable-features=VizDisplayCompositor",
+          "--disable-extensions",
+          "--disable-plugins",
+          "--disable-background-timer-throttling",
+          "--disable-backgrounding-occluded-windows",
+          "--disable-renderer-backgrounding",
+          "--disable-ipc-flooding-protection",
+          "--memory-pressure-off",
         ],
-        ignoreDefaultArgs: ['--disable-extensions'],
-        timeout: 60000
+        ignoreDefaultArgs: ["--disable-extensions"],
+        timeout: 60000,
       });
 
       const page = await browser.newPage();
-      
+
       // Configurar el viewport para PNG
       await page.setViewport({ width: 800, height: 1000 });
-      
+
       // Cargar el HTML con timeout más largo
-      await page.setContent(ticketHTML, { 
-        waitUntil: 'networkidle0',
-        timeout: 30000 
+      await page.setContent(ticketHTML, {
+        waitUntil: "networkidle0",
+        timeout: 30000,
       });
-      
+
       // Generar PNG
       const pngBuffer = await page.screenshot({
-        type: 'png',
+        type: "png",
         fullPage: true,
-        omitBackground: false
+        omitBackground: false,
       });
 
       // Convertir Uint8Array a Buffer si es necesario
       return Buffer.from(pngBuffer);
-
     } catch (error) {
-      this.logger.error('Error generando PNG profesional:', error);
+      this.logger.error("Error generando PNG profesional:", error);
       throw error;
     } finally {
       if (browser) {
         try {
           await browser.close();
         } catch (closeError) {
-          this.logger.warn('Error cerrando navegador PNG:', closeError);
+          this.logger.warn("Error cerrando navegador PNG:", closeError);
         }
       }
     }
@@ -586,25 +619,34 @@ export class EmailService {
   /**
    * Genera un PDF profesional pero estable del ticket
    */
-  private async generateSimpleTicketPDF(ticket: Ticket, eventName: string): Promise<Buffer> {
+  private async generateSimpleTicketPDF(
+    ticket: Ticket,
+    eventName: string,
+  ): Promise<Buffer> {
     let browser: puppeteer.Browser | null = null;
-    
+
     try {
-      this.logger.log(`🔧 Generando PDF profesional para ticket ${ticket.code}...`);
-      
+      this.logger.log(
+        `🔧 Generando PDF profesional para ticket ${ticket.code}...`,
+      );
+
       // Generar QR code
       const qrBuffer = await this.generateQRCode(ticket.qrToken);
-      const qrBase64 = `data:image/png;base64,${qrBuffer.toString('base64')}`;
-      
+      const qrBase64 = `data:image/png;base64,${qrBuffer.toString("base64")}`;
+
       browser = await puppeteer.launch({
         headless: true,
-        executablePath: '/usr/bin/chromium-browser',
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-        timeout: 30000
+        executablePath: "/usr/bin/chromium-browser",
+        args: [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
+        ],
+        timeout: 30000,
       });
 
       const page = await browser.newPage();
-      
+
       const professionalHTML = `
         <html>
           <head>
@@ -740,12 +782,12 @@ export class EmailService {
                   
                   <div class="detail-item">
                     <div class="detail-label">Precio</div>
-                    <div class="detail-value">${ticket.price.amount.toLocaleString('es-ES')} ${ticket.price.currency}</div>
+                    <div class="detail-value">${ticket.price.amount.toLocaleString("es-ES")} ${ticket.price.currency}</div>
                   </div>
                   
                   <div class="detail-item">
                     <div class="detail-label">Fecha de Compra</div>
-                    <div class="detail-value">${ticket.purchaseDate.toLocaleDateString('es-ES')}</div>
+                    <div class="detail-value">${ticket.purchaseDate.toLocaleDateString("es-ES")}</div>
                   </div>
                 </div>
                 
@@ -766,26 +808,25 @@ export class EmailService {
           </body>
         </html>
       `;
-      
-      await page.setContent(professionalHTML, { waitUntil: 'networkidle0' });
-      const pdfBuffer = await page.pdf({ 
-        format: 'A4',
+
+      await page.setContent(professionalHTML, { waitUntil: "networkidle0" });
+      const pdfBuffer = await page.pdf({
+        format: "A4",
         printBackground: true,
-        margin: { top: '10px', right: '10px', bottom: '10px', left: '10px' }
+        margin: { top: "10px", right: "10px", bottom: "10px", left: "10px" },
       });
-      
+
       this.logger.log(`✅ PDF profesional generado: ${pdfBuffer.length} bytes`);
       return Buffer.from(pdfBuffer);
-
     } catch (error) {
-      this.logger.error('Error generando PDF profesional:', error);
+      this.logger.error("Error generando PDF profesional:", error);
       throw error;
     } finally {
       if (browser) {
         try {
           await browser.close();
         } catch (e) {
-          this.logger.warn('Error cerrando navegador:', e);
+          this.logger.warn("Error cerrando navegador:", e);
         }
       }
     }
@@ -794,29 +835,36 @@ export class EmailService {
   /**
    * Genera un PNG profesional pero estable del ticket
    */
-  private async generateSimpleTicketPNG(ticket: Ticket, eventName: string): Promise<Buffer> {
+  private async generateSimpleTicketPNG(
+    ticket: Ticket,
+    eventName: string,
+  ): Promise<Buffer> {
     let browser: puppeteer.Browser | null = null;
-    
+
     try {
       this.logger.log(`🔧 Generando PNG simple para ticket ${ticket.code}...`);
-      
+
       // Generar QR code
       const qrBuffer = await this.generateQRCode(ticket.qrToken);
-      const qrBase64 = `data:image/png;base64,${qrBuffer.toString('base64')}`;
+      const qrBase64 = `data:image/png;base64,${qrBuffer.toString("base64")}`;
       this.logger.log(`✅ QR code generado para PNG: ${qrBuffer.length} bytes`);
-      
+
       browser = await puppeteer.launch({
         headless: true,
-        executablePath: '/usr/bin/chromium-browser',
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-        timeout: 30000
+        executablePath: "/usr/bin/chromium-browser",
+        args: [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
+        ],
+        timeout: 30000,
       });
       this.logger.log(`✅ Navegador PNG iniciado`);
 
       const page = await browser.newPage();
       await page.setViewport({ width: 800, height: 1000 });
       this.logger.log(`✅ Página PNG configurada`);
-      
+
       // Usar HTML simplificado pero profesional
       const professionalHTML = `
         <html>
@@ -867,11 +915,11 @@ export class EmailService {
                   </div>
                   <div class="detail">
                     <div class="label">Precio</div>
-                    <div class="value">${ticket.price.amount.toLocaleString('es-ES')} ${ticket.price.currency}</div>
+                    <div class="value">${ticket.price.amount.toLocaleString("es-ES")} ${ticket.price.currency}</div>
                   </div>
                   <div class="detail">
                     <div class="label">Fecha</div>
-                    <div class="value">${ticket.purchaseDate.toLocaleDateString('es-ES')}</div>
+                    <div class="value">${ticket.purchaseDate.toLocaleDateString("es-ES")}</div>
                   </div>
                 </div>
                 <div class="qr-section">
@@ -885,22 +933,24 @@ export class EmailService {
           </body>
         </html>
       `;
-      
-      await page.setContent(professionalHTML, { waitUntil: 'networkidle0' });
+
+      await page.setContent(professionalHTML, { waitUntil: "networkidle0" });
       this.logger.log(`✅ Contenido HTML cargado en PNG`);
-      
-      const pngBuffer = await page.screenshot({ 
-        type: 'png',
+
+      const pngBuffer = await page.screenshot({
+        type: "png",
         fullPage: true,
-        omitBackground: false
+        omitBackground: false,
       });
-      
+
       this.logger.log(`✅ PNG simple generado: ${pngBuffer.length} bytes`);
       return Buffer.from(pngBuffer);
-
     } catch (error) {
-      this.logger.error('Error generando PNG simple:', error);
-      this.logger.error('PNG Error stack:', error instanceof Error ? error.stack : 'No stack available');
+      this.logger.error("Error generando PNG simple:", error);
+      this.logger.error(
+        "PNG Error stack:",
+        error instanceof Error ? error.stack : "No stack available",
+      );
       throw error;
     } finally {
       if (browser) {
@@ -908,7 +958,7 @@ export class EmailService {
           await browser.close();
           this.logger.log(`✅ Navegador PNG cerrado`);
         } catch (e) {
-          this.logger.warn('Error cerrando navegador PNG:', e);
+          this.logger.warn("Error cerrando navegador PNG:", e);
         }
       }
     }
@@ -916,70 +966,87 @@ export class EmailService {
 
   private registerHandlebarsHelpers(): void {
     // Helper para formatear fechas
-    handlebars.registerHelper('formatDate', (date: string) => {
-      return new Date(date).toLocaleDateString('es-ES', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
+    handlebars.registerHelper("formatDate", (date: string) => {
+      return new Date(date).toLocaleDateString("es-ES", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
       });
     });
 
     // Helper para formatear hora
-    handlebars.registerHelper('formatTime', (time: string) => {
-      if (!time) return '';
-      return new Date(`2000-01-01T${time}`).toLocaleTimeString('es-ES', {
-        hour: '2-digit',
-        minute: '2-digit',
+    handlebars.registerHelper("formatTime", (time: string) => {
+      if (!time) return "";
+      return new Date(`2000-01-01T${time}`).toLocaleTimeString("es-ES", {
+        hour: "2-digit",
+        minute: "2-digit",
       });
     });
 
     // Helper para formatear precio
-    handlebars.registerHelper('formatPrice', (amount: number, currency: string) => {
-      return new Intl.NumberFormat('es-ES', {
-        style: 'currency',
-        currency: currency || 'EUR',
-      }).format(amount);
-    });
+    handlebars.registerHelper(
+      "formatPrice",
+      (amount: number, currency: string) => {
+        return new Intl.NumberFormat("es-ES", {
+          style: "currency",
+          currency: currency || "EUR",
+        }).format(amount);
+      },
+    );
 
     // Helper para generar QR URL
-    handlebars.registerHelper('qrCodeUrl', (qrToken: string) => {
-      const baseUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:4200');
+    handlebars.registerHelper("qrCodeUrl", (qrToken: string) => {
+      const baseUrl = this.configService.get<string>(
+        "FRONTEND_URL",
+        "http://localhost:4200",
+      );
       return `${baseUrl}/qr/${qrToken}`;
     });
 
     // Helper condicional
-    handlebars.registerHelper('ifEquals', function(this: any, arg1: any, arg2: any, options: any) {
-      return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
-    });
+    handlebars.registerHelper(
+      "ifEquals",
+      function (this: any, arg1: any, arg2: any, options: any) {
+        return arg1 == arg2 ? options.fn(this) : options.inverse(this);
+      },
+    );
   }
 
   /**
    * Carga y compila una plantilla de email
    */
-  private async loadTemplate(templateName: string): Promise<handlebars.TemplateDelegate> {
+  private async loadTemplate(
+    templateName: string,
+  ): Promise<handlebars.TemplateDelegate> {
     try {
       const templatePath = path.join(this.templatesPath, `${templateName}.hbs`);
-      const templateContent = fs.readFileSync(templatePath, 'utf8');
+      const templateContent = fs.readFileSync(templatePath, "utf8");
       return handlebars.compile(templateContent);
     } catch (error) {
       this.logger.error(`Error al cargar plantilla ${templateName}:`, error);
-      throw new Error(`No se pudo cargar la plantilla de email: ${templateName}`);
+      throw new Error(
+        `No se pudo cargar la plantilla de email: ${templateName}`,
+      );
     }
   }
 
   /**
    * Envía email de confirmación de compra con entradas
    */
-  async sendTicketConfirmationEmail(params: SendTicketEmailParams): Promise<boolean> {
+  async sendTicketConfirmationEmail(
+    params: SendTicketEmailParams,
+  ): Promise<boolean> {
     try {
-      this.logger.log(`📧 Enviando email de confirmación a: ${params.buyerEmail}`);
+      this.logger.log(
+        `📧 Enviando email de confirmación a: ${params.buyerEmail}`,
+      );
 
       // Cargar plantilla
-      const template = await this.loadTemplate('ticket-confirmation');
+      const template = await this.loadTemplate("ticket-confirmation");
 
       // Preparar datos para la plantilla
-      const ticketsWithQR = params.tickets.map(ticket => ({
+      const ticketsWithQR = params.tickets.map((ticket) => ({
         id: ticket.id,
         code: ticket.code,
         type: ticket.type,
@@ -991,7 +1058,7 @@ export class EmailService {
 
       // Preparar datos para la plantilla
       const templateData = {
-        buyerName: params.buyerName || 'Estimado/a cliente',
+        buyerName: params.buyerName || "Estimado/a cliente",
         buyerEmail: params.buyerEmail,
         eventName: params.eventName,
         eventDate: params.eventDate,
@@ -1002,12 +1069,24 @@ export class EmailService {
         eventImage: params.eventImage,
         tickets: ticketsWithQR,
         totalTickets: params.tickets.length,
-        totalAmount: params.tickets.reduce((sum, ticket) => sum + ticket.price.amount, 0),
-        currency: params.tickets[0]?.price.currency || 'EUR',
+        totalAmount: params.tickets.reduce(
+          (sum, ticket) => sum + ticket.price.amount,
+          0,
+        ),
+        currency: params.tickets[0]?.price.currency || "EUR",
         purchaseDate: new Date().toISOString(),
-        supportEmail: this.configService.get<string>('SUPPORT_EMAIL', 'soporte@ticketsales.com'),
-        companyName: this.configService.get<string>('COMPANY_NAME', 'TicketSales'),
-        websiteUrl: this.configService.get<string>('FRONTEND_URL', 'http://localhost:4200'),
+        supportEmail: this.configService.get<string>(
+          "SUPPORT_EMAIL",
+          "soporte@ticketsales.com",
+        ),
+        companyName: this.configService.get<string>(
+          "COMPANY_NAME",
+          "TicketSales",
+        ),
+        websiteUrl: this.configService.get<string>(
+          "FRONTEND_URL",
+          "http://localhost:4200",
+        ),
       };
 
       // Generar HTML del email
@@ -1015,97 +1094,140 @@ export class EmailService {
 
       // Generar PDFs y PNGs para cada ticket según configuración
       const attachments: EmailAttachment[] = [];
-      const attachPDF = this.configService.get<string>('EMAIL_ATTACH_PDF', 'true') === 'true';
-      const attachPNG = this.configService.get<string>('EMAIL_ATTACH_PNG', 'true') === 'true';
-      
+      const attachPDF =
+        this.configService.get<string>("EMAIL_ATTACH_PDF", "true") === "true";
+      const attachPNG =
+        this.configService.get<string>("EMAIL_ATTACH_PNG", "true") === "true";
+
       if (attachPDF || attachPNG) {
-        this.logger.log(`📄 Generando archivos para ${params.tickets.length} tickets (PDF: ${attachPDF}, PNG: ${attachPNG})...`);
-        
+        this.logger.log(
+          `📄 Generando archivos para ${params.tickets.length} tickets (PDF: ${attachPDF}, PNG: ${attachPNG})...`,
+        );
+
         for (const ticket of params.tickets) {
           try {
-            this.logger.log(`🔄 Iniciando generación de archivos para ticket ${ticket.code}...`);
-            
+            this.logger.log(
+              `🔄 Iniciando generación de archivos para ticket ${ticket.code}...`,
+            );
+
             // Generar PDF si está habilitado
             if (attachPDF) {
               this.logger.log(`📄 Generando PDF para ticket ${ticket.code}...`);
               try {
                 // Usar método simple temporalmente
-                const pdfBuffer = await this.generateSimpleTicketPDF(ticket, params.eventName);
-                
+                const pdfBuffer = await this.generateSimpleTicketPDF(
+                  ticket,
+                  params.eventName,
+                );
+
                 attachments.push({
                   filename: `ticket-${ticket.code}.pdf`,
                   content: pdfBuffer,
-                  contentType: 'application/pdf',
+                  contentType: "application/pdf",
                 });
-                this.logger.log(`✅ PDF generado para ticket ${ticket.code}, tamaño: ${pdfBuffer.length} bytes`);
+                this.logger.log(
+                  `✅ PDF generado para ticket ${ticket.code}, tamaño: ${pdfBuffer.length} bytes`,
+                );
               } catch (pdfError) {
-                this.logger.error(`❌ Error generando PDF para ticket ${ticket.code}:`, pdfError);
+                this.logger.error(
+                  `❌ Error generando PDF para ticket ${ticket.code}:`,
+                  pdfError,
+                );
               }
-              
+
               // Pequeño delay para evitar conflictos
-              await new Promise(resolve => setTimeout(resolve, 500));
+              await new Promise((resolve) => setTimeout(resolve, 500));
             }
-            
+
             // Generar PNG si está habilitado
             if (attachPNG) {
               this.logger.log(`🖼️ Generando PNG para ticket ${ticket.code}...`);
               try {
-                const pngBuffer = await this.generateSimpleTicketPNG(ticket, params.eventName);
-                
+                const pngBuffer = await this.generateSimpleTicketPNG(
+                  ticket,
+                  params.eventName,
+                );
+
                 if (pngBuffer && pngBuffer.length > 0) {
                   attachments.push({
                     filename: `ticket-${ticket.code}.png`,
                     content: pngBuffer,
-                    contentType: 'image/png',
+                    contentType: "image/png",
                   });
-                  this.logger.log(`✅ PNG generado y adjuntado para ticket ${ticket.code}, tamaño: ${pngBuffer.length} bytes`);
+                  this.logger.log(
+                    `✅ PNG generado y adjuntado para ticket ${ticket.code}, tamaño: ${pngBuffer.length} bytes`,
+                  );
                 } else {
-                  this.logger.error(`❌ PNG buffer vacío para ticket ${ticket.code}`);
+                  this.logger.error(
+                    `❌ PNG buffer vacío para ticket ${ticket.code}`,
+                  );
                 }
               } catch (pngError) {
-                this.logger.error(`❌ Error generando PNG para ticket ${ticket.code}:`, pngError);
-                this.logger.error(`❌ PNG Error stack:`, pngError instanceof Error ? pngError.stack : 'No stack available');
+                this.logger.error(
+                  `❌ Error generando PNG para ticket ${ticket.code}:`,
+                  pngError,
+                );
+                this.logger.error(
+                  `❌ PNG Error stack:`,
+                  pngError instanceof Error
+                    ? pngError.stack
+                    : "No stack available",
+                );
               }
             }
-            
-            this.logger.log(`✅ Archivos generados para ticket ${ticket.code} (PDF: ${attachPDF}, PNG: ${attachPNG})`);
+
+            this.logger.log(
+              `✅ Archivos generados para ticket ${ticket.code} (PDF: ${attachPDF}, PNG: ${attachPNG})`,
+            );
           } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : String(error);
+            const errorMessage =
+              error instanceof Error ? error.message : String(error);
             const errorStack = error instanceof Error ? error.stack : undefined;
-            this.logger.error(`❌ Error generando archivos para ticket ${ticket.code}:`, errorMessage);
+            this.logger.error(
+              `❌ Error generando archivos para ticket ${ticket.code}:`,
+              errorMessage,
+            );
             if (errorStack) {
               this.logger.error(`❌ Stack trace:`, errorStack);
             }
           }
         }
       } else {
-        this.logger.log('📄 Generación de adjuntos deshabilitada por configuración');
+        this.logger.log(
+          "📄 Generación de adjuntos deshabilitada por configuración",
+        );
       }
 
       // Configurar opciones del email
       const mailOptions: nodemailer.SendMailOptions = {
         from: {
-          name: this.configService.get<string>('FROM_NAME', 'TicketSales'),
-          address: this.configService.get<string>('FROM_EMAIL') || this.configService.get<string>('SMTP_USER') || 'noreply@ticketsales.com',
+          name: this.configService.get<string>("FROM_NAME", "TicketSales"),
+          address:
+            this.configService.get<string>("FROM_EMAIL") ||
+            this.configService.get<string>("SMTP_USER") ||
+            "noreply@ticketsales.com",
         },
         to: params.buyerEmail,
         subject: `🎫 Confirmación de compra - ${params.eventName}`,
         html: htmlContent,
-        attachments: [
-          ...(params.attachments || []),
-          ...attachments,
-        ],
+        attachments: [...(params.attachments || []), ...attachments],
       };
 
       // Enviar email
       const result = await this.transporter.sendMail(mailOptions);
-      
-      this.logger.log(`✅ Email enviado exitosamente a ${params.buyerEmail}. MessageId: ${result.messageId}`);
-      this.logger.log(`📎 Adjuntos incluidos: ${attachments.length} archivos (${attachments.filter(a => a.contentType === 'application/pdf').length} PDFs, ${attachments.filter(a => a.contentType === 'image/png').length} PNGs)`);
-      return true;
 
+      this.logger.log(
+        `✅ Email enviado exitosamente a ${params.buyerEmail}. MessageId: ${result.messageId}`,
+      );
+      this.logger.log(
+        `📎 Adjuntos incluidos: ${attachments.length} archivos (${attachments.filter((a) => a.contentType === "application/pdf").length} PDFs, ${attachments.filter((a) => a.contentType === "image/png").length} PNGs)`,
+      );
+      return true;
     } catch (error) {
-      this.logger.error(`❌ Error al enviar email a ${params.buyerEmail}:`, error);
+      this.logger.error(
+        `❌ Error al enviar email a ${params.buyerEmail}:`,
+        error,
+      );
       return false;
     }
   }
@@ -1113,37 +1235,53 @@ export class EmailService {
   /**
    * Envía email de recordatorio del evento
    */
-  async sendEventReminderEmail(params: SendTicketEmailParams): Promise<boolean> {
+  async sendEventReminderEmail(
+    params: SendTicketEmailParams,
+  ): Promise<boolean> {
     try {
-      this.logger.log(`📧 Enviando recordatorio de evento a: ${params.buyerEmail}`);
+      this.logger.log(
+        `📧 Enviando recordatorio de evento a: ${params.buyerEmail}`,
+      );
 
-      const template = await this.loadTemplate('event-reminder');
-      
+      const template = await this.loadTemplate("event-reminder");
+
       const templateData = {
-        buyerName: params.buyerName || 'Estimado/a cliente',
+        buyerName: params.buyerName || "Estimado/a cliente",
         eventName: params.eventName,
         eventDate: params.eventDate,
         eventLocation: params.eventLocation,
         eventVenueName: params.eventVenueName,
         eventStartTime: params.eventStartTime,
         eventEndTime: params.eventEndTime,
-        tickets: params.tickets.map(ticket => ({
+        tickets: params.tickets.map((ticket) => ({
           code: ticket.code,
           type: ticket.type,
           qrToken: ticket.qrToken,
         })),
         totalTickets: params.tickets.length,
-        supportEmail: this.configService.get<string>('SUPPORT_EMAIL', 'soporte@ticketsales.com'),
-        companyName: this.configService.get<string>('COMPANY_NAME', 'TicketSales'),
-        websiteUrl: this.configService.get<string>('FRONTEND_URL', 'http://localhost:4200'),
+        supportEmail: this.configService.get<string>(
+          "SUPPORT_EMAIL",
+          "soporte@ticketsales.com",
+        ),
+        companyName: this.configService.get<string>(
+          "COMPANY_NAME",
+          "TicketSales",
+        ),
+        websiteUrl: this.configService.get<string>(
+          "FRONTEND_URL",
+          "http://localhost:4200",
+        ),
       };
 
       const htmlContent = template(templateData);
 
       const mailOptions: nodemailer.SendMailOptions = {
         from: {
-          name: this.configService.get<string>('FROM_NAME', 'TicketSales'),
-          address: this.configService.get<string>('FROM_EMAIL') || this.configService.get<string>('SMTP_USER') || 'noreply@ticketsales.com',
+          name: this.configService.get<string>("FROM_NAME", "TicketSales"),
+          address:
+            this.configService.get<string>("FROM_EMAIL") ||
+            this.configService.get<string>("SMTP_USER") ||
+            "noreply@ticketsales.com",
         },
         to: params.buyerEmail,
         subject: `🔔 Recordatorio: ${params.eventName} - ¡No olvides tus entradas!`,
@@ -1151,12 +1289,16 @@ export class EmailService {
       };
 
       const result = await this.transporter.sendMail(mailOptions);
-      
-      this.logger.log(`✅ Recordatorio enviado exitosamente a ${params.buyerEmail}. MessageId: ${result.messageId}`);
-      return true;
 
+      this.logger.log(
+        `✅ Recordatorio enviado exitosamente a ${params.buyerEmail}. MessageId: ${result.messageId}`,
+      );
+      return true;
     } catch (error) {
-      this.logger.error(`❌ Error al enviar recordatorio a ${params.buyerEmail}:`, error);
+      this.logger.error(
+        `❌ Error al enviar recordatorio a ${params.buyerEmail}:`,
+        error,
+      );
       return false;
     }
   }
@@ -1169,7 +1311,7 @@ export class EmailService {
     subject: string,
     templateName: string,
     templateData: any,
-    attachments?: EmailAttachment[]
+    attachments?: EmailAttachment[],
   ): Promise<boolean> {
     try {
       const template = await this.loadTemplate(templateName);
@@ -1177,8 +1319,11 @@ export class EmailService {
 
       const mailOptions: nodemailer.SendMailOptions = {
         from: {
-          name: this.configService.get<string>('FROM_NAME', 'TicketSales'),
-          address: this.configService.get<string>('FROM_EMAIL') || this.configService.get<string>('SMTP_USER') || 'noreply@ticketsales.com',
+          name: this.configService.get<string>("FROM_NAME", "TicketSales"),
+          address:
+            this.configService.get<string>("FROM_EMAIL") ||
+            this.configService.get<string>("SMTP_USER") ||
+            "noreply@ticketsales.com",
         },
         to,
         subject,
@@ -1187,11 +1332,15 @@ export class EmailService {
       };
 
       const result = await this.transporter.sendMail(mailOptions);
-      this.logger.log(`✅ Email personalizado enviado a ${to}. MessageId: ${result.messageId}`);
+      this.logger.log(
+        `✅ Email personalizado enviado a ${to}. MessageId: ${result.messageId}`,
+      );
       return true;
-
     } catch (error) {
-      this.logger.error(`❌ Error al enviar email personalizado a ${to}:`, error);
+      this.logger.error(
+        `❌ Error al enviar email personalizado a ${to}:`,
+        error,
+      );
       return false;
     }
   }

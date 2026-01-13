@@ -110,11 +110,14 @@ export class TypeOrmTicketRepository implements ITicketRepository {
    * @param buyerEmail - The email of the buyer
    * @returns Promise resolving to array of Tickets
    */
-  async findByEventAndBuyer(eventId: string, buyerEmail: string): Promise<Ticket[]> {
+  async findByEventAndBuyer(
+    eventId: string,
+    buyerEmail: string,
+  ): Promise<Ticket[]> {
     const ormEntities = await this.repository.find({
-      where: { 
+      where: {
         eventId,
-        buyerEmail 
+        buyerEmail,
       },
     });
 

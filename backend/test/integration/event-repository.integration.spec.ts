@@ -84,7 +84,7 @@ describe("TypeOrmEventRepository Integration Tests", () => {
         ticketConfigs,
         undefined, // imageUrl
         undefined, // details
-        undefined  // createdBy
+        undefined, // createdBy
       );
 
       // Act
@@ -120,7 +120,7 @@ describe("TypeOrmEventRepository Integration Tests", () => {
         ticketConfigs,
         undefined, // imageUrl
         undefined, // details
-        undefined  // createdBy
+        undefined, // createdBy
       );
 
       // Save event first
@@ -164,7 +164,7 @@ describe("TypeOrmEventRepository Integration Tests", () => {
         ],
         undefined, // imageUrl
         undefined, // details
-        undefined  // createdBy
+        undefined, // createdBy
       );
 
       const event2 = new Event(
@@ -183,7 +183,7 @@ describe("TypeOrmEventRepository Integration Tests", () => {
         ],
         undefined, // imageUrl
         undefined, // details
-        undefined  // createdBy
+        undefined, // createdBy
       );
 
       // Save events
@@ -228,7 +228,7 @@ describe("TypeOrmEventRepository Integration Tests", () => {
         ],
         undefined, // imageUrl
         undefined, // details
-        undefined  // createdBy
+        undefined, // createdBy
       );
 
       // Save original event
@@ -251,7 +251,7 @@ describe("TypeOrmEventRepository Integration Tests", () => {
         ],
         undefined, // imageUrl
         undefined, // details
-        undefined  // createdBy
+        undefined, // createdBy
       );
 
       // Act
