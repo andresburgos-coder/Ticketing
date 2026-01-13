@@ -1,25 +1,48 @@
 <div class="mobile-menu md:hidden bg-white border-t border-gray-200 shadow-lg">
   <nav class="flex flex-col p-4 space-y-2">
-    <a [routerLink]="['/']" (click)="onClose()" class="px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+    <a
+      [routerLink]="['/']"
+      (click)="onClose()"
+      class="px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+    >
       Eventos
     </a>
     @if (isAuthenticated) {
       @if (isBuyer()) {
-        <a [routerLink]="['/my-tickets']" (click)="onClose()" class="px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+        <a
+          [routerLink]="['/my-tickets']"
+          (click)="onClose()"
+          class="px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+        >
           Mis Entradas
         </a>
-        <a [routerLink]="['/profile']" (click)="onClose()" class="px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+        <a
+          [routerLink]="['/profile']"
+          (click)="onClose()"
+          class="px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+        >
           Perfil
         </a>
       }
-      <button (click)="onLogout()" class="px-4 py-3 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+      <button
+        (click)="onLogout()"
+        class="px-4 py-3 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+      >
         Cerrar sesión
       </button>
     } @else {
-      <a [routerLink]="['/auth']" (click)="onClose()" class="px-4 py-3 text-center text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-semibold">
+      <a
+        [routerLink]="['/auth']"
+        (click)="onClose()"
+        class="px-4 py-3 text-center text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-semibold"
+      >
         Iniciar sesión
       </a>
-      <a [routerLink]="['/auth']" (click)="onClose()" class="px-4 py-3 text-center text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors font-semibold">
+      <a
+        [routerLink]="['/auth']"
+        (click)="onClose()"
+        class="px-4 py-3 text-center text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors font-semibold"
+      >
         Crear cuenta
       </a>
     }

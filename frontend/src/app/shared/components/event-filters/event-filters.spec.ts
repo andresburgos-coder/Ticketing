@@ -10,7 +10,7 @@ describe('EventFiltersComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [EventFiltersComponent, FormsModule]
+      imports: [EventFiltersComponent, FormsModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(EventFiltersComponent);

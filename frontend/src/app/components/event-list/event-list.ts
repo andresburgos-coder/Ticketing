@@ -19,12 +19,12 @@ export class EventList implements OnInit, OnDestroy {
   // Access signals from service
   readonly events = this.eventService.filteredEvents;
   readonly isLoading = this.eventService.isLoading;
-  
+
   // Mobile filters modal
   readonly showFilters = signal(false);
 
   toggleFilters(): void {
-    this.showFilters.update(v => !v);
+    this.showFilters.update((v) => !v);
   }
 
   ngOnInit(): void {

@@ -11,7 +11,7 @@ import { environment } from '../../../../environments/environment';
   standalone: true,
   imports: [CommonModule, RouterLink, CurrencyFormatPipe, DateFormatPipe],
   templateUrl: './event-card.html',
-  styleUrl: './event-card.css'
+  styleUrl: './event-card.css',
 })
 export class EventCard {
   @Input() event!: Event;
@@ -20,7 +20,7 @@ export class EventCard {
     if (!this.event.ticketTypes || this.event.ticketTypes.length === 0) {
       return 0;
     }
-    return Math.min(...this.event.ticketTypes.map(t => Number(t.price)));
+    return Math.min(...this.event.ticketTypes.map((t) => Number(t.price)));
   }
 
   getTotalAvailableTickets(): number {

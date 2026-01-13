@@ -12,12 +12,14 @@ export interface TicketAvailabilityUpdate {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class WebSocketService {
   private socket: Socket | null = null;
   private readonly isConnected = signal(false);
-  private readonly availabilityUpdates$ = new BehaviorSubject<TicketAvailabilityUpdate | null>(null);
+  private readonly availabilityUpdates$ = new BehaviorSubject<TicketAvailabilityUpdate | null>(
+    null,
+  );
 
   readonly isConnected$ = this.isConnected.asReadonly();
 
@@ -36,13 +38,18 @@ export class WebSocketService {
 
       // Detectar si estamos usando una IP específica
       const hostname = window.location.hostname;
-      const isSpecificIP = hostname !== 'localhost' &&
-                          hostname !== '127.0.0.1' &&
-                          /^\d+\.\d+\.\d+\.\d+$/.test(hostname);
+      const isSpecificIP =
+        hostname !== 'localhost' &&
+        hostname !== '127.0.0.1' &&
+        /^\d+\.\d+\.\d+\.\d+$/.test(hostname);
 
       // Para HTTPS, mantener HTTPS para WebSocket (wss://)
       // Solo usar HTTP si el contexto actual es HTTP
-      if (!window.location.protocol.startsWith('https') && isSpecificIP && baseUrl.startsWith('https://')) {
+      if (
+        !window.location.protocol.startsWith('https') &&
+        isSpecificIP &&
+        baseUrl.startsWith('https://')
+      ) {
         baseUrl = baseUrl.replace('https://', 'http://');
       }
 
@@ -55,7 +62,7 @@ export class WebSocketService {
         // Usar SSL si estamos en HTTPS
         secure: window.location.protocol === 'https:',
         rejectUnauthorized: false, // Para desarrollo con certificados auto-firmados
-        closeOnBeforeunload: false
+        closeOnBeforeunload: false,
       });
 
       this.socket.on('connect', () => {
@@ -64,13 +71,17 @@ export class WebSocketService {
       });
 
       this.socket.on('TICKET_AVAILABILITY_UPDATE', (data: any) => {
-        console.log('%c[WebSocket] 🎫 RECEIVED AVAILABILITY UPDATE', 'color: green; font-weight: bold;', data);
+        console.log(
+          '%c[WebSocket] 🎫 RECEIVED AVAILABILITY UPDATE',
+          'color: green; font-weight: bold;',
+          data,
+        );
         const update: TicketAvailabilityUpdate = {
           eventId: data.eventId,
           ticketType: data.ticketType,
           availableQuantity: data.availableQuantity,
           totalQuantity: data.totalQuantity,
-          timestamp: data.timestamp || new Date().toISOString()
+          timestamp: data.timestamp || new Date().toISOString(),
         };
         this.availabilityUpdates$.next(update);
       });
@@ -94,12 +105,10 @@ export class WebSocketService {
       this.socket.io.engine.on('error', (error: any) => {
         // Silently ignore transport errors
       });
-
     } catch (error) {
       console.debug('[WebSocket] Initialization skipped (expected in development)');
     }
   }
-
 
   /**
    * Subscribe to availability updates for a specific event.
@@ -128,10 +137,15 @@ export class WebSocketService {
     }
 
     // Return a filtered observable that only emits updates for this event
-    return new Observable(observer => {
-      const subscription = this.availabilityUpdates$.subscribe(update => {
+    return new Observable((observer) => {
+      const subscription = this.availabilityUpdates$.subscribe((update) => {
         if (update && String(update.eventId) === String(eventId)) {
-          console.log('%c[WebSocket] 📤 Emitting update to subscriber for event:', 'color: orange; font-weight: bold;', eventId, update);
+          console.log(
+            '%c[WebSocket] 📤 Emitting update to subscriber for event:',
+            'color: orange; font-weight: bold;',
+            eventId,
+            update,
+          );
           observer.next(update);
         }
       });

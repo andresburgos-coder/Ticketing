@@ -55,7 +55,7 @@ export interface PurchaseHistory {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ProfileService {
   private readonly http = inject(HttpClient);
@@ -75,10 +75,10 @@ export class ProfileService {
   getProfile(): Observable<UserProfile> {
     this._isLoading.set(true);
     return this.http.get<UserProfile>(`${this.baseUrl}`).pipe(
-      tap(profile => {
+      tap((profile) => {
         this._profile.set(profile);
         this._isLoading.set(false);
-      })
+      }),
     );
   }
 
@@ -88,10 +88,10 @@ export class ProfileService {
   updateProfile(data: UpdateProfileRequest): Observable<UserProfile> {
     this._isLoading.set(true);
     return this.http.put<UserProfile>(`${this.baseUrl}`, data).pipe(
-      tap(profile => {
+      tap((profile) => {
         this._profile.set(profile);
         this._isLoading.set(false);
-      })
+      }),
     );
   }
 
@@ -112,10 +112,13 @@ export class ProfileService {
   /**
    * Update notification preferences
    */
-  updatePreferences(preferences: { newsletter: boolean; eventNotifications: boolean }): Observable<UserProfile> {
-    return this.http.patch<UserProfile>(`${this.baseUrl}/preferences`, preferences).pipe(
-      tap(profile => this._profile.set(profile))
-    );
+  updatePreferences(preferences: {
+    newsletter: boolean;
+    eventNotifications: boolean;
+  }): Observable<UserProfile> {
+    return this.http
+      .patch<UserProfile>(`${this.baseUrl}/preferences`, preferences)
+      .pipe(tap((profile) => this._profile.set(profile)));
   }
 
   /**

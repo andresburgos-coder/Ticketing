@@ -13,10 +13,11 @@
       [value]="selectedEventId()"
       (change)="onEventChange($any($event.target).value)"
       [disabled]="isLoading()"
-      class="event-select">
+      class="event-select"
+    >
       <option value="">-- Selecciona un evento --</option>
       @for (event of events(); track event.id) {
-        <option [value]="event.id">{{ event.name }} - {{ event.date | date:'dd/MM/yyyy' }}</option>
+        <option [value]="event.id">{{ event.name }} - {{ event.date | date: 'dd/MM/yyyy' }}</option>
       }
     </select>
   </div>
@@ -38,7 +39,8 @@
           <button
             class="btn btn-primary btn-large btn-scan"
             (click)="startCamera()"
-            [disabled]="isLoading() || !canScan()">
+            [disabled]="isLoading() || !canScan()"
+          >
             @if (isLoading()) {
               <span class="spinner"></span> Iniciando...
             } @else {
@@ -47,9 +49,7 @@
             }
           </button>
         } @else {
-          <button
-            class="btn btn-danger btn-large"
-            (click)="stopCamera()">
+          <button class="btn btn-danger btn-large" (click)="stopCamera()">
             <span class="btn-icon">⏹️</span>
             <span>Detener</span>
           </button>
@@ -61,18 +61,10 @@
   <!-- Camera View -->
   @if (isCameraActive()) {
     <div class="camera-container">
-      <video
-        #videoElement
-        class="camera-video"
-        autoplay
-        playsinline>
-      </video>
+      <video #videoElement class="camera-video" autoplay playsinline></video>
 
       <!-- Canvas for QR scanning (hidden) -->
-      <canvas
-        #canvasElement
-        style="display: none;">
-      </canvas>
+      <canvas #canvasElement style="display: none"> </canvas>
 
       <div class="scan-overlay">
         <div class="scan-frame">
@@ -102,11 +94,7 @@
     <div class="results-section">
       <div class="results-header">
         <h3>📋 Últimas Validaciones</h3>
-        <button
-          class="btn btn-small btn-outline"
-          (click)="clearResults()">
-          🗑️ Limpiar
-        </button>
+        <button class="btn btn-small btn-outline" (click)="clearResults()">🗑️ Limpiar</button>
       </div>
 
       <div class="results-list">
@@ -118,7 +106,11 @@
 
             <div class="result-content">
               <div class="result-status">
-                <span class="status-badge" [class.success]="result.success" [class.error]="!result.success">
+                <span
+                  class="status-badge"
+                  [class.success]="result.success"
+                  [class.error]="!result.success"
+                >
                   {{ result.success ? 'VÁLIDA' : 'RECHAZADA' }}
                 </span>
                 <span class="result-time">{{ formatTime(result.timestamp) }}</span>
@@ -145,7 +137,7 @@
 
                   @if (result.ticket.usedAt) {
                     <div class="usage-info">
-                      <small>⏰ Usado: {{ result.ticket.usedAt | date:'dd/MM/yyyy HH:mm' }}</small>
+                      <small>⏰ Usado: {{ result.ticket.usedAt | date: 'dd/MM/yyyy HH:mm' }}</small>
                     </div>
                   }
                 </div>

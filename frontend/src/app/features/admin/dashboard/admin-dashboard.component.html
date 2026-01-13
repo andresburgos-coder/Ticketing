@@ -1,8 +1,6 @@
 <div class="dashboard">
   <h2>Dashboard</h2>
 
-
-
   @if (loading()) {
     <div class="loading">
       <p>Cargando estadísticas...</p>
@@ -17,45 +15,45 @@
 
   @if (stats() && !loading()) {
     <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-icon">👥</div>
-      <div class="stat-content">
-        <h3>{{ stats()!.overview.totalUsers }}</h3>
-        <p>Total Usuarios</p>
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-content">
+          <h3>{{ stats()!.overview.totalUsers }}</h3>
+          <p>Total Usuarios</p>
+        </div>
       </div>
-    </div>
 
-    <div class="stat-card">
-      <div class="stat-icon">🎫</div>
-      <div class="stat-content">
-        <h3>{{ stats()!.overview.totalEvents }}</h3>
-        <p>Total Eventos</p>
+      <div class="stat-card">
+        <div class="stat-icon">🎫</div>
+        <div class="stat-content">
+          <h3>{{ stats()!.overview.totalEvents }}</h3>
+          <p>Total Eventos</p>
+        </div>
       </div>
-    </div>
 
-    <div class="stat-card">
-      <div class="stat-icon">🎟️</div>
-      <div class="stat-content">
-        <h3>{{ stats()!.overview.totalTicketsSold }}</h3>
-        <p>Tickets Vendidos</p>
+      <div class="stat-card">
+        <div class="stat-icon">🎟️</div>
+        <div class="stat-content">
+          <h3>{{ stats()!.overview.totalTicketsSold }}</h3>
+          <p>Tickets Vendidos</p>
+        </div>
       </div>
-    </div>
 
-    <div class="stat-card">
-      <div class="stat-icon">💰</div>
-      <div class="stat-content">
-        <h3>{{ stats()!.overview.totalRevenue | currencyFormat }}</h3>
-        <p>Ingresos Totales</p>
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-content">
+          <h3>{{ stats()!.overview.totalRevenue | currencyFormat }}</h3>
+          <p>Ingresos Totales</p>
+        </div>
       </div>
-    </div>
 
-    <div class="stat-card">
-      <div class="stat-icon">📋</div>
-      <div class="stat-content">
-        <h3>{{ stats()!.overview.activeReservations }}</h3>
-        <p>Reservas Activas</p>
+      <div class="stat-card">
+        <div class="stat-icon">📋</div>
+        <div class="stat-content">
+          <h3>{{ stats()!.overview.activeReservations }}</h3>
+          <p>Reservas Activas</p>
+        </div>
       </div>
-    </div>
     </div>
 
     <div class="dashboard-content">
@@ -66,7 +64,7 @@
             <div class="event-item">
               <div class="event-info">
                 <h4>{{ event.name }}</h4>
-                <p>{{ event.date | date:'short' }}</p>
+                <p>{{ event.date | date: 'short' }}</p>
                 <p>{{ event.location }}</p>
               </div>
             </div>

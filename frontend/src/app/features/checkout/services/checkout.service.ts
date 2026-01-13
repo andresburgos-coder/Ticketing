@@ -56,7 +56,7 @@ const PENDING_CHECKOUT_KEY = 'ticketing_pending_checkout';
 const RESERVATIONS_KEY = 'ticketing_reservations';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CheckoutService {
   private readonly http = inject(HttpClient);
@@ -87,7 +87,7 @@ export class CheckoutService {
 
   // Computed signals
   readonly subtotal = computed(() => {
-    return this._cart().reduce((total, item) => total + (item.price * item.quantity), 0);
+    return this._cart().reduce((total, item) => total + item.price * item.quantity, 0);
   });
 
   // Service fee (5%) to align with mock UI
@@ -133,11 +133,12 @@ export class CheckoutService {
     const raw = localStorage.getItem(PENDING_CHECKOUT_KEY);
     if (!raw) return false;
     try {
-      const payload: { items: CartItem[]; eventId?: string | number; eventName?: string } = JSON.parse(raw);
+      const payload: { items: CartItem[]; eventId?: string | number; eventName?: string } =
+        JSON.parse(raw);
 
       // Clear current cart and load pending items
       this.clearCart();
-      (payload.items || []).forEach(item => {
+      (payload.items || []).forEach((item) => {
         if (item && item.quantity > 0) {
           this.addToCart(item.ticketTypeId, item.ticketTypeName, item.quantity, item.price);
         }
@@ -172,7 +173,9 @@ export class CheckoutService {
     const email = this.authService.currentUser()?.email;
 
     if (!eventId || !email || cart.length === 0) {
-      console.warn('[CheckoutService] Cannot create reservations: missing eventId, email, or cart is empty');
+      console.warn(
+        '[CheckoutService] Cannot create reservations: missing eventId, email, or cart is empty',
+      );
       return false;
     }
 
@@ -186,15 +189,14 @@ export class CheckoutService {
           eventId: String(eventId),
           ticketType: this.mapTicketTypeName(item.ticketTypeName),
           quantity: item.quantity,
-          buyerEmail: email
+          buyerEmail: email,
         };
 
         console.log('📤 [CheckoutService] Creating reservation:', reservationDto);
 
-        const response = await this.http.post<any>(
-          `${environment.apiUrl}/reservations`,
-          reservationDto
-        ).toPromise();
+        const response = await this.http
+          .post<any>(`${environment.apiUrl}/reservations`, reservationDto)
+          .toPromise();
 
         console.log('✅ [CheckoutService] Reservation created:', response);
 
@@ -205,7 +207,7 @@ export class CheckoutService {
           quantity: response.quantity,
           totalAmount: response.totalAmount,
           expiresAt: new Date(response.expiresAt),
-          status: response.status
+          status: response.status,
         });
       }
 
@@ -257,14 +259,12 @@ export class CheckoutService {
 
   addToCart(ticketTypeId: number, ticketTypeName: string, quantity: number, price: number): void {
     const cart = this._cart();
-    const existingItem = cart.find(item => item.ticketTypeId === ticketTypeId);
+    const existingItem = cart.find((item) => item.ticketTypeId === ticketTypeId);
 
     if (existingItem) {
       // Create a new array reference to trigger signal update
-      const updatedCart = cart.map(item =>
-        item.ticketTypeId === ticketTypeId
-          ? { ...item, quantity: item.quantity + quantity }
-          : item
+      const updatedCart = cart.map((item) =>
+        item.ticketTypeId === ticketTypeId ? { ...item, quantity: item.quantity + quantity } : item,
       );
       this._cart.set(updatedCart);
     } else {
@@ -273,7 +273,7 @@ export class CheckoutService {
   }
 
   removeFromCart(ticketTypeId: number): void {
-    this._cart.set(this._cart().filter(item => item.ticketTypeId !== ticketTypeId));
+    this._cart.set(this._cart().filter((item) => item.ticketTypeId !== ticketTypeId));
   }
 
   updateQuantity(ticketTypeId: number, quantity: number): void {
@@ -282,7 +282,7 @@ export class CheckoutService {
       return;
     }
     const cart = this._cart();
-    const updatedCart = cart.map(item => {
+    const updatedCart = cart.map((item) => {
       if (item.ticketTypeId === ticketTypeId) {
         return { ...item, quantity: quantity };
       }
@@ -320,7 +320,9 @@ export class CheckoutService {
     const remaining = Math.max(0, Math.floor((expiresAt - now) / 1000));
     this._timeRemaining.set(remaining);
 
-    console.log(`⏱️ [CheckoutService] Timer started. Expires at: ${new Date(expiresAt).toISOString()}, Remaining: ${remaining}s`);
+    console.log(
+      `⏱️ [CheckoutService] Timer started. Expires at: ${new Date(expiresAt).toISOString()}, Remaining: ${remaining}s`,
+    );
 
     if (remaining <= 0) {
       this.handleReservationExpired();
@@ -361,7 +363,11 @@ export class CheckoutService {
     this._reservationExpired.set(false);
   }
 
-  confirmOrder(paymentMethodId: string, buyerEmail?: string, paymentInfo?: { cardNumber: string; expiryDate: string; cvv: string }): void {
+  confirmOrder(
+    paymentMethodId: string,
+    buyerEmail?: string,
+    paymentInfo?: { cardNumber: string; expiryDate: string; cvv: string },
+  ): void {
     this._isLoading.set(true);
 
     const cart = this._cart();
@@ -393,10 +399,10 @@ export class CheckoutService {
     cart: CartItem[],
     eventId: string,
     buyerEmail: string,
-    paymentInfo: { cardNumber: string; expiryDate: string; cvv: string }
+    paymentInfo: { cardNumber: string; expiryDate: string; cvv: string },
   ): void {
     // Call backend for each ticket type
-    const purchasePromises = cart.map(item => {
+    const purchasePromises = cart.map((item) => {
       // Match the backend DTO: eventId (UUID), ticketType (enum), quantity, buyerEmail, paymentInfo
       const purchaseDto = {
         eventId,
@@ -406,8 +412,8 @@ export class CheckoutService {
         paymentInfo: {
           cardNumber: paymentInfo.cardNumber,
           expiryDate: paymentInfo.expiryDate,
-          cvv: paymentInfo.cvv
-        }
+          cvv: paymentInfo.cvv,
+        },
       };
 
       console.log('📤 Enviando POST /tickets/purchase:', purchaseDto);
@@ -415,18 +421,18 @@ export class CheckoutService {
     });
 
     Promise.all(purchasePromises)
-      .then(results => {
+      .then((results) => {
         console.log('✅ Respuesta del backend:', results);
         // Combine all tickets from backend responses
         const allTickets: PurchasedTicket[] = [];
         results.forEach((tickets: any[]) => {
           if (Array.isArray(tickets)) {
-            tickets.forEach(t => {
+            tickets.forEach((t) => {
               allTickets.push({
                 id: t.id || t.code,
                 ticketTypeName: t.type || t.ticketType,
                 price: t.price,
-                qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${t.qrToken || t.id}`
+                qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${t.qrToken || t.id}`,
               });
             });
           }
@@ -434,7 +440,7 @@ export class CheckoutService {
 
         this.finalizeOrder(allTickets);
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Backend purchase failed, falling back to local:', error);
         // Fallback to local processing
         this.processLocalOrder();
@@ -449,14 +455,14 @@ export class CheckoutService {
     const tickets: PurchasedTicket[] = [];
     const cart = this._cart();
 
-    cart.forEach(item => {
+    cart.forEach((item) => {
       for (let i = 0; i < item.quantity; i++) {
         const ticketId = `TKT-${Date.now()}-${item.ticketTypeId}-${i}`;
         tickets.push({
           id: ticketId,
           ticketTypeName: item.ticketTypeName,
           price: item.price,
-          qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${ticketId}`
+          qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${ticketId}`,
         });
       }
     });
@@ -479,7 +485,7 @@ export class CheckoutService {
       total: this.total(),
       purchaseDate: new Date().toISOString(),
       eventId: this._eventId(),
-      eventName: this._eventName()
+      eventName: this._eventName(),
     };
 
     // Save completed order to signal (for confirmation page)
@@ -489,11 +495,8 @@ export class CheckoutService {
     const eventId = this._eventId();
     if (eventId) {
       // Invalidate cache for each ticket type purchased
-      cart.forEach(item => {
-        this.cacheInvalidationService.invalidateAfterPurchase(
-          String(eventId),
-          item.ticketTypeName
-        );
+      cart.forEach((item) => {
+        this.cacheInvalidationService.invalidateAfterPurchase(String(eventId), item.ticketTypeName);
       });
 
       // Also invalidate the general event cache

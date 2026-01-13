@@ -9,7 +9,7 @@ import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
   standalone: true,
   imports: [CommonModule, CurrencyFormatPipe],
   templateUrl: './admin-reports.component.html',
-  styleUrl: './admin-reports.component.css'
+  styleUrl: './admin-reports.component.css',
 })
 export class AdminReportsComponent implements OnInit {
   dashboardStats: DashboardStats | null = null;
@@ -31,16 +31,18 @@ export class AdminReportsComponent implements OnInit {
     Promise.all([
       this.adminService.getDashboardStats().toPromise(),
       this.adminService.getEventStats().toPromise(),
-      this.adminService.getTicketStats().toPromise()
-    ]).then(([dashboardStats, eventStats, ticketStats]) => {
-      this.dashboardStats = dashboardStats!;
-      this.eventStats = eventStats!;
-      this.ticketStats = ticketStats!;
-      this.loading = false;
-    }).catch(error => {
-      this.error = error.message || 'Error al cargar los reportes';
-      this.loading = false;
-    });
+      this.adminService.getTicketStats().toPromise(),
+    ])
+      .then(([dashboardStats, eventStats, ticketStats]) => {
+        this.dashboardStats = dashboardStats!;
+        this.eventStats = eventStats!;
+        this.ticketStats = ticketStats!;
+        this.loading = false;
+      })
+      .catch((error) => {
+        this.error = error.message || 'Error al cargar los reportes';
+        this.loading = false;
+      });
   }
 
   getAverageTicketPrice(): number {
@@ -69,13 +71,13 @@ export class AdminReportsComponent implements OnInit {
         return {
           type: 'Events Report',
           generatedAt: new Date().toISOString(),
-          data: this.eventStats
+          data: this.eventStats,
         };
       case 'tickets':
         return {
           type: 'Tickets Report',
           generatedAt: new Date().toISOString(),
-          data: this.ticketStats
+          data: this.ticketStats,
         };
       case 'users':
         return {
@@ -83,8 +85,8 @@ export class AdminReportsComponent implements OnInit {
           generatedAt: new Date().toISOString(),
           data: {
             totalUsers: this.dashboardStats?.overview.totalUsers,
-            activeReservations: this.dashboardStats?.overview.activeReservations
-          }
+            activeReservations: this.dashboardStats?.overview.activeReservations,
+          },
         };
       case 'full':
         return {
@@ -92,7 +94,7 @@ export class AdminReportsComponent implements OnInit {
           generatedAt: new Date().toISOString(),
           dashboard: this.dashboardStats,
           events: this.eventStats,
-          tickets: this.ticketStats
+          tickets: this.ticketStats,
         };
       default:
         return {};

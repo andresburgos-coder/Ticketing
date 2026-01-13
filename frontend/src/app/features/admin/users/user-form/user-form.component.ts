@@ -3,14 +3,19 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AdminService } from '../../../../services/admin.service';
-import { User, UserRole, CreateUserRequest, UpdateUserRequest } from '../../../../models/admin.model';
+import {
+  User,
+  UserRole,
+  CreateUserRequest,
+  UpdateUserRequest,
+} from '../../../../models/admin.model';
 
 @Component({
   selector: 'app-user-form',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './user-form.component.html',
-  styleUrl: './user-form.component.css'
+  styleUrl: './user-form.component.css',
 })
 export class UserFormComponent implements OnInit {
   roles = Object.values(UserRole);
@@ -25,14 +30,14 @@ export class UserFormComponent implements OnInit {
     password: '', // Empty string for form initialization, not a hardcoded credential
     firstName: '',
     lastName: '',
-    role: UserRole.BUYER
+    role: UserRole.BUYER,
   };
 
   constructor(
     private adminService: AdminService,
     private router: Router,
     private route: ActivatedRoute,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
@@ -51,7 +56,7 @@ export class UserFormComponent implements OnInit {
     this.loading = true;
     this.error = null;
     console.log('[UserForm] Loading user:', id);
-    
+
     this.adminService.getUserById(id).subscribe({
       next: (user) => {
         console.log('[UserForm] User loaded:', user);
@@ -59,7 +64,7 @@ export class UserFormComponent implements OnInit {
           email: this.extractEmail(user),
           firstName: user.firstName,
           lastName: user.lastName,
-          role: user.role
+          role: user.role,
         };
         console.log('[UserForm] Form populated:', this.userForm);
         this.loading = false;
@@ -71,7 +76,7 @@ export class UserFormComponent implements OnInit {
         this.error = error.error?.message || 'Error al cargar el usuario';
         this.loading = false;
         console.log('[UserForm] Loading set to false (error)');
-      }
+      },
     });
   }
 
@@ -100,7 +105,7 @@ export class UserFormComponent implements OnInit {
         error: (error) => {
           this.error = error.error?.message || 'Error al actualizar el usuario';
           this.loading = false;
-        }
+        },
       });
     } else {
       // Modo creación
@@ -111,7 +116,7 @@ export class UserFormComponent implements OnInit {
         error: (error) => {
           this.error = error.error?.message || 'Error al crear el usuario';
           this.loading = false;
-        }
+        },
       });
     }
   }

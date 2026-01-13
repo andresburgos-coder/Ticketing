@@ -21,7 +21,7 @@ export interface QRValidationResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class QRScannerService {
   private readonly http = inject(HttpClient);
@@ -66,12 +66,12 @@ export class QRScannerService {
       console.log('[QR] Requesting camera access...');
       // Try to get camera permissions
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' } // Prefer back camera
+        video: { facingMode: 'environment' }, // Prefer back camera
       });
 
       console.log('[QR] Camera access granted');
       // Stop the stream immediately after checking
-      stream.getTracks().forEach(track => track.stop());
+      stream.getTracks().forEach((track) => track.stop());
       return true;
     } catch (error: any) {
       console.error('[QR] Camera access failed:', error.name, error.message);
@@ -86,7 +86,7 @@ export class QRScannerService {
   async getCameraDevices(): Promise<MediaDeviceInfo[]> {
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
-      return devices.filter(device => device.kind === 'videoinput');
+      return devices.filter((device) => device.kind === 'videoinput');
     } catch (error: any) {
       return [];
     }

@@ -3,7 +3,7 @@ import { CanActivateFn, Router } from '@angular/router';
 import { CheckoutService } from '../../features/checkout/services/checkout.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CheckoutGuardService {
   private readonly checkoutService = inject(CheckoutService);

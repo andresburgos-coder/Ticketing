@@ -31,5 +31,5 @@ export const environment = {
     } else {
       return `http://${host}:3001`;
     }
-  })()
+  })(),
 };

@@ -15,11 +15,11 @@ import {
   PaginatedResponse,
   UsersQuery,
   TicketsQuery,
-  ReservationsQuery
+  ReservationsQuery,
 } from '../models/admin.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AdminService {
   private readonly apiUrl = `${environment.apiUrl}/admin`;
@@ -58,10 +58,10 @@ export class AdminService {
   // Dashboard Statistics
   getDashboardStats(): Observable<DashboardStats> {
     return this.http.get<DashboardStats>(`${this.apiUrl}/dashboard/stats`).pipe(
-      catchError(error => {
+      catchError((error) => {
         console.error('[AdminService] Error getting dashboard stats:', error);
         throw error;
-      })
+      }),
     );
   }
 
@@ -103,14 +103,14 @@ export class AdminService {
     console.log('[AdminService] Making request to:', `${this.apiUrl}/tickets`);
 
     return this.http.get<PaginatedResponse<AdminTicket>>(`${this.apiUrl}/tickets`, { params }).pipe(
-      tap(response => console.log('[AdminService] Success response:', response)),
-      catchError(error => {
+      tap((response) => console.log('[AdminService] Success response:', response)),
+      catchError((error) => {
         console.error('[AdminService] HTTP Error:', error);
         console.error('[AdminService] Error status:', error.status);
         console.error('[AdminService] Error message:', error.message);
         console.error('[AdminService] Error body:', error.error);
         return throwError(() => error);
-      })
+      }),
     );
   }
 
@@ -122,25 +122,27 @@ export class AdminService {
     if (query.page) params = params.set('page', query.page.toString());
     if (query.limit) params = params.set('limit', query.limit.toString());
 
-    return this.http.get<PaginatedResponse<AdminReservation>>(`${this.apiUrl}/reservations`, { params });
+    return this.http.get<PaginatedResponse<AdminReservation>>(`${this.apiUrl}/reservations`, {
+      params,
+    });
   }
 
   // Event Management
   getEvents(): Observable<any[]> {
     return this.http.get<any[]>(`${environment.apiUrl}/events`).pipe(
-      catchError(error => {
+      catchError((error) => {
         console.error('[AdminService] getEvents failed:', error);
         throw error;
-      })
+      }),
     );
   }
 
   getEvent(id: string): Observable<any> {
     return this.http.get<any>(`${environment.apiUrl}/events/${id}`).pipe(
-      catchError(error => {
+      catchError((error) => {
         console.error('[AdminService] getEvent failed:', error);
         throw error;
-      })
+      }),
     );
   }
 

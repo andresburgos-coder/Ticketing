@@ -10,7 +10,7 @@ import { environment } from '../../environments/environment';
 export class Orders {
   private apiUrl = `${environment.apiUrl}/orders`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   createOrder(dto: CreateOrderDto): Observable<Order> {
     return this.http.post<Order>(this.apiUrl, dto);

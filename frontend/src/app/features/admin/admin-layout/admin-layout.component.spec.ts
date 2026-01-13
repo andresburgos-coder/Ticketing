@@ -14,10 +14,16 @@ describe('AdminLayoutComponent', () => {
   beforeEach(async () => {
     const authServiceSpy = {
       logout: jasmine.createSpy(),
-      currentUser: signal({ id: '1', email: 'admin@test.com', firstName: 'Admin', lastName: 'User', role: 'ADMIN' })
+      currentUser: signal({
+        id: '1',
+        email: 'admin@test.com',
+        firstName: 'Admin',
+        lastName: 'User',
+        role: 'ADMIN',
+      }),
     };
     const routerSpy = {
-      navigate: jasmine.createSpy('navigate').and.returnValue(Promise.resolve(true))
+      navigate: jasmine.createSpy('navigate').and.returnValue(Promise.resolve(true)),
     };
 
     await TestBed.configureTestingModule({
@@ -25,8 +31,8 @@ describe('AdminLayoutComponent', () => {
       providers: [
         { provide: AuthService, useValue: authServiceSpy },
         { provide: Router, useValue: routerSpy },
-        { provide: ActivatedRoute, useValue: {} }
-      ]
+        { provide: ActivatedRoute, useValue: {} },
+      ],
     }).compileComponents();
 
     authService = TestBed.inject(AuthService);

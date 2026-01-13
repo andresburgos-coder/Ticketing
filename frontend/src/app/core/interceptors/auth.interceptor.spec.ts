@@ -3,7 +3,6 @@ import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { authInterceptor } from './auth.interceptor';
 
-
 describe('authInterceptor', () => {
   let httpMock: HttpTestingController;
   let httpClient: HttpClient;
@@ -15,8 +14,8 @@ describe('authInterceptor', () => {
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(withInterceptors([authInterceptor])),
-        provideHttpClientTesting()
-      ]
+        provideHttpClientTesting(),
+      ],
     });
 
     httpMock = TestBed.inject(HttpTestingController);

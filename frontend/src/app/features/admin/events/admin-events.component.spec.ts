@@ -16,11 +16,13 @@ describe('AdminEventsComponent', () => {
     events: signal([]),
     events$: new Subject().asObservable(),
     loadEvents: jasmine.createSpy('loadEvents').and.returnValue(undefined),
-    deleteEvent: jasmine.createSpy('deleteEvent').and.returnValue(of(void 0))
+    deleteEvent: jasmine.createSpy('deleteEvent').and.returnValue(of(void 0)),
   } as any;
 
   const adminServiceMock: Partial<AdminService> = {
-    getTicketStats: jasmine.createSpy('getTicketStats').and.returnValue(of({ totalTicketsSold: 0, totalRevenue: 0 }))
+    getTicketStats: jasmine
+      .createSpy('getTicketStats')
+      .and.returnValue(of({ totalTicketsSold: 0, totalRevenue: 0 })),
   } as any;
 
   beforeEach(async () => {
@@ -28,7 +30,7 @@ describe('AdminEventsComponent', () => {
 
     const mockEventService = {
       ...eventServiceMock,
-      events$: eventsSubject.asObservable()
+      events$: eventsSubject.asObservable(),
     };
 
     await TestBed.configureTestingModule({
@@ -36,8 +38,8 @@ describe('AdminEventsComponent', () => {
       providers: [
         { provide: EventService, useValue: mockEventService },
         { provide: AdminService, useValue: adminServiceMock },
-        { provide: ActivatedRoute, useValue: { queryParams: of({}) } }
-      ]
+        { provide: ActivatedRoute, useValue: { queryParams: of({}) } },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AdminEventsComponent);

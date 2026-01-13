@@ -9,20 +9,26 @@
   background-repeat: no-repeat;
 }
 .animate-slide-in {
-  animation: slideIn 0.3s cubic-bezier(0.4,0,0.2,1);
+  animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 @keyframes slideIn {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 /* Ocultar scrollbar en indicadores */
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* IE y Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* IE y Edge */
+  scrollbar-width: none; /* Firefox */
 }
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari y Opera */
+  display: none; /* Chrome, Safari y Opera */
 }
 
 /* Mejoras para touch devices */

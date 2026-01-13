@@ -15,7 +15,7 @@ export interface User {
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './mobile-menu.html',
-  styleUrl: './mobile-menu.css'
+  styleUrl: './mobile-menu.css',
 })
 export class MobileMenu {
   @Input() isAuthenticated = false;

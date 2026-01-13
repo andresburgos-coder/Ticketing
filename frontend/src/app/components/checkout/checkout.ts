@@ -21,7 +21,7 @@ import { ToastService } from '../../core/services/toast.service';
     ReservationTimer,
     ContactForm,
     PaymentForm,
-    LoadingSpinner
+    LoadingSpinner,
   ],
   templateUrl: './checkout.html',
   styleUrl: './checkout.css',
@@ -68,12 +68,12 @@ export class Checkout implements OnInit, OnDestroy {
     }
 
     // Read event info from query params and set in service
-    this.route.queryParams.subscribe(async params => {
+    this.route.queryParams.subscribe(async (params) => {
       this.eventId = params['eventId'];
       const eventName = params['eventName'];
       if (this.eventId) {
         this.checkoutService.setEventInfo(this.eventId, eventName);
-        
+
         // Create reservations when checkout starts (if authenticated)
         if (!this.reservationCreated) {
           try {
@@ -93,8 +93,11 @@ export class Checkout implements OnInit, OnDestroy {
   }
 
   private handleExpiration(): void {
-    this.toastService.show('⏰ Tu reserva ha expirado. Por favor, vuelve a seleccionar tus entradas.', 'error');
-    
+    this.toastService.show(
+      '⏰ Tu reserva ha expirado. Por favor, vuelve a seleccionar tus entradas.',
+      'error',
+    );
+
     // Clear the cart and redirect after a short delay
     setTimeout(() => {
       this.checkoutService.clearCart();
@@ -122,7 +125,7 @@ export class Checkout implements OnInit, OnDestroy {
         this.paymentData = {
           cardNumber: formData.cardNumber,
           expiryDate: formData.expiryDate,
-          cvv: formData.cvv
+          cvv: formData.cvv,
         };
         this.confirmOrder();
       }
@@ -145,14 +148,14 @@ export class Checkout implements OnInit, OnDestroy {
     // Save buyer info to localStorage for confirmation page
     const buyerInfo = {
       name: `${this.contactData.firstName} ${this.contactData.lastName}`,
-      email: this.contactData.email
+      email: this.contactData.email,
     };
     localStorage.setItem('currentBuyerInfo', JSON.stringify(buyerInfo));
 
     this.checkoutService.confirmOrder('stripe', this.contactData.email, this.paymentData);
     setTimeout(() => {
       const completed = this.checkoutService.completedOrder();
-      const ids = completed?.tickets?.map(t => t.id) || [];
+      const ids = completed?.tickets?.map((t) => t.id) || [];
       const queryParams: any = {};
       if (ids.length > 0) {
         queryParams.t = ids.join(',');

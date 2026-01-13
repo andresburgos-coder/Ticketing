@@ -7,9 +7,7 @@ describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [
-        { provide: ActivatedRoute, useValue: { queryParams: of({}) } }
-      ]
+      providers: [{ provide: ActivatedRoute, useValue: { queryParams: of({}) } }],
     }).compileComponents();
   });
 

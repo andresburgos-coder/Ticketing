@@ -15,7 +15,7 @@ interface MenuItem {
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './admin-layout.component.html',
-  styleUrl: './admin-layout.component.css'
+  styleUrl: './admin-layout.component.css',
 })
 export class AdminLayoutComponent {
   private readonly authService = inject(AuthService);
@@ -30,14 +30,14 @@ export class AdminLayoutComponent {
     { path: '/admin/qr-scanner', label: 'Escáner QR', icon: 'icon-qr-scanner' },
     { path: '/admin/users', label: 'Usuarios', icon: 'icon-users', adminOnly: true },
     { path: '/admin/reservations', label: 'Reservas', icon: 'icon-reservations', adminOnly: true },
-    { path: '/admin/reports', label: 'Reportes', icon: 'icon-reports', adminOnly: true }
+    { path: '/admin/reports', label: 'Reportes', icon: 'icon-reports', adminOnly: true },
   ];
 
   readonly visibleMenuItems = computed(() => {
     const user = this.currentUser();
     if (!user) return [];
 
-    return this.menuItems.filter(item => {
+    return this.menuItems.filter((item) => {
       if (item.adminOnly && user.role !== 'ADMIN') {
         return false;
       }

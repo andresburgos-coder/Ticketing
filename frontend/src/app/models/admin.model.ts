@@ -12,7 +12,7 @@ export interface User {
 export enum UserRole {
   BUYER = 'BUYER',
   ORGANIZER = 'ORGANIZER',
-  ADMIN = 'ADMIN'
+  ADMIN = 'ADMIN',
 }
 
 export enum EventCategory {
@@ -35,8 +35,7 @@ export enum EventCategory {
   RECREATIVO = 'Recreativo',
   STAND_UP_COMEDY = 'Stand-Up Comedy',
   TEATRO = 'Teatro',
-  TURISMO = 'Turismo'
-  
+  TURISMO = 'Turismo',
 }
 
 export interface CreateUserRequest {

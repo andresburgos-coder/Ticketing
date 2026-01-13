@@ -13,7 +13,7 @@ import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
   standalone: true,
   imports: [CommonModule, FormsModule, CurrencyFormatPipe],
   templateUrl: './admin-tickets.component.html',
-  styleUrl: './admin-tickets.component.css'
+  styleUrl: './admin-tickets.component.css',
 })
 export class AdminTicketsComponent implements OnInit {
   tickets: AdminTicket[] = [];
@@ -22,7 +22,7 @@ export class AdminTicketsComponent implements OnInit {
     eventId: '',
     status: '',
     page: 1,
-    limit: 10
+    limit: 10,
   };
   pagination: any = null;
   loading = true;
@@ -33,7 +33,7 @@ export class AdminTicketsComponent implements OnInit {
   constructor(
     private adminService: AdminService,
     private eventService: EventService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
@@ -93,16 +93,19 @@ export class AdminTicketsComponent implements OnInit {
       console.log('[AdminTickets] Raw backend response:', response);
       console.log('[AdminTickets] Backend response data count:', response.data?.length || 0);
 
-      this.tickets = response.data.map(ticket => ({
+      this.tickets = response.data.map((ticket) => ({
         ...ticket,
-        eventName: ticket.eventName ?? this.getEventName(ticket.eventId)
+        eventName: ticket.eventName ?? this.getEventName(ticket.eventId),
       }));
       this.pagination = response.pagination;
       console.log('[AdminTickets] Tickets processed:', this.tickets.length);
-      console.log('[AdminTickets] Processed tickets:', this.tickets.map(t => ({ code: t.code, eventName: t.eventName, eventId: t.eventId })));
+      console.log(
+        '[AdminTickets] Processed tickets:',
+        this.tickets.map((t) => ({ code: t.code, eventName: t.eventName, eventId: t.eventId })),
+      );
     } catch (error: any) {
       console.error('[AdminTickets] Error loading tickets:', error);
-      
+
       // Mejorar el mensaje de error basado en el tipo de error
       if (error.status === 500) {
         this.error = 'Error interno del servidor. Por favor verifica los filtros aplicados.';
@@ -111,7 +114,7 @@ export class AdminTicketsComponent implements OnInit {
       } else {
         this.error = error.message || `Error ${error.status}: ${error.statusText}`;
       }
-      
+
       // En caso de error, limpiar los tickets actuales
       this.tickets = [];
       this.pagination = null;
@@ -155,7 +158,7 @@ export class AdminTicketsComponent implements OnInit {
       return nameFromMap;
     }
     // Fallback: buscar directamente en el arreglo por si el mapa no contiene la clave
-    const found = this.events.find(ev => String(ev.id) === key);
+    const found = this.events.find((ev) => String(ev.id) === key);
     const name = found?.name;
     return name ?? 'Evento no encontrado';
   }
@@ -167,7 +170,10 @@ export class AdminTicketsComponent implements OnInit {
   onEventFilterChange(eventId: string) {
     console.log('[AdminTickets] Event filter changed to:', eventId);
     console.log('[AdminTickets] Current filters object:', this.filters);
-    console.log('[AdminTickets] Available events:', this.events.map(e => ({ id: e.id, name: e.name })));
+    console.log(
+      '[AdminTickets] Available events:',
+      this.events.map((e) => ({ id: e.id, name: e.name })),
+    );
     this.filters.eventId = eventId;
     this.filters.page = 1;
     this.loadTickets();
@@ -187,7 +193,7 @@ export class AdminTicketsComponent implements OnInit {
       eventId: '',
       status: '',
       page: 1,
-      limit: 10
+      limit: 10,
     };
     this.error = null;
     this.loadTickets();

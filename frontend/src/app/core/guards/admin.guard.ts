@@ -5,12 +5,12 @@ import { map, catchError } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AdminGuard implements CanActivate {
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
   ) {}
 
   canActivate(): Observable<boolean> {

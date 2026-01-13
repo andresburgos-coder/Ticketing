@@ -19,7 +19,7 @@ export interface EmailResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class EmailService {
   private readonly http = inject(HttpClient);

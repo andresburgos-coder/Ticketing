@@ -1,19 +1,39 @@
 <div class="w-full bg-white">
-  <div class="relative flex flex-col items-center justify-center mx-auto overflow-hidden w-full h-48 sm:h-64 md:h-80 lg:h-96 xl:h-[400px] max-w-7xl">
-    <div class="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat z-0"
-      [style.background-image]="'linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.6)), url(' + slides[current()]?.image + ')'">
-    </div>
+  <div
+    class="relative flex flex-col items-center justify-center mx-auto overflow-hidden w-full h-48 sm:h-64 md:h-80 lg:h-96 xl:h-[400px] max-w-7xl"
+  >
+    <div
+      class="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat z-0"
+      [style.background-image]="
+        'linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.6)), url(' + slides[current()]?.image + ')'
+      "
+    ></div>
     <!-- Swiper Controls -->
-    <div class="absolute bottom-2 sm:bottom-4 md:bottom-6 left-0 right-0 flex justify-center items-center gap-2 sm:gap-4 z-20 px-4">
-      <button aria-label="Anterior" (click)="prev()" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-600">
+    <div
+      class="absolute bottom-2 sm:bottom-4 md:bottom-6 left-0 right-0 flex justify-center items-center gap-2 sm:gap-4 z-20 px-4"
+    >
+      <button
+        aria-label="Anterior"
+        (click)="prev()"
+        class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-600"
+      >
         <span class="material-symbols-outlined text-lg sm:text-xl">chevron_left</span>
       </button>
       <div class="flex gap-1 sm:gap-2 max-w-xs overflow-x-auto scrollbar-hide">
         <ng-container *ngFor="let slide of slides; let i = index">
-          <button aria-label="Ir al slide {{i+1}}" (click)="goTo(i)" [class.bg-primary-600]="current() === i" class="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-white/70 border border-white focus:outline-none focus:ring-2 focus:ring-primary-600 transition-all flex-shrink-0"></button>
+          <button
+            aria-label="Ir al slide {{ i + 1 }}"
+            (click)="goTo(i)"
+            [class.bg-primary-600]="current() === i"
+            class="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-white/70 border border-white focus:outline-none focus:ring-2 focus:ring-primary-600 transition-all flex-shrink-0"
+          ></button>
         </ng-container>
       </div>
-      <button aria-label="Siguiente" (click)="next()" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-600">
+      <button
+        aria-label="Siguiente"
+        (click)="next()"
+        class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-600"
+      >
         <span class="material-symbols-outlined text-lg sm:text-xl">chevron_right</span>
       </button>
     </div>

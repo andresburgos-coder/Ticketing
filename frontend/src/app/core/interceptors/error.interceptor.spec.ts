@@ -5,7 +5,6 @@ import { Router } from '@angular/router';
 import { errorInterceptor } from './error.interceptor';
 import { AuthService } from '../services/auth.service';
 
-
 describe('errorInterceptor', () => {
   let httpMock: HttpTestingController;
   let httpClient: HttpClient;
@@ -14,7 +13,7 @@ describe('errorInterceptor', () => {
 
   beforeEach(() => {
     const routerMock = {
-      navigate: jasmine.createSpy()
+      navigate: jasmine.createSpy(),
     };
 
     TestBed.configureTestingModule({
@@ -22,8 +21,8 @@ describe('errorInterceptor', () => {
         provideHttpClient(withInterceptors([errorInterceptor])),
         provideHttpClientTesting(),
         AuthService,
-        { provide: Router, useValue: routerMock }
-      ]
+        { provide: Router, useValue: routerMock },
+      ],
     });
 
     httpMock = TestBed.inject(HttpTestingController);
@@ -35,7 +34,10 @@ describe('errorInterceptor', () => {
   it('should handle 401 errors by logging out', async () => {
     const logoutSpy = spyOn(authService, 'logout');
 
-    const promise = httpClient.get('/api/test').toPromise().catch(err => err);
+    const promise = httpClient
+      .get('/api/test')
+      .toPromise()
+      .catch((err) => err);
 
     const req = httpMock.expectOne('/api/test');
     req.flush({ message: 'Unauthorized' }, { status: 401, statusText: 'Unauthorized' });
@@ -47,7 +49,10 @@ describe('errorInterceptor', () => {
   });
 
   it('should handle 403 errors', async () => {
-    const promise = httpClient.get('/api/test').toPromise().catch(err => err);
+    const promise = httpClient
+      .get('/api/test')
+      .toPromise()
+      .catch((err) => err);
 
     const req = httpMock.expectOne('/api/test');
     req.flush({ message: 'Forbidden' }, { status: 403, statusText: 'Forbidden' });
@@ -58,7 +63,10 @@ describe('errorInterceptor', () => {
   });
 
   it('should handle 500 errors', async () => {
-    const promise = httpClient.get('/api/test').toPromise().catch(err => err);
+    const promise = httpClient
+      .get('/api/test')
+      .toPromise()
+      .catch((err) => err);
 
     const req = httpMock.expectOne('/api/test');
     req.flush({ message: 'Server Error' }, { status: 500, statusText: 'Internal Server Error' });
@@ -79,6 +87,5 @@ describe('errorInterceptor', () => {
 
   afterEach(() => {
     httpMock.verify();
-    ;
   });
 });

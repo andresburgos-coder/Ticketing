@@ -10,15 +10,12 @@ describe('CheckoutService', () => {
   beforeEach(() => {
     ordersService = {
       createOrder: jasmine.createSpy(),
-      confirmOrder: jasmine.createSpy()
+      confirmOrder: jasmine.createSpy(),
     };
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [
-        CheckoutService,
-        { provide: Orders, useValue: ordersService }
-      ]
+      providers: [CheckoutService, { provide: Orders, useValue: ordersService }],
     });
 
     service = TestBed.inject(CheckoutService);
@@ -37,7 +34,7 @@ describe('CheckoutService', () => {
         ticketTypeId: 1,
         ticketTypeName: 'VIP Ticket',
         quantity: 2,
-        price: 100
+        price: 100,
       });
     });
 
@@ -112,9 +109,11 @@ describe('CheckoutService', () => {
   });
 
   describe('reservation', () => {
-        afterEach(() => {
-          try { jasmine.clock().uninstall(); } catch {}
-        });
+    afterEach(() => {
+      try {
+        jasmine.clock().uninstall();
+      } catch {}
+    });
     it('should set reservation with countdown timer', () => {
       const mockReservation = {
         id: '1',
@@ -123,7 +122,7 @@ describe('CheckoutService', () => {
         quantity: 2,
         totalAmount: 200,
         expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
-        status: 'active'
+        status: 'active',
       };
 
       service.setReservation(mockReservation as any);
@@ -143,7 +142,7 @@ describe('CheckoutService', () => {
         quantity: 2,
         totalAmount: 200,
         expiresAt,
-        status: 'active'
+        status: 'active',
       };
       service.setReservation(mockReservation as any);
 
@@ -167,7 +166,7 @@ describe('CheckoutService', () => {
         quantity: 2,
         totalAmount: 200,
         expiresAt,
-        status: 'active'
+        status: 'active',
       };
       service.setReservation(mockReservation as any);
 
@@ -187,7 +186,7 @@ describe('CheckoutService', () => {
       service.confirmOrder('stripe', 'test@example.com', {
         cardNumber: '4111111111111111',
         expiryDate: '12/25',
-        cvv: '123'
+        cvv: '123',
       });
 
       // isLoading will be set to false after setTimeout, so we just check it was called

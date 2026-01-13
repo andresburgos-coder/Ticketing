@@ -13,14 +13,14 @@ describe('Confirmation', () => {
 
   beforeEach(async () => {
     const routerMock = {
-      navigate: jasmine.createSpy('navigate')
+      navigate: jasmine.createSpy('navigate'),
     };
 
     checkoutService = {
       total: signal(220),
       cartItemCount: signal(2),
       clearCart: jasmine.createSpy('clearCart'),
-      completedOrder: signal(null)
+      completedOrder: signal(null),
     };
 
     await TestBed.configureTestingModule({
@@ -28,8 +28,8 @@ describe('Confirmation', () => {
       providers: [
         { provide: Router, useValue: routerMock },
         { provide: CheckoutService, useValue: checkoutService },
-        { provide: ActivatedRoute, useValue: { queryParams: of({}) } }
-      ]
+        { provide: ActivatedRoute, useValue: { queryParams: of({}) } },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Confirmation);
@@ -61,7 +61,7 @@ describe('Confirmation', () => {
       usedAt: null,
       eventName: 'Test Event',
       eventDate: new Date().toISOString(),
-      eventLocation: 'Test Location'
+      eventLocation: 'Test Location',
     };
 
     // Mock canvas methods
@@ -71,20 +71,20 @@ describe('Confirmation', () => {
         fillRect: jasmine.createSpy('fillRect'),
         drawImage: jasmine.createSpy('drawImage'),
         createLinearGradient: jasmine.createSpy('createLinearGradient').and.returnValue({
-          addColorStop: jasmine.createSpy('addColorStop')
+          addColorStop: jasmine.createSpy('addColorStop'),
         }),
         fillText: jasmine.createSpy('fillText'),
         strokeStyle: '',
         lineWidth: 0,
         strokeRect: jasmine.createSpy('strokeRect'),
         textAlign: '',
-        measureText: jasmine.createSpy('measureText').and.returnValue({ width: 100 })
+        measureText: jasmine.createSpy('measureText').and.returnValue({ width: 100 }),
       }),
       width: 900,
       height: 600,
       toBlob: jasmine.createSpy('toBlob').and.callFake((callback) => {
         callback(new Blob());
-      })
+      }),
     };
 
     spyOn(document, 'createElement').and.returnValue(mockCanvas as any);
@@ -94,7 +94,7 @@ describe('Confirmation', () => {
     const mockLink = {
       href: '',
       download: '',
-      click: jasmine.createSpy('click')
+      click: jasmine.createSpy('click'),
     };
     (document.createElement as jasmine.Spy).and.returnValue(mockCanvas as any);
     (document.createElement as jasmine.Spy).and.returnValue(mockLink as any);

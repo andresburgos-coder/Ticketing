@@ -13,7 +13,7 @@ import { ToastService } from '../../../core/services/toast.service';
   imports: [CommonModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './admin-users.component.html',
-  styleUrl: './admin-users.component.css'
+  styleUrl: './admin-users.component.css',
 })
 export class AdminUsersComponent implements OnInit {
   users = signal<User[]>([]);
@@ -27,7 +27,7 @@ export class AdminUsersComponent implements OnInit {
 
   constructor(
     private adminService: AdminService,
-    private router: Router
+    private router: Router,
   ) {}
   private readonly toastService = inject(ToastService);
 
@@ -60,7 +60,7 @@ export class AdminUsersComponent implements OnInit {
         error: (error) => {
           this.error.set(error.message || 'Error al cargar los usuarios');
           reject(error);
-        }
+        },
       });
     });
   }
@@ -116,7 +116,7 @@ export class AdminUsersComponent implements OnInit {
           const errorMsg = error.error?.message || error.message || 'Error desconocido';
           console.warn('[AdminUsers] Error deleting user:', errorMsg);
           this.toastService.show('Error al eliminar usuario: ' + errorMsg, 'error');
-        }
+        },
       });
     }
   }

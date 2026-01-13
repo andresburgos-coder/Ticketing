@@ -5,7 +5,6 @@ import { EventService } from '../../../services/event.service';
 import { of } from 'rxjs';
 import { signal } from '@angular/core';
 
-
 describe('AdminReservationsComponent', () => {
   let component: AdminReservationsComponent;
   let fixture: ComponentFixture<AdminReservationsComponent>;
@@ -14,22 +13,24 @@ describe('AdminReservationsComponent', () => {
 
   beforeEach(async () => {
     const adminServiceSpy = {
-      getReservations: jasmine.createSpy('getReservations').and.returnValue(of({
-        data: [],
-        pagination: { page: 1, totalPages: 1, total: 0, limit: 10 }
-      }))
+      getReservations: jasmine.createSpy('getReservations').and.returnValue(
+        of({
+          data: [],
+          pagination: { page: 1, totalPages: 1, total: 0, limit: 10 },
+        }),
+      ),
     };
     const eventServiceSpy = {
       loadEvents: jasmine.createSpy('loadEvents').and.returnValue(Promise.resolve()),
-      events: signal([])
+      events: signal([]),
     };
 
     await TestBed.configureTestingModule({
       imports: [AdminReservationsComponent],
       providers: [
         { provide: AdminService, useValue: adminServiceSpy },
-        { provide: EventService, useValue: eventServiceSpy }
-      ]
+        { provide: EventService, useValue: eventServiceSpy },
+      ],
     }).compileComponents();
 
     adminService = TestBed.inject(AdminService);
@@ -52,39 +53,41 @@ describe('AdminReservationsComponent', () => {
 
   it('should load reservations on init', async () => {
     (eventService.loadEvents as jasmine.Spy).and.returnValue(Promise.resolve());
-    (adminService.getReservations as jasmine.Spy).and.returnValue(of({
-      data: [],
-      pagination: { page: 1, totalPages: 1, total: 0, limit: 10 }
-    } as any));
+    (adminService.getReservations as jasmine.Spy).and.returnValue(
+      of({
+        data: [],
+        pagination: { page: 1, totalPages: 1, total: 0, limit: 10 },
+      } as any),
+    );
 
     component.ngOnInit();
-    
+
     // Wait for async operations to complete
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise((resolve) => setTimeout(resolve, 200));
 
     expect(eventService.loadEvents).toHaveBeenCalled();
     expect(adminService.getReservations).toHaveBeenCalled();
   });
 
   it('should change page', async () => {
-    (adminService.getReservations as jasmine.Spy).and.returnValue(of({
-      data: [],
-      pagination: { page: 2, totalPages: 3, total: 20, limit: 10 }
-    } as any));
+    (adminService.getReservations as jasmine.Spy).and.returnValue(
+      of({
+        data: [],
+        pagination: { page: 2, totalPages: 3, total: 20, limit: 10 },
+      } as any),
+    );
 
     component.changePage(2);
-    
+
     // Wait for async operations to complete
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     expect(component.filters.page).toBe(2);
     expect(adminService.getReservations).toHaveBeenCalled();
   });
 
   it('should get event name from events array', () => {
-    component.events = [
-      { id: '1', name: 'Concert', date: new Date(), location: 'NYC' } as any
-    ];
+    component.events = [{ id: '1', name: 'Concert', date: new Date(), location: 'NYC' } as any];
 
     const eventName = component['getEventName']('1');
     expect(eventName).toBe('Concert');

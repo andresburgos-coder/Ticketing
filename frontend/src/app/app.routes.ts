@@ -13,21 +13,21 @@ import { AdminGuard } from './core/guards/admin.guard';
 import { organizerGuard } from './core/guards/organizer.guard';
 
 export const routes: Routes = [
-    { path: '', component: EventList },
-    { path: 'auth', component: AuthComponent },
-    { path: 'login', redirectTo: 'auth', pathMatch: 'full' },
-    { path: 'register', redirectTo: 'auth', pathMatch: 'full' },
-    { path: 'event/:id', component: EventDetail },
-    { path: 'event/:id/edit', component: EventForm, canActivate: [authGuard] },
-    { path: 'create-event', component: EventForm, canActivate: [authGuard] },
-    { path: 'checkout', component: Checkout, canActivate: [checkoutGuard] },
-    { path: 'confirmation', component: Confirmation },
-    { path: 'my-tickets', component: MyTicketsComponent, canActivate: [authGuard] },
-    { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
-    {
-        path: 'admin',
-        canActivate: [organizerGuard],
-        loadChildren: () => import('./features/admin/admin.routes').then(m => m.adminRoutes)
-    },
-    { path: '**', redirectTo: '' }
+  { path: '', component: EventList },
+  { path: 'auth', component: AuthComponent },
+  { path: 'login', redirectTo: 'auth', pathMatch: 'full' },
+  { path: 'register', redirectTo: 'auth', pathMatch: 'full' },
+  { path: 'event/:id', component: EventDetail },
+  { path: 'event/:id/edit', component: EventForm, canActivate: [authGuard] },
+  { path: 'create-event', component: EventForm, canActivate: [authGuard] },
+  { path: 'checkout', component: Checkout, canActivate: [checkoutGuard] },
+  { path: 'confirmation', component: Confirmation },
+  { path: 'my-tickets', component: MyTicketsComponent, canActivate: [authGuard] },
+  { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
+  {
+    path: 'admin',
+    canActivate: [organizerGuard],
+    loadChildren: () => import('./features/admin/admin.routes').then((m) => m.adminRoutes),
+  },
+  { path: '**', redirectTo: '' },
 ];

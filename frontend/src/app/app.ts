@@ -10,7 +10,7 @@ import { ToastService } from './core/services/toast.service';
   selector: 'app-root',
   imports: [RouterOutlet, Header, Footer, ToastComponent, QRScannerFabComponent],
   templateUrl: './app.html',
-  styleUrl: './app.css'
+  styleUrl: './app.css',
 })
 export class App {
   protected readonly title = signal('frontend');

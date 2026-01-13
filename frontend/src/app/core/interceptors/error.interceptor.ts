@@ -4,14 +4,17 @@ import {
   HttpHandlerFn,
   HttpEvent,
   HttpInterceptorFn,
-  HttpErrorResponse
+  HttpErrorResponse,
 } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
-export const errorInterceptor: HttpInterceptorFn = (request: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> => {
+export const errorInterceptor: HttpInterceptorFn = (
+  request: HttpRequest<unknown>,
+  next: HttpHandlerFn,
+): Observable<HttpEvent<unknown>> => {
   const router = inject(Router);
   const authService = inject(AuthService);
 
@@ -30,6 +33,6 @@ export const errorInterceptor: HttpInterceptorFn = (request: HttpRequest<unknown
       }
 
       return throwError(() => error);
-    })
+    }),
   );
 };

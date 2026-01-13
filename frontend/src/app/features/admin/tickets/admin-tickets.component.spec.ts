@@ -11,13 +11,17 @@ describe('AdminTicketsComponent', () => {
   let fixture: ComponentFixture<AdminTicketsComponent>;
 
   const adminServiceMock = {
-    getTickets: jasmine.createSpy('getTickets').and.returnValue(of({ data: [], pagination: { page: 1, totalPages: 1, total: 0, limit: 10 } }))
+    getTickets: jasmine
+      .createSpy('getTickets')
+      .and.returnValue(
+        of({ data: [], pagination: { page: 1, totalPages: 1, total: 0, limit: 10 } }),
+      ),
   };
 
   const eventServiceMock = {
     events: signal([]),
     events$: eventsSubject.asObservable(),
-    loadEvents: jasmine.createSpy('loadEvents').and.returnValue(undefined)
+    loadEvents: jasmine.createSpy('loadEvents').and.returnValue(undefined),
   };
 
   beforeEach(async () => {
@@ -25,8 +29,8 @@ describe('AdminTicketsComponent', () => {
       imports: [AdminTicketsComponent],
       providers: [
         { provide: AdminService, useValue: adminServiceMock },
-        { provide: EventService, useValue: eventServiceMock }
-      ]
+        { provide: EventService, useValue: eventServiceMock },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AdminTicketsComponent);

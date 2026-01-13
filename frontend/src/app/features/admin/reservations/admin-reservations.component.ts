@@ -12,7 +12,7 @@ import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
   standalone: true,
   imports: [CommonModule, FormsModule, CurrencyFormatPipe],
   templateUrl: './admin-reservations.component.html',
-  styleUrl: './admin-reservations.component.css'
+  styleUrl: './admin-reservations.component.css',
 })
 export class AdminReservationsComponent implements OnInit {
   reservations: AdminReservation[] = [];
@@ -24,7 +24,7 @@ export class AdminReservationsComponent implements OnInit {
 
   constructor(
     private adminService: AdminService,
-    private eventService: EventService
+    private eventService: EventService,
   ) {}
 
   ngOnInit() {
@@ -63,9 +63,9 @@ export class AdminReservationsComponent implements OnInit {
     return new Promise((resolve, reject) => {
       this.adminService.getReservations(this.filters).subscribe({
         next: (response) => {
-          this.reservations = response.data.map(reservation => ({
+          this.reservations = response.data.map((reservation) => ({
             ...reservation,
-            eventName: this.getEventName(reservation.eventId)
+            eventName: this.getEventName(reservation.eventId),
           }));
           this.pagination = response.pagination;
           resolve();
@@ -73,7 +73,7 @@ export class AdminReservationsComponent implements OnInit {
         error: (error) => {
           this.error = error.message || 'Error al cargar las reservas';
           reject(error);
-        }
+        },
       });
     });
   }
@@ -106,7 +106,7 @@ export class AdminReservationsComponent implements OnInit {
   }
 
   private getEventName(eventId: string): string {
-    const event = this.events.find(e => e.id === eventId);
+    const event = this.events.find((e) => e.id === eventId);
     return event ? event.name : 'Evento no encontrado';
   }
 }

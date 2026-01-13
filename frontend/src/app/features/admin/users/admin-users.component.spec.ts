@@ -7,7 +7,6 @@ import { AdminService } from '../../../services/admin.service';
 import { User, UserRole } from '../../../models/admin.model';
 import { of, throwError } from 'rxjs';
 
-
 describe('AdminUsersComponent', () => {
   let component: AdminUsersComponent;
   let fixture: ComponentFixture<AdminUsersComponent>;
@@ -23,7 +22,7 @@ describe('AdminUsersComponent', () => {
       firstName: 'Admin',
       lastName: 'User',
       role: UserRole.ADMIN,
-      createdAt: new Date('2024-01-01')
+      createdAt: new Date('2024-01-01'),
     },
     {
       id: '2',
@@ -31,8 +30,8 @@ describe('AdminUsersComponent', () => {
       firstName: 'Buyer',
       lastName: 'User',
       role: UserRole.BUYER,
-      createdAt: new Date('2024-01-15')
-    }
+      createdAt: new Date('2024-01-15'),
+    },
   ];
 
   beforeEach(async () => {
@@ -40,18 +39,18 @@ describe('AdminUsersComponent', () => {
       getUsers: jasmine.createSpy(),
       createAdminUser: jasmine.createSpy(),
       updateUser: jasmine.createSpy(),
-      deleteUser: jasmine.createSpy()
+      deleteUser: jasmine.createSpy(),
     };
     mockRouter = {
-      navigate: jasmine.createSpy('navigate').and.returnValue(Promise.resolve(true))
+      navigate: jasmine.createSpy('navigate').and.returnValue(Promise.resolve(true)),
     };
 
     await TestBed.configureTestingModule({
       imports: [CommonModule, FormsModule, AdminUsersComponent],
       providers: [
         { provide: AdminService, useValue: mockAdminService },
-        { provide: Router, useValue: mockRouter }
-      ]
+        { provide: Router, useValue: mockRouter },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AdminUsersComponent);
@@ -69,15 +68,15 @@ describe('AdminUsersComponent', () => {
         page: 1,
         limit: 10,
         total: 2,
-        totalPages: 1
-      }
+        totalPages: 1,
+      },
     };
 
     (mockAdminService.getUsers as jasmine.Spy).and.returnValue(of(mockResponse));
 
     fixture.detectChanges();
 
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
     expect(mockAdminService.getUsers).toHaveBeenCalled();
     expect(component.users()).toEqual(mockUsers);
     expect(component.pagination().total).toBe(2);
@@ -86,12 +85,12 @@ describe('AdminUsersComponent', () => {
 
   it('should handle loading error', async () => {
     (mockAdminService.getUsers as jasmine.Spy).and.returnValue(
-      throwError(() => ({ message: 'Network error' }))
+      throwError(() => ({ message: 'Network error' })),
     );
 
     fixture.detectChanges();
 
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
     expect(component.error()).toBe('Network error');
     expect(component.loading()).toBeFalsy();
   });
@@ -134,7 +133,7 @@ describe('AdminUsersComponent', () => {
 
   it('should change page and reload users', () => {
     (mockAdminService.getUsers as jasmine.Spy).and.returnValue(
-      of({ data: [], pagination: { page: 2, limit: 10, total: 0, totalPages: 1 } })
+      of({ data: [], pagination: { page: 2, limit: 10, total: 0, totalPages: 1 } }),
     );
 
     component.changePage(2);
@@ -145,13 +144,13 @@ describe('AdminUsersComponent', () => {
 
   it('should search users with debounce', async () => {
     (mockAdminService.getUsers as jasmine.Spy).and.returnValue(
-      of({ data: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 1 } })
+      of({ data: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 1 } }),
     );
 
     component.filters.search = 'test';
     component.searchUsers();
 
-    await new Promise(resolve => setTimeout(resolve, 600));
+    await new Promise((resolve) => setTimeout(resolve, 600));
     expect(component.filters.page).toBe(1);
     expect(mockAdminService.getUsers).toHaveBeenCalled();
   });
@@ -163,7 +162,7 @@ describe('AdminUsersComponent', () => {
       firstName: 'Test',
       lastName: 'User',
       role: UserRole.BUYER,
-      createdAt: new Date()
+      createdAt: new Date(),
     };
 
     const email = component.getEmail(user);

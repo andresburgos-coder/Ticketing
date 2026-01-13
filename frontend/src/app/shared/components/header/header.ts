@@ -9,7 +9,7 @@ import { AuthService } from '../../../core/services/auth.service';
   standalone: true,
   imports: [CommonModule, RouterLink, MobileMenu],
   templateUrl: './header.html',
-  styleUrl: './header.css'
+  styleUrl: './header.css',
 })
 export class Header {
   private readonly authService = inject(AuthService);
@@ -25,7 +25,7 @@ export class Header {
   }
 
   toggleMobileMenu() {
-    this.mobileMenuOpen.update(value => !value);
+    this.mobileMenuOpen.update((value) => !value);
   }
 
   logout() {
@@ -33,4 +33,3 @@ export class Header {
     this.router.navigate(['/']);
   }
 }
-

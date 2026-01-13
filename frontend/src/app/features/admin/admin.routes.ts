@@ -24,22 +24,27 @@ export const adminRoutes: Routes = [
       { path: 'users/edit/:id', component: UserFormComponent, canActivate: [adminOnlyGuard] },
       {
         path: 'qr-scanner',
-        component: QRScannerComponent
+        component: QRScannerComponent,
       },
       {
         path: 'tickets',
-        loadComponent: () => import('./tickets/admin-tickets.component').then(m => m.AdminTicketsComponent)
+        loadComponent: () =>
+          import('./tickets/admin-tickets.component').then((m) => m.AdminTicketsComponent),
       },
       {
         path: 'reservations',
-        loadComponent: () => import('./reservations/admin-reservations.component').then(m => m.AdminReservationsComponent),
-        canActivate: [adminOnlyGuard]
+        loadComponent: () =>
+          import('./reservations/admin-reservations.component').then(
+            (m) => m.AdminReservationsComponent,
+          ),
+        canActivate: [adminOnlyGuard],
       },
       {
         path: 'reports',
-        loadComponent: () => import('./reports/admin-reports.component').then(m => m.AdminReportsComponent),
-        canActivate: [adminOnlyGuard]
-      }
-    ]
-  }
+        loadComponent: () =>
+          import('./reports/admin-reports.component').then((m) => m.AdminReportsComponent),
+        canActivate: [adminOnlyGuard],
+      },
+    ],
+  },
 ];

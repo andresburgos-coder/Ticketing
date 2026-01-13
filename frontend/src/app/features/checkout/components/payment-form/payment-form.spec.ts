@@ -8,7 +8,7 @@ describe('PaymentForm', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PaymentForm, FormsModule]
+      imports: [PaymentForm, FormsModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PaymentForm);
@@ -65,7 +65,7 @@ describe('PaymentForm', () => {
         cardNumber: '4111111111111111',
         expiryMonth: '12',
         expiryYear: nextYear,
-        cvv: '123'
+        cvv: '123',
       };
 
       const isValid = component.validate();

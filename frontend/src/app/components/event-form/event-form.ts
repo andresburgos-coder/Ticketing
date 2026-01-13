@@ -1,6 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Events } from '../../services/events';
 import { EventService } from '../../services/event.service';
@@ -27,7 +33,7 @@ export enum EventCategory {
   RECREATIVO = 'Recreativo',
   STAND_UP_COMEDY = 'Stand-Up Comedy',
   TEATRO = 'Teatro',
-  TURISMO = 'Turismo'
+  TURISMO = 'Turismo',
 }
 import { ToastService } from '../../core/services/toast.service';
 
@@ -36,7 +42,7 @@ import { ToastService } from '../../core/services/toast.service';
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule, LoadingSpinner],
   templateUrl: './event-form.html',
-  styleUrl: './event-form.css'
+  styleUrl: './event-form.css',
 })
 export class EventForm implements OnInit {
   private readonly fb = inject(FormBuilder);
@@ -77,13 +83,13 @@ export class EventForm implements OnInit {
       foodSale: this.form.get('foodSale')?.value,
       liquorSale: this.form.get('liquorSale')?.value,
       reducedMobilityAccess: this.form.get('reducedMobilityAccess')?.value,
-      pregnantAccess: this.form.get('pregnantAccess')?.value
+      pregnantAccess: this.form.get('pregnantAccess')?.value,
     };
     formData.append('eventDetails', JSON.stringify(eventDetails));
 
     formData.append(
       'ticketConfigurations',
-      JSON.stringify(this.form.get('ticketConfigurations')?.value)
+      JSON.stringify(this.form.get('ticketConfigurations')?.value),
     );
 
     // Add image if selected
@@ -91,14 +97,18 @@ export class EventForm implements OnInit {
       formData.append('image', this.selectedFile, this.selectedFile.name);
     }
 
-    const request = this.isEditing && this.eventId
-      ? this.eventsService.updateEvent(this.eventId, formData)
-      : this.eventsService.createEvent(formData);
+    const request =
+      this.isEditing && this.eventId
+        ? this.eventsService.updateEvent(this.eventId, formData)
+        : this.eventsService.createEvent(formData);
 
     request.subscribe({
       next: () => {
         this.isLoading = false;
-        this.toastService.show(this.isEditing ? '¡Evento actualizado exitosamente!' : '¡Evento creado exitosamente!', 'success');
+        this.toastService.show(
+          this.isEditing ? '¡Evento actualizado exitosamente!' : '¡Evento creado exitosamente!',
+          'success',
+        );
         this.eventService.loadEvents();
         this.router.navigate(['/']);
       },
@@ -106,7 +116,7 @@ export class EventForm implements OnInit {
         this.isLoading = false;
         console.error('Error saving event:', err);
         this.toastService.show('Error al guardar el evento. Inténtalo nuevamente.', 'error');
-      }
+      },
     });
   }
 
@@ -132,10 +142,10 @@ export class EventForm implements OnInit {
       ticketConfigurations: [
         [
           { type: 'VIP', price: 100, currency: 'COP', quantity: 50 },
-          { type: 'GENERAL', price: 50, currency: 'COP', quantity: 100 }
+          { type: 'GENERAL', price: 50, currency: 'COP', quantity: 100 },
         ],
-        Validators.required
-      ]
+        Validators.required,
+      ],
     });
   }
 
@@ -166,7 +176,7 @@ export class EventForm implements OnInit {
           liquorSales: event.eventDetails?.[0]?.liquorSale || false,
           wheelchairAccess: event.eventDetails?.[0]?.reducedMobilityAccess || false,
           pregnancyAccess: event.eventDetails?.[0]?.pregnantAccess || false,
-          ticketConfigurations: event.ticketConfigurations || []
+          ticketConfigurations: event.ticketConfigurations || [],
         });
 
         if (event.imageUrl) {
@@ -185,7 +195,7 @@ export class EventForm implements OnInit {
       error: (err) => {
         console.error('Error loading event:', err);
         this.isLoading = false;
-      }
+      },
     });
   }
 

@@ -3,7 +3,6 @@ import { AdminReportsComponent } from './admin-reports.component';
 import { AdminService } from '../../../services/admin.service';
 import { of } from 'rxjs';
 
-
 describe('AdminReportsComponent', () => {
   let component: AdminReportsComponent;
   let fixture: ComponentFixture<AdminReportsComponent>;
@@ -13,12 +12,12 @@ describe('AdminReportsComponent', () => {
     const adminServiceSpy = {
       getDashboardStats: jasmine.createSpy(),
       getEventStats: jasmine.createSpy(),
-      getTicketStats: jasmine.createSpy()
+      getTicketStats: jasmine.createSpy(),
     };
 
     await TestBed.configureTestingModule({
       imports: [AdminReportsComponent],
-      providers: [{ provide: AdminService, useValue: adminServiceSpy }]
+      providers: [{ provide: AdminService, useValue: adminServiceSpy }],
     }).compileComponents();
 
     adminService = TestBed.inject(AdminService);
@@ -37,10 +36,10 @@ describe('AdminReportsComponent', () => {
         totalEvents: 10,
         totalTicketsSold: 500,
         totalRevenue: 5000,
-        activeReservations: 50
+        activeReservations: 50,
       },
       recentEvents: [],
-      topEvents: []
+      topEvents: [],
     };
 
     const avgPrice = component.getAverageTicketPrice();
@@ -52,7 +51,7 @@ describe('AdminReportsComponent', () => {
     spyOn(document, 'createElement').and.returnValue({
       href: '',
       download: '',
-      click: jasmine.createSpy()
+      click: jasmine.createSpy(),
     } as any);
 
     component.dashboardStats = {
@@ -61,10 +60,10 @@ describe('AdminReportsComponent', () => {
         totalEvents: 10,
         totalTicketsSold: 500,
         totalRevenue: 5000,
-        activeReservations: 50
+        activeReservations: 50,
       },
       recentEvents: [],
-      topEvents: []
+      topEvents: [],
     };
 
     expect(() => component.exportReport('events')).not.toThrow();
@@ -77,15 +76,19 @@ describe('AdminReportsComponent', () => {
         totalEvents: 10,
         totalTicketsSold: 500,
         totalRevenue: 5000,
-        activeReservations: 50
+        activeReservations: 50,
       },
       recentEvents: [],
-      topEvents: []
+      topEvents: [],
     };
 
     (adminService.getDashboardStats as jasmine.Spy).and.returnValue(of(mockDashboardStats));
-    (adminService.getEventStats as jasmine.Spy).and.returnValue(of({ upcomingEvents: [], pastEvents: [], eventsByCategory: [] } as any));
-    (adminService.getTicketStats as jasmine.Spy).and.returnValue(of({ ticketsByType: [], salesByMonth: [] } as any));
+    (adminService.getEventStats as jasmine.Spy).and.returnValue(
+      of({ upcomingEvents: [], pastEvents: [], eventsByCategory: [] } as any),
+    );
+    (adminService.getTicketStats as jasmine.Spy).and.returnValue(
+      of({ ticketsByType: [], salesByMonth: [] } as any),
+    );
 
     component.ngOnInit();
 

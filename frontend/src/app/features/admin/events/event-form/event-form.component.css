@@ -61,7 +61,9 @@
   border-radius: 4px;
   font-size: 14px;
   font-family: inherit;
-  transition: border-color 0.3s, box-shadow 0.3s;
+  transition:
+    border-color 0.3s,
+    box-shadow 0.3s;
 }
 
 .form-control:focus {

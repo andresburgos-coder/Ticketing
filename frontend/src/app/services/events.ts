@@ -14,16 +14,12 @@ export class Events {
   constructor(private http: HttpClient) {}
 
   getEvents(): Observable<Event[]> {
-    return this.http.get<Event[]>(this.apiUrl).pipe(
-      catchError(this.handleError('getEvents'))
-    );
+    return this.http.get<Event[]>(this.apiUrl).pipe(catchError(this.handleError('getEvents')));
   }
 
   getEvent(id: number | string): Observable<Event> {
     const url = `${this.apiUrl}/${id}`;
-    return this.http.get<Event>(url).pipe(
-      catchError(this.handleError('getEvent'))
-    );
+    return this.http.get<Event>(url).pipe(catchError(this.handleError('getEvent')));
   }
 
   /**
@@ -32,9 +28,9 @@ export class Events {
    * @returns Observable<Event> - The created event with imageUrl
    */
   createEvent(formData: FormData): Observable<Event> {
-    return this.http.post<Event>(this.apiUrl, formData).pipe(
-      catchError(this.handleError('createEvent'))
-    );
+    return this.http
+      .post<Event>(this.apiUrl, formData)
+      .pipe(catchError(this.handleError('createEvent')));
   }
 
   /**
@@ -44,9 +40,9 @@ export class Events {
    * @returns Observable<Event> - The updated event
    */
   updateEvent(id: string | number, formData: FormData): Observable<Event> {
-    return this.http.put<Event>(`${this.apiUrl}/${id}`, formData).pipe(
-      catchError(this.handleError('updateEvent'))
-    );
+    return this.http
+      .put<Event>(`${this.apiUrl}/${id}`, formData)
+      .pipe(catchError(this.handleError('updateEvent')));
   }
 
   private handleError(operation = 'operation') {

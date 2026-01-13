@@ -1,6 +1,13 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+  AbstractControl,
+  ValidationErrors,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import { CheckoutService } from '../../../checkout/services/checkout.service';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -12,7 +19,7 @@ type AuthMode = 'login' | 'register';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './auth.html',
-  styleUrl: './auth.css'
+  styleUrl: './auth.css',
 })
 export class AuthComponent {
   private readonly authService = inject(AuthService);
@@ -33,19 +40,22 @@ export class AuthComponent {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      rememberMe: [false]
+      rememberMe: [false],
     });
 
-    this.registerForm = this.fb.group({
-      firstName: ['', [Validators.required]],
-      lastName: ['', [Validators.required]],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', [Validators.required]],
-      terms: [false, [Validators.requiredTrue]]
-    }, {
-      validators: this.passwordMatchValidator
-    });
+    this.registerForm = this.fb.group(
+      {
+        firstName: ['', [Validators.required]],
+        lastName: ['', [Validators.required]],
+        email: ['', [Validators.required, Validators.email]],
+        password: ['', [Validators.required, Validators.minLength(6)]],
+        confirmPassword: ['', [Validators.required]],
+        terms: [false, [Validators.requiredTrue]],
+      },
+      {
+        validators: this.passwordMatchValidator,
+      },
+    );
   }
 
   passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
@@ -66,7 +76,7 @@ export class AuthComponent {
   }
 
   togglePasswordVisibility(): void {
-    this.showPassword.update(value => !value);
+    this.showPassword.update((value) => !value);
   }
 
   onLoginSubmit(): void {
@@ -95,9 +105,9 @@ export class AuthComponent {
         error: (error: any) => {
           console.error('Login error:', error);
           this.errorMessage.set(
-            error.error?.message || 'Error al iniciar sesión. Verifica tus credenciales.'
+            error.error?.message || 'Error al iniciar sesión. Verifica tus credenciales.',
           );
-        }
+        },
       });
     }
   }
@@ -119,9 +129,9 @@ export class AuthComponent {
         error: (error: any) => {
           console.error('Register error:', error);
           this.errorMessage.set(
-            error.error?.message || 'Error al crear la cuenta. Intenta nuevamente.'
+            error.error?.message || 'Error al crear la cuenta. Intenta nuevamente.',
           );
-        }
+        },
       });
     }
   }

@@ -13,7 +13,7 @@ export interface EventFilters {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class EventService {
   // Signals
@@ -40,11 +40,13 @@ export class EventService {
     const events = this._events();
     const filters = this._filters();
 
-    return events.filter(event => {
+    return events.filter((event) => {
       if (filters.searchQuery) {
         const query = filters.searchQuery.toLowerCase();
-        if (!event.name.toLowerCase().includes(query) &&
-            !event.location.toLowerCase().includes(query)) {
+        if (
+          !event.name.toLowerCase().includes(query) &&
+          !event.location.toLowerCase().includes(query)
+        ) {
           return false;
         }
       }
@@ -77,7 +79,7 @@ export class EventService {
 
   constructor(
     private eventsApi: Events,
-    private wsService: WebSocketService
+    private wsService: WebSocketService,
   ) {}
 
   loadEvents(): void {
@@ -94,7 +96,7 @@ export class EventService {
         console.error('Error loading events:', err);
         this._isLoading.set(false);
         this.eventsLoaded$.error(err);
-      }
+      },
     });
   }
 
@@ -114,7 +116,7 @@ export class EventService {
       error: (err) => {
         console.error('Error loading event:', err);
         this._isLoading.set(false);
-      }
+      },
     });
   }
 
@@ -125,7 +127,11 @@ export class EventService {
   private subscribeToEventUpdates(eventId: string | number): void {
     const eventIdStr = String(eventId);
 
-    console.log('%c[EventService] 🔔 Attempting WebSocket subscription for event UUID:', 'color: blue; font-weight: bold;', eventIdStr);
+    console.log(
+      '%c[EventService] 🔔 Attempting WebSocket subscription for event UUID:',
+      'color: blue; font-weight: bold;',
+      eventIdStr,
+    );
 
     // Check if already subscribed with a valid subscription
     const existingSub = this.wsSubscriptions.get(eventIdStr);
@@ -140,39 +146,49 @@ export class EventService {
       this.wsSubscriptions.delete(eventIdStr);
     }
 
-    console.log('%c[EventService] 🔔 Setting up WebSocket subscription for event:', 'color: blue; font-weight: bold;', eventIdStr);
+    console.log(
+      '%c[EventService] 🔔 Setting up WebSocket subscription for event:',
+      'color: blue; font-weight: bold;',
+      eventIdStr,
+    );
 
     const subscription = this.wsService.subscribeToEvent(eventIdStr).subscribe(
       (update) => {
         if (update) {
-          console.log('%c[EventService] 🎫 AVAILABILITY UPDATE RECEIVED!', 'color: green; font-size: 14px; font-weight: bold;');
+          console.log(
+            '%c[EventService] 🎫 AVAILABILITY UPDATE RECEIVED!',
+            'color: green; font-size: 14px; font-weight: bold;',
+          );
           console.log('[EventService] Update details:', update);
           console.log('[EventService] Refetching event:', eventIdStr);
 
           // Refetch the event to get updated availability
           this.eventsApi.getEvent(eventIdStr).subscribe({
             next: (data) => {
-              console.log('%c[EventService] ✅ Event refetched successfully', 'color: green; font-weight: bold;');
+              console.log(
+                '%c[EventService] ✅ Event refetched successfully',
+                'color: green; font-weight: bold;',
+              );
               console.log('[EventService] New ticketConfigurations:', data.ticketConfigurations);
               // Force a new object reference to ensure change detection
               this._selectedEvent.set({ ...data });
             },
             error: (err) => {
               console.error('[EventService] Error refetching event after WebSocket update:', err);
-            }
+            },
           });
         }
       },
       (error) => {
         console.error('[EventService] WebSocket subscription error:', error);
-      }
+      },
     );
 
     this.wsSubscriptions.set(eventIdStr, subscription);
   }
 
   updateFilters(filters: Partial<EventFilters>): void {
-    this._filters.update(current => ({ ...current, ...filters }));
+    this._filters.update((current) => ({ ...current, ...filters }));
   }
 
   clearFilters(): void {
@@ -195,11 +211,11 @@ export class EventService {
 
   deleteEvent(id: string | number): Observable<void> {
     // TODO: Implement actual delete API call
-    return new Observable(observer => {
+    return new Observable((observer) => {
       // Simulate API call
       setTimeout(() => {
         const events = this._events();
-        const updatedEvents = events.filter(event => event.id !== id);
+        const updatedEvents = events.filter((event) => event.id !== id);
         this._events.set(updatedEvents);
         observer.next();
         observer.complete();

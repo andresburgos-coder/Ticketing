@@ -1,4 +1,3 @@
-
 import { Component, OnInit, Input, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
@@ -12,16 +11,18 @@ declare var L: any;
     <div
       #mapContainer
       class="w-full h-full rounded-xl overflow-hidden"
-      style="min-height: 256px; background: #f3f4f6;">
-    </div>
+      style="min-height: 256px; background: #f3f4f6;"
+    ></div>
   `,
-  styles: [`
-    :host {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-  `]
+  styles: [
+    `
+      :host {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+    `,
+  ],
 })
 export class MapViewerComponent implements OnInit, OnDestroy {
   @Input() location: string = '';
@@ -92,7 +93,9 @@ export class MapViewerComponent implements OnInit, OnDestroy {
     this.marker = L.marker([lat, lng]).addTo(this.map);
 
     // Popup con información
-    const popupText = this.venueName ? `<strong>${this.venueName}</strong><br>${this.location}` : this.location;
+    const popupText = this.venueName
+      ? `<strong>${this.venueName}</strong><br>${this.location}`
+      : this.location;
     this.marker.bindPopup(popupText).openPopup();
   }
 

@@ -18,7 +18,7 @@ describe('Orders', () => {
   it('should call createOrder', () => {
     const http = TestBed.inject<any>(HttpClient);
     spyOn(http, 'post').and.returnValue({ subscribe: () => {} });
-    const dto = { userId: '1', ticketIds: [1,2], totalAmount: 100 };
+    const dto = { userId: '1', ticketIds: [1, 2], totalAmount: 100 };
     service.createOrder(dto as any);
     expect(http.post).toHaveBeenCalledWith(jasmine.any(String), dto);
   });

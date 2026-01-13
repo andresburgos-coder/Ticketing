@@ -15,7 +15,7 @@ export interface PaymentFormData {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './payment-form.html',
-  styleUrl: './payment-form.css'
+  styleUrl: './payment-form.css',
 })
 export class PaymentForm {
   formData: PaymentFormData = {
@@ -23,7 +23,7 @@ export class PaymentForm {
     cardNumber: '',
     expiryMonth: '',
     expiryYear: '',
-    cvv: ''
+    cvv: '',
   };
 
   errors: { [key: string]: string } = {};
@@ -111,7 +111,7 @@ export class PaymentForm {
   getFormData(): PaymentFormData & { expiryDate: string } {
     return {
       ...this.formData,
-      expiryDate: `${this.formData.expiryMonth}/${this.formData.expiryYear}`
+      expiryDate: `${this.formData.expiryMonth}/${this.formData.expiryYear}`,
     };
   }
 }

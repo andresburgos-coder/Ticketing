@@ -12,7 +12,7 @@ import { EventCategory } from '../../../../models/admin.model';
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './event-form.component.html',
-  styleUrl: './event-form.component.css'
+  styleUrl: './event-form.component.css',
 })
 export class EventFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
@@ -46,7 +46,7 @@ export class EventFormComponent implements OnInit {
     EventCategory.ACCION_EXTREMO,
     EventCategory.INMERSIONES,
     EventCategory.COMFAMA,
-    EventCategory.OTROS
+    EventCategory.OTROS,
   ];
 
   ngOnInit() {
@@ -65,13 +65,13 @@ export class EventFormComponent implements OnInit {
       ticketTypes: this.fb.group({
         general: this.fb.group({
           price: ['', [Validators.required, Validators.min(0)]],
-          quantity: ['', [Validators.required, Validators.min(1)]]
+          quantity: ['', [Validators.required, Validators.min(1)]],
         }),
         vip: this.fb.group({
           price: [''],
-          quantity: ['']
-        })
-      })
+          quantity: [''],
+        }),
+      }),
     });
   }
 
@@ -86,7 +86,7 @@ export class EventFormComponent implements OnInit {
         error: (err) => {
           console.error('Error loading event:', err);
           this.toastService.error('Error al cargar el evento');
-        }
+        },
       });
     }
   }
@@ -98,7 +98,7 @@ export class EventFormComponent implements OnInit {
       location: event.location,
       venueName: event.venueName,
       description: event.eventDetails?.[0]?.seating || '',
-      category: event.eventDetails?.[0]?.category || ''
+      category: event.eventDetails?.[0]?.category || '',
     });
 
     // Load ticket configurations
@@ -112,19 +112,19 @@ export class EventFormComponent implements OnInit {
       if (generalTicket) {
         ticketTypesUpdate.general = {
           price: generalTicket.price,
-          quantity: generalTicket.totalQuantity
+          quantity: generalTicket.totalQuantity,
         };
       }
 
       if (vipTicket) {
         ticketTypesUpdate.vip = {
           price: vipTicket.price,
-          quantity: vipTicket.totalQuantity
+          quantity: vipTicket.totalQuantity,
         };
       }
 
       this.form.patchValue({
-        ticketTypes: ticketTypesUpdate
+        ticketTypes: ticketTypesUpdate,
       });
     }
 
@@ -170,7 +170,7 @@ export class EventFormComponent implements OnInit {
         type: 'GENERAL',
         price: Number(generalPrice),
         currency: 'COP',
-        quantity: Number(generalQty)
+        quantity: Number(generalQty),
       });
     }
 
@@ -182,7 +182,7 @@ export class EventFormComponent implements OnInit {
         type: 'VIP',
         price: Number(vipPrice),
         currency: 'COP',
-        quantity: Number(vipQty)
+        quantity: Number(vipQty),
       });
     }
 
@@ -195,16 +195,18 @@ export class EventFormComponent implements OnInit {
     formData.append('ticketConfigurations', JSON.stringify(ticketConfigurations));
 
     // Add event details
-    const eventDetails = [{
-      category: this.form.get('category')?.value || 'General',
-      minAge: null,
-      seating: 'General Admission',
-      capacity: ticketConfigurations.reduce((total, config) => total + config.quantity, 0),
-      foodSale: false,
-      liquorSale: false,
-      reducedMobilityAccess: false,
-      pregnantAccess: false
-    }];
+    const eventDetails = [
+      {
+        category: this.form.get('category')?.value || 'General',
+        minAge: null,
+        seating: 'General Admission',
+        capacity: ticketConfigurations.reduce((total, config) => total + config.quantity, 0),
+        foodSale: false,
+        liquorSale: false,
+        reducedMobilityAccess: false,
+        pregnantAccess: false,
+      },
+    ];
     formData.append('eventDetails', JSON.stringify(eventDetails));
 
     if (this.selectedImage) {
@@ -218,7 +220,7 @@ export class EventFormComponent implements OnInit {
     request$.subscribe({
       next: () => {
         this.toastService.success(
-          this.isEditing() ? 'Evento actualizado correctamente' : 'Evento creado correctamente'
+          this.isEditing() ? 'Evento actualizado correctamente' : 'Evento creado correctamente',
         );
         this.router.navigate(['/admin/events']);
       },
@@ -226,7 +228,7 @@ export class EventFormComponent implements OnInit {
         console.error('Error saving event:', err);
         this.toastService.error('Error al guardar el evento');
         this.loading.set(false);
-      }
+      },
     });
   }
 

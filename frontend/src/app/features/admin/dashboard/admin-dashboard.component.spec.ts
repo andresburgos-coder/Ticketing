@@ -8,25 +8,24 @@ describe('AdminDashboardComponent', () => {
   let fixture: ComponentFixture<AdminDashboardComponent>;
 
   const adminServiceMock = {
-    getDashboardStats: () => of({
-      overview: {
-        totalUsers: 0,
-        totalEvents: 0,
-        totalTicketsSold: 0,
-        totalRevenue: 0,
-        activeReservations: 0
-      },
-      recentEvents: [],
-      topEvents: []
-    })
+    getDashboardStats: () =>
+      of({
+        overview: {
+          totalUsers: 0,
+          totalEvents: 0,
+          totalTicketsSold: 0,
+          totalRevenue: 0,
+          activeReservations: 0,
+        },
+        recentEvents: [],
+        topEvents: [],
+      }),
   };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AdminDashboardComponent],
-      providers: [
-        { provide: AdminService, useValue: adminServiceMock }
-      ]
+      providers: [{ provide: AdminService, useValue: adminServiceMock }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AdminDashboardComponent);

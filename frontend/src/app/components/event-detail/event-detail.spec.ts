@@ -1,4 +1,3 @@
-
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { EventDetail } from './event-detail';
 import { EventService } from '../../services/event.service';
@@ -26,18 +25,16 @@ describe('EventDetail', () => {
     imageUrl: '',
     tags: ['#Test'],
     ticketConfigurations: [
-      { type: 'VIP', price: 100, currency: 'COP', totalQuantity: 10, availableQuantity: 5 }
+      { type: 'VIP', price: 100, currency: 'COP', totalQuantity: 10, availableQuantity: 5 },
     ],
-    ticketTypes: [
-      { id: 1, name: 'General', price: 50, totalQuantity: 100, availableQuantity: 50 }
-    ],
-    eventDetails: [{ category: 'Music', minAge: 18 }]
+    ticketTypes: [{ id: 1, name: 'General', price: 50, totalQuantity: 100, availableQuantity: 50 }],
+    eventDetails: [{ category: 'Music', minAge: 18 }],
   };
 
   beforeEach(async () => {
     eventService = jasmine.createSpyObj('EventService', ['loadEventById', 'clearSelectedEvent'], {
       selectedEvent: signal(mockEvent),
-      isLoading: signal(false)
+      isLoading: signal(false),
     });
     orders = jasmine.createSpyObj('Orders', []);
     checkoutService = jasmine.createSpyObj('CheckoutService', ['clearCart', 'addToCart']);
@@ -53,8 +50,8 @@ describe('EventDetail', () => {
         { provide: CheckoutService, useValue: checkoutService },
         { provide: ToastService, useValue: toastService },
         { provide: Router, useValue: router },
-        { provide: ActivatedRoute, useValue: route }
-      ]
+        { provide: ActivatedRoute, useValue: route },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(EventDetail);
@@ -117,13 +114,13 @@ describe('EventDetail', () => {
   });
 
   it('getMaxQty returns correct max', () => {
-    expect(component["getMaxQty"](mockEvent.ticketConfigurations[0])).toBe(5);
-    expect(component["getMaxQty"](mockEvent.ticketTypes[0])).toBe(50);
+    expect(component['getMaxQty'](mockEvent.ticketConfigurations[0])).toBe(5);
+    expect(component['getMaxQty'](mockEvent.ticketTypes[0])).toBe(50);
   });
 
   it('clampSelectedQuantities clamps values', () => {
     component.selectedQuantities = { VIP: 10, 1: 100 };
-    component["clampSelectedQuantities"]();
+    component['clampSelectedQuantities']();
     expect(component.selectedQuantities.VIP).toBe(5);
     expect(component.selectedQuantities[1]).toBe(50);
   });
@@ -138,7 +135,9 @@ describe('EventDetail', () => {
   });
 
   it('getTicketTypeDescription returns correct string', () => {
-    expect(component.getTicketTypeDescription(mockEvent.ticketConfigurations[0])).toContain('available');
+    expect(component.getTicketTypeDescription(mockEvent.ticketConfigurations[0])).toContain(
+      'available',
+    );
     const soldOut = { ...mockEvent.ticketConfigurations[0], availableQuantity: 0 };
     expect(component.getTicketTypeDescription(soldOut)).toBe('No longer available');
   });

@@ -1,13 +1,13 @@
 export interface Order {
-    id: number;
-    userId: string;
-    total: number;
-    status: string;
-    createdAt: string;
-    tickets?: any[];
+  id: number;
+  userId: string;
+  total: number;
+  status: string;
+  createdAt: string;
+  tickets?: any[];
 }
 
 export interface CreateOrderDto {
-    ticketIds: number[];
-    userId: string;
+  ticketIds: number[];
+  userId: string;
 }

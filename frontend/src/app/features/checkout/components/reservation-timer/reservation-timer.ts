@@ -8,7 +8,7 @@ import { Subscription, interval } from 'rxjs';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './reservation-timer.html',
-  styleUrl: './reservation-timer.css'
+  styleUrl: './reservation-timer.css',
 })
 export class ReservationTimer implements OnInit, OnDestroy {
   private readonly checkoutService = inject(CheckoutService);
@@ -21,7 +21,7 @@ export class ReservationTimer implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Initial update
     this.updateDisplayTime();
-    
+
     // Update every second using RxJS interval
     this.timerSubscription = interval(1000).subscribe(() => {
       this.updateDisplayTime();

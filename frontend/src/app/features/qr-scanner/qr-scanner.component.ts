@@ -1,4 +1,13 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, inject, signal, computed } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ViewChild,
+  ElementRef,
+  inject,
+  signal,
+  computed,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -26,7 +35,7 @@ interface ScanResult {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './qr-scanner.component.html',
-  styleUrl: './qr-scanner.component.css'
+  styleUrl: './qr-scanner.component.css',
 })
 export class QRScannerComponent implements OnInit, OnDestroy {
   @ViewChild('videoElement', { static: false }) videoElement!: ElementRef<HTMLVideoElement>;
@@ -55,10 +64,8 @@ export class QRScannerComponent implements OnInit, OnDestroy {
   readonly currentUser = this.authService.currentUser;
 
   // Computed
-  readonly canScan = computed(() =>
-    this.cameraSupported() &&
-    this.selectedEventId() &&
-    !this.isLoading()
+  readonly canScan = computed(
+    () => this.cameraSupported() && this.selectedEventId() && !this.isLoading(),
   );
 
   readonly isOrganizer = computed(() => this.currentUser()?.role === 'ORGANIZER');
@@ -96,7 +103,8 @@ export class QRScannerComponent implements OnInit, OnDestroy {
 
     if (!supported) {
       const isHttps = window.location.protocol === 'https:';
-      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const isLocalhost =
+        window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
       let message = '❌ Cámara no disponible. ';
 
@@ -125,7 +133,7 @@ export class QRScannerComponent implements OnInit, OnDestroy {
         console.error('Error loading events:', error);
         this.toastService.show('Error al cargar eventos', 'error');
         this.isLoading.set(false);
-      }
+      },
     });
   }
 
@@ -155,8 +163,8 @@ export class QRScannerComponent implements OnInit, OnDestroy {
         video: {
           facingMode: 'environment', // Prefer back camera
           width: { ideal: 1280 },
-          height: { ideal: 720 }
-        }
+          height: { ideal: 720 },
+        },
       });
 
       console.log('[QRComponent] Camera stream obtained:', this.stream);
@@ -180,7 +188,6 @@ export class QRScannerComponent implements OnInit, OnDestroy {
 
       this.isLoading.set(false);
       this.toastService.show('✅ Cámara iniciada. Apunta al código QR', 'success');
-
     } catch (error: any) {
       console.error('[QRComponent] Error starting camera:', error.name, error.message);
       let errorMessage = '❌ Error al acceder a la cámara. ';
@@ -253,19 +260,18 @@ export class QRScannerComponent implements OnInit, OnDestroy {
     }
   }
 
-
   private async waitForVideoElement(): Promise<void> {
     const maxAttempts = 10;
     const delay = 100; // 100ms
 
     for (let i = 0; i < maxAttempts; i++) {
       if (this.videoElement?.nativeElement) {
-        console.log('[QRComponent] Video element found after', (i * delay), 'ms');
+        console.log('[QRComponent] Video element found after', i * delay, 'ms');
         return;
       }
 
       // Wait before next attempt
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
 
     throw new Error('Video element not found after waiting');
@@ -280,7 +286,7 @@ export class QRScannerComponent implements OnInit, OnDestroy {
     try {
       // Get the selected event code directly - no need to search by ID
       const selectedEventCode = this.selectedEventId();
-      
+
       if (!selectedEventCode) {
         console.error('No event selected');
         this.toastService.show('Selecciona un evento primero', 'error');
@@ -305,28 +311,29 @@ export class QRScannerComponent implements OnInit, OnDestroy {
       this.stopCamera();
 
       // Validate the QR token using the event code directly
-      this.qrScannerService.validateQR(
-        qrData.trim(), // QR Token (UUID)
-        selectedEventCode // Event Code (TICK0009-XXX)
-      ).subscribe(
-        (response: QRValidationResponse) => {
-          this.addScanResult(response);
+      this.qrScannerService
+        .validateQR(
+          qrData.trim(), // QR Token (UUID)
+          selectedEventCode, // Event Code (TICK0009-XXX)
+        )
+        .subscribe(
+          (response: QRValidationResponse) => {
+            this.addScanResult(response);
 
-          if (response.valid) {
-            this.toastService.show('¡Entrada válida! Acceso permitido', 'success');
-            // Play success sound (optional)
-            this.playSound('success');
-          } else {
-            this.toastService.show(response.message, 'error');
-            // Play error sound (optional)
-            this.playSound('error');
-          }
-        },
-        (error: any) => {
-          throw error; // Re-throw to be caught by outer catch block
-        }
-      );
-
+            if (response.valid) {
+              this.toastService.show('¡Entrada válida! Acceso permitido', 'success');
+              // Play success sound (optional)
+              this.playSound('success');
+            } else {
+              this.toastService.show(response.message, 'error');
+              // Play error sound (optional)
+              this.playSound('error');
+            }
+          },
+          (error: any) => {
+            throw error; // Re-throw to be caught by outer catch block
+          },
+        );
     } catch (error: any) {
       console.error('Error validating QR:', error);
 
@@ -352,9 +359,9 @@ export class QRScannerComponent implements OnInit, OnDestroy {
       const errorResult: ScanResult = {
         success: false,
         message: errorMessage,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
-      this.scanResults.update(results => [errorResult, ...results.slice(0, 9)]);
+      this.scanResults.update((results) => [errorResult, ...results.slice(0, 9)]);
     } finally {
       // Add delay before allowing next scan
       setTimeout(() => {
@@ -368,18 +375,19 @@ export class QRScannerComponent implements OnInit, OnDestroy {
       success: response.valid,
       message: response.message,
       ticket: response.ticket,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
-    this.scanResults.update(results => [result, ...results.slice(0, 9)]); // Keep last 10 results
+    this.scanResults.update((results) => [result, ...results.slice(0, 9)]); // Keep last 10 results
   }
 
   private playSound(type: 'success' | 'error') {
     try {
       const audio = new Audio();
-      audio.src = type === 'success'
-        ? 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTuR2O/Eeyw='
-        : 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTuR2O/Eeyw=';
+      audio.src =
+        type === 'success'
+          ? 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTuR2O/Eeyw='
+          : 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTuR2O/Eeyw=';
       audio.volume = 0.3;
       audio.play().catch(() => {}); // Ignore errors if audio can't play
     } catch (error) {
@@ -411,7 +419,7 @@ export class QRScannerComponent implements OnInit, OnDestroy {
 
     // Stop media stream
     if (this.stream) {
-      this.stream.getTracks().forEach(track => track.stop());
+      this.stream.getTracks().forEach((track) => track.stop());
       this.stream = null;
     }
 
@@ -441,7 +449,7 @@ export class QRScannerComponent implements OnInit, OnDestroy {
     return date.toLocaleTimeString('es-ES', {
       hour: '2-digit',
       minute: '2-digit',
-      second: '2-digit'
+      second: '2-digit',
     });
   }
 }

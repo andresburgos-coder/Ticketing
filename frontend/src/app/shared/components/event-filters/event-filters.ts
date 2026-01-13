@@ -8,7 +8,7 @@ import { EventService, type EventFilters as IEventFilters } from '../../../servi
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './event-filters.html',
-  styleUrl: './event-filters.css'
+  styleUrl: './event-filters.css',
 })
 export class EventFiltersComponent implements OnInit, OnDestroy {
   private readonly eventService = inject(EventService);
@@ -19,14 +19,7 @@ export class EventFiltersComponent implements OnInit, OnDestroy {
   selectedCategory = '';
 
   // Available categories (could come from API)
-  categories = [
-    'All Categories',
-    'Concerts',
-    'Workshops',
-    'Conferences',
-    'Sports',
-    'Theater'
-  ];
+  categories = ['All Categories', 'Concerts', 'Workshops', 'Conferences', 'Sports', 'Theater'];
 
   ngOnInit(): void {
     // Initialize from service filters if they exist
@@ -40,9 +33,10 @@ export class EventFiltersComponent implements OnInit, OnDestroy {
     const filters: IEventFilters = {
       searchQuery: this.searchQuery || undefined,
       location: this.location || undefined,
-      category: this.selectedCategory && this.selectedCategory !== 'All Categories'
-        ? this.selectedCategory
-        : undefined
+      category:
+        this.selectedCategory && this.selectedCategory !== 'All Categories'
+          ? this.selectedCategory
+          : undefined,
     };
     this.eventService.updateFilters(filters);
   }
