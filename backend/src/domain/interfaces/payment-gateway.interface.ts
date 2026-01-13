@@ -1,4 +1,4 @@
-import { Money } from '../value-objects/money.vo';
+import { Money } from "../value-objects/money.vo";
 
 /**
  * Payment data required to process a payment
@@ -32,7 +32,7 @@ export type PaymentResult =
  * IPaymentGateway Interface
  * Defines the contract for payment processing
  * Follows Dependency Inversion Principle (DIP)
- * 
+ *
  * Requirements: 4.1, 4.2, 4.5
  * - 4.1: Process payment with amount validation
  * - 4.2: Return success/failure result

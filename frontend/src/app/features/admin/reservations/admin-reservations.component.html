@@ -59,11 +59,11 @@
           </td>
           <td>
             <div class="expiry-info" [class.expired]="isExpired(reservation.expiresAt)">
-              {{ reservation.expiresAt | date:'short' }}
+              {{ reservation.expiresAt | date: 'short' }}
               <small *ngIf="isExpired(reservation.expiresAt)">Expirada</small>
             </div>
           </td>
-          <td>{{ reservation.createdAt | date:'short' }}</td>
+          <td>{{ reservation.createdAt | date: 'short' }}</td>
         </tr>
       </tbody>
     </table>
@@ -78,8 +78,8 @@
       </button>
 
       <span class="page-info">
-        Página {{ pagination.page }} de {{ pagination.totalPages }}
-        ({{ pagination.total }} reservas)
+        Página {{ pagination.page }} de {{ pagination.totalPages }} ({{ pagination.total }}
+        reservas)
       </span>
 
       <button

@@ -1,12 +1,24 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Headers, BadRequestException, Res } from '@nestjs/common';
-import { Response } from 'express';
-import { Throttle } from '@nestjs/throttler';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
-import { AuthService, AuthResponse } from '../../application/services/auth.service';
-import { CsrfService } from '../../infrastructure/external/csrf.service';
-import { LoginDto } from '../../application/dto/login.dto';
-import { RegisterDto } from '../../application/dto/register.dto';
-import { RefreshTokenDto } from '../../application/dto/refresh-token.dto';
+import {
+  Controller,
+  Post,
+  Body,
+  HttpCode,
+  HttpStatus,
+  Headers,
+  BadRequestException,
+  Res,
+} from "@nestjs/common";
+import { Response } from "express";
+import { Throttle } from "@nestjs/throttler";
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from "@nestjs/swagger";
+import {
+  AuthService,
+  AuthResponse,
+} from "../../application/services/auth.service";
+import { CsrfService } from "../../infrastructure/external/csrf.service";
+import { LoginDto } from "../../application/dto/login.dto";
+import { RegisterDto } from "../../application/dto/register.dto";
+import { RefreshTokenDto } from "../../application/dto/refresh-token.dto";
 
 /**
  * AuthController
@@ -18,12 +30,12 @@ import { RefreshTokenDto } from '../../application/dto/refresh-token.dto';
  * - 9.3: Token refresh functionality
  * - 9.4: Error handling for invalid credentials
  */
-@ApiTags('auth')
-@Controller('auth')
+@ApiTags("auth")
+@Controller("auth")
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly csrfService: CsrfService
+    private readonly csrfService: CsrfService,
   ) {}
 
   /**
@@ -35,102 +47,113 @@ export class AuthController {
    * @throws ConflictException if user already exists
    * @throws BadRequestException if validation fails
    */
-  @Post('register')
+  @Post("register")
   @Throttle(5, 3600000) // 5 registrations per hour per IP
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
-    summary: 'Register a new user',
-    description: 'Creates a new user account with email, password, and personal information'
+    summary: "Register a new user",
+    description:
+      "Creates a new user account with email, password, and personal information",
   })
   @ApiBody({
     type: RegisterDto,
-    description: 'User registration data'
+    description: "User registration data",
   })
   @ApiResponse({
     status: 201,
-    description: 'User successfully registered',
+    description: "User successfully registered",
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        accessToken: { type: 'string', description: 'JWT access token' },
-        refreshToken: { type: 'string', description: 'JWT refresh token' },
+        accessToken: { type: "string", description: "JWT access token" },
+        refreshToken: { type: "string", description: "JWT refresh token" },
         user: {
-          type: 'object',
+          type: "object",
           properties: {
-            id: { type: 'string', description: 'User ID' },
-            email: { type: 'string', description: 'User email' },
-            firstName: { type: 'string', description: 'User first name' },
-            lastName: { type: 'string', description: 'User last name' },
-            role: { type: 'string', description: 'User role', enum: ['BUYER', 'ORGANIZER', 'ADMIN'] }
-          }
-        }
-      }
-    }
+            id: { type: "string", description: "User ID" },
+            email: { type: "string", description: "User email" },
+            firstName: { type: "string", description: "User first name" },
+            lastName: { type: "string", description: "User last name" },
+            role: {
+              type: "string",
+              description: "User role",
+              enum: ["BUYER", "ORGANIZER", "ADMIN"],
+            },
+          },
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 400,
-    description: 'Bad request - validation failed',
+    description: "Bad request - validation failed",
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        statusCode: { type: 'number', example: 400 },
-        message: { type: 'array', items: { type: 'string' } },
-        error: { type: 'string', example: 'Bad Request' }
-      }
-    }
+        statusCode: { type: "number", example: 400 },
+        message: { type: "array", items: { type: "string" } },
+        error: { type: "string", example: "Bad Request" },
+      },
+    },
   })
   @ApiResponse({
     status: 409,
-    description: 'Conflict - user already exists',
+    description: "Conflict - user already exists",
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        statusCode: { type: 'number', example: 409 },
-        message: { type: 'string', example: 'User with this email already exists' },
-        error: { type: 'string', example: 'Conflict' }
-      }
-    }
+        statusCode: { type: "number", example: 409 },
+        message: {
+          type: "string",
+          example: "User with this email already exists",
+        },
+        error: { type: "string", example: "Conflict" },
+      },
+    },
   })
   async register(
     @Body() registerDto: RegisterDto,
-    @Headers('x-csrf-token') csrfToken: string,
-    @Res() res: Response
+    @Headers("x-csrf-token") csrfToken: string,
+    @Res() res: Response,
   ): Promise<void> {
     // Validate CSRF token (skip in development for easier testing)
-    const isDevelopment = process.env.NODE_ENV === 'development';
-    if (!isDevelopment && (!csrfToken || !this.csrfService.validateToken(csrfToken))) {
-      throw new BadRequestException('Invalid or missing CSRF token');
+    const isDevelopment = process.env.NODE_ENV === "development";
+    if (
+      !isDevelopment &&
+      (!csrfToken || !this.csrfService.validateToken(csrfToken))
+    ) {
+      throw new BadRequestException("Invalid or missing CSRF token");
     }
 
     const result = await this.authService.register(
       registerDto.email,
       registerDto.password,
       registerDto.firstName,
-      registerDto.lastName
+      registerDto.lastName,
     );
 
     // Set secure HttpOnly cookies with tokens for backup
-    res.cookie('accessToken', result.accessToken, {
+    res.cookie("accessToken", result.accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
       maxAge: 15 * 60 * 1000, // 15 minutes
-      path: '/',
+      path: "/",
     });
 
-    res.cookie('refreshToken', result.refreshToken, {
+    res.cookie("refreshToken", result.refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      path: '/',
+      path: "/",
     });
 
     res.status(201).json({
       accessToken: result.accessToken,
       refreshToken: result.refreshToken,
       user: result.user,
-      message: 'Registration successful',
+      message: "Registration successful",
     });
   }
 
@@ -143,90 +166,101 @@ export class AuthController {
    * @throws UnauthorizedException if credentials are invalid
    * @throws BadRequestException if validation fails
    */
-  @Post('login')
+  @Post("login")
   @Throttle(5, 60000) // 5 login attempts per minute per IP
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Login user',
-    description: 'Authenticates user with email and password, returns JWT tokens'
+    summary: "Login user",
+    description:
+      "Authenticates user with email and password, returns JWT tokens",
   })
   @ApiBody({
     type: LoginDto,
-    description: 'User login credentials'
+    description: "User login credentials",
   })
   @ApiResponse({
     status: 200,
-    description: 'User successfully authenticated',
+    description: "User successfully authenticated",
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        accessToken: { type: 'string', description: 'JWT access token' },
-        refreshToken: { type: 'string', description: 'JWT refresh token' },
+        accessToken: { type: "string", description: "JWT access token" },
+        refreshToken: { type: "string", description: "JWT refresh token" },
         user: {
-          type: 'object',
+          type: "object",
           properties: {
-            id: { type: 'string', description: 'User ID' },
-            email: { type: 'string', description: 'User email' },
-            firstName: { type: 'string', description: 'User first name' },
-            lastName: { type: 'string', description: 'User last name' },
-            role: { type: 'string', description: 'User role', enum: ['BUYER', 'ORGANIZER', 'ADMIN'] }
-          }
-        }
-      }
-    }
+            id: { type: "string", description: "User ID" },
+            email: { type: "string", description: "User email" },
+            firstName: { type: "string", description: "User first name" },
+            lastName: { type: "string", description: "User last name" },
+            role: {
+              type: "string",
+              description: "User role",
+              enum: ["BUYER", "ORGANIZER", "ADMIN"],
+            },
+          },
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 400,
-    description: 'Bad request - validation failed',
+    description: "Bad request - validation failed",
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        statusCode: { type: 'number', example: 400 },
-        message: { type: 'array', items: { type: 'string' } },
-        error: { type: 'string', example: 'Bad Request' }
-      }
-    }
+        statusCode: { type: "number", example: 400 },
+        message: { type: "array", items: { type: "string" } },
+        error: { type: "string", example: "Bad Request" },
+      },
+    },
   })
   @ApiResponse({
     status: 401,
-    description: 'Unauthorized - invalid credentials',
+    description: "Unauthorized - invalid credentials",
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        statusCode: { type: 'number', example: 401 },
-        message: { type: 'string', example: 'Invalid email or password' },
-        error: { type: 'string', example: 'Unauthorized' }
-      }
-    }
+        statusCode: { type: "number", example: 401 },
+        message: { type: "string", example: "Invalid email or password" },
+        error: { type: "string", example: "Unauthorized" },
+      },
+    },
   })
   async login(
     @Body() loginDto: LoginDto,
-    @Headers('x-csrf-token') csrfToken: string,
-    @Res() res: Response
+    @Headers("x-csrf-token") csrfToken: string,
+    @Res() res: Response,
   ): Promise<void> {
     // Validate CSRF token (skip in development for easier testing)
-    const isDevelopment = process.env.NODE_ENV === 'development';
-    if (!isDevelopment && (!csrfToken || !this.csrfService.validateToken(csrfToken))) {
-      throw new BadRequestException('Invalid or missing CSRF token');
+    const isDevelopment = process.env.NODE_ENV === "development";
+    if (
+      !isDevelopment &&
+      (!csrfToken || !this.csrfService.validateToken(csrfToken))
+    ) {
+      throw new BadRequestException("Invalid or missing CSRF token");
     }
 
-    const result = await this.authService.login(loginDto.email, loginDto.password);
+    const result = await this.authService.login(
+      loginDto.email,
+      loginDto.password,
+    );
 
     // Set secure HttpOnly cookie with token for backup
-    res.cookie('accessToken', result.accessToken, {
+    res.cookie("accessToken", result.accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // HTTPS only in production
-      sameSite: 'strict',
+      secure: process.env.NODE_ENV === "production", // HTTPS only in production
+      sameSite: "strict",
       maxAge: 15 * 60 * 1000, // 15 minutes
-      path: '/',
+      path: "/",
     });
 
-    res.cookie('refreshToken', result.refreshToken, {
+    res.cookie("refreshToken", result.refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      path: '/',
+      path: "/",
     });
 
     // Return user data and tokens (tokens also in cookies)
@@ -234,7 +268,7 @@ export class AuthController {
       accessToken: result.accessToken,
       refreshToken: result.refreshToken,
       user: result.user,
-      message: 'Login successful',
+      message: "Login successful",
     });
   }
 
@@ -247,78 +281,83 @@ export class AuthController {
    * @throws UnauthorizedException if refresh token is invalid
    * @throws BadRequestException if validation fails
    */
-  @Post('refresh')
+  @Post("refresh")
   @Throttle(10, 60000) // 10 refresh attempts per minute per IP
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Refresh access token',
-    description: 'Generates a new access token using a valid refresh token'
+    summary: "Refresh access token",
+    description: "Generates a new access token using a valid refresh token",
   })
   @ApiBody({
     type: RefreshTokenDto,
-    description: 'Refresh token data'
+    description: "Refresh token data",
   })
   @ApiResponse({
     status: 200,
-    description: 'New access token generated',
+    description: "New access token generated",
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        accessToken: { type: 'string', description: 'New JWT access token' }
-      }
-    }
+        accessToken: { type: "string", description: "New JWT access token" },
+      },
+    },
   })
   @ApiResponse({
     status: 400,
-    description: 'Bad request - validation failed',
+    description: "Bad request - validation failed",
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        statusCode: { type: 'number', example: 400 },
-        message: { type: 'array', items: { type: 'string' } },
-        error: { type: 'string', example: 'Bad Request' }
-      }
-    }
+        statusCode: { type: "number", example: 400 },
+        message: { type: "array", items: { type: "string" } },
+        error: { type: "string", example: "Bad Request" },
+      },
+    },
   })
   @ApiResponse({
     status: 401,
-    description: 'Unauthorized - invalid refresh token',
+    description: "Unauthorized - invalid refresh token",
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        statusCode: { type: 'number', example: 401 },
-        message: { type: 'string', example: 'Invalid refresh token' },
-        error: { type: 'string', example: 'Unauthorized' }
-      }
-    }
+        statusCode: { type: "number", example: 401 },
+        message: { type: "string", example: "Invalid refresh token" },
+        error: { type: "string", example: "Unauthorized" },
+      },
+    },
   })
   async refresh(
     @Body() refreshTokenDto: RefreshTokenDto,
-    @Headers('x-csrf-token') csrfToken: string,
-    @Res() res: Response
+    @Headers("x-csrf-token") csrfToken: string,
+    @Res() res: Response,
   ): Promise<void> {
     // Validate CSRF token (skip in development for easier testing)
-    const isDevelopment = process.env.NODE_ENV === 'development';
-    if (!isDevelopment && (!csrfToken || !this.csrfService.validateToken(csrfToken))) {
-      throw new BadRequestException('Invalid or missing CSRF token');
+    const isDevelopment = process.env.NODE_ENV === "development";
+    if (
+      !isDevelopment &&
+      (!csrfToken || !this.csrfService.validateToken(csrfToken))
+    ) {
+      throw new BadRequestException("Invalid or missing CSRF token");
     }
 
-    const result = await this.authService.refreshToken(refreshTokenDto.refreshToken);
+    const result = await this.authService.refreshToken(
+      refreshTokenDto.refreshToken,
+    );
 
     // Update accessToken cookie
-    res.cookie('accessToken', result.accessToken, {
+    res.cookie("accessToken", result.accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
       maxAge: 15 * 60 * 1000, // 15 minutes
-      path: '/',
+      path: "/",
     });
 
     res.json({
       accessToken: result.accessToken,
       refreshToken: result.refreshToken,
       user: result.user,
-      message: 'Token refreshed successfully',
+      message: "Token refreshed successfully",
     });
   }
 }

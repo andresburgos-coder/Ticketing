@@ -2,34 +2,51 @@
   <div class="flex items-center justify-between px-4 py-3 max-w-7xl mx-auto">
     <!-- Logo -->
     <div class="flex items-center gap-2">
-      <a [routerLink]="['/']" class="flex items-center gap-2 text-gray-900 hover:text-blue-600 transition-colors">
+      <a
+        [routerLink]="['/']"
+        class="flex items-center gap-2 text-gray-900 hover:text-blue-600 transition-colors"
+      >
         <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 48 48">
           <path d="M6 6H42L36 24L42 42H6L12 24L6 6Z"></path>
         </svg>
-        <h1  [routerLink]="['/']" class="text-xl font-bold">TicketMastery</h1>
+        <h1 [routerLink]="['/']" class="text-xl font-bold">TicketMastery</h1>
       </a>
     </div>
 
     <!-- Desktop Navigation -->
     <nav class="hidden md:flex items-center gap-6">
-
-      @if (isAuthenticated()) {
-        <a [routerLink]="['/my-tickets']" class="text-gray-700 hover:text-blue-600 transition-colors">Mis Entradas</a>
-        <a [routerLink]="['/profile']" class="text-gray-700 hover:text-blue-600 transition-colors">Perfil</a>
+      @if (isAuthenticated() && isBuyer()) {
+        <a
+          [routerLink]="['/my-tickets']"
+          class="text-gray-700 hover:text-blue-600 transition-colors"
+          >Mis Entradas</a
+        >
+        <a [routerLink]="['/profile']" class="text-gray-700 hover:text-blue-600 transition-colors"
+          >Perfil</a
+        >
       }
     </nav>
 
     <!-- Auth Buttons Desktop -->
     <div class="hidden md:flex items-center gap-2">
       @if (!isAuthenticated()) {
-        <a [routerLink]="['/auth']" class="px-4 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+        <a
+          [routerLink]="['/auth']"
+          class="px-4 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+        >
           Iniciar sesión
         </a>
-        <a [routerLink]="['/auth']" class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+        <a
+          [routerLink]="['/auth']"
+          class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+        >
           Crear cuenta
         </a>
       } @else {
-        <button (click)="logout()" class="px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+        <button
+          (click)="logout()"
+          class="px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+        >
           Cerrar sesión
         </button>
       }
@@ -42,12 +59,23 @@
       (keydown.space)="$event.preventDefault(); toggleMobileMenu()"
       [attr.aria-expanded]="mobileMenuOpen()"
       [attr.aria-label]="mobileMenuOpen() ? 'Cerrar men\u00fa' : 'Abrir men\u00fa'"
-      class="md:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+      class="md:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+    >
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
         @if (!mobileMenuOpen()) {
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16"
+          ></path>
         } @else {
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          ></path>
         }
       </svg>
     </button>
@@ -57,8 +85,10 @@
   @if (mobileMenuOpen()) {
     <app-mobile-menu
       [isAuthenticated]="isAuthenticated()"
+      [currentUser]="currentUser()"
       (close)="toggleMobileMenu()"
-      (logout)="logout()">
+      (logout)="logout()"
+    >
     </app-mobile-menu>
   }
 </header>

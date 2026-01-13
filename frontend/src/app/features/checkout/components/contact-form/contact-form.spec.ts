@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { ContactForm } from './contact-form';
-import { describe, it, expect, beforeEach } from 'vitest';
 
 describe('ContactForm', () => {
   let component: ContactForm;
@@ -9,7 +8,7 @@ describe('ContactForm', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ContactForm, FormsModule]
+      imports: [ContactForm, FormsModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ContactForm);
@@ -72,7 +71,7 @@ describe('ContactForm', () => {
         firstName: 'John',
         lastName: 'Doe',
         email: 'john@example.com',
-        phone: '+1234567890'
+        phone: '+1234567890',
       };
 
       const isValid = component.validate();

@@ -10,16 +10,14 @@ import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
   imports: [CommonModule, CurrencyFormatPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './admin-dashboard.component.html',
-  styleUrl: './admin-dashboard.component.css'
+  styleUrl: './admin-dashboard.component.css',
 })
 export class AdminDashboardComponent implements OnInit {
   stats = signal<DashboardStats | null>(null);
   loading = signal(true);
   error = signal<string | null>(null);
 
-  constructor(
-    private adminService: AdminService
-  ) {
+  constructor(private adminService: AdminService) {
     console.log('[AdminDashboard] Constructor called');
   }
 
@@ -44,7 +42,7 @@ export class AdminDashboardComponent implements OnInit {
         console.error('[AdminDashboard] Error loading stats:', error);
         this.error.set(error.message || 'Error al cargar las estadísticas');
         this.loading.set(false);
-      }
+      },
     });
   }
 }

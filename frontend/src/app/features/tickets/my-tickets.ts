@@ -5,10 +5,10 @@ import { FormsModule } from '@angular/forms';
 import { TicketsService, Ticket } from '../../core/services/tickets.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Events } from '../../services/events';
-import { CheckoutService, CompletedOrder, PurchasedTicket } from '../checkout/services/checkout.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { CurrencyFormatPipe } from '../../shared/pipes/currency-format.pipe';
+import { environment } from '../../../environments/environment';
 
 interface DisplayTicket {
   id: string;
@@ -45,13 +45,12 @@ interface EventGroup {
   standalone: true,
   imports: [CommonModule, RouterLink, FormsModule, CurrencyFormatPipe],
   templateUrl: './my-tickets.html',
-  styleUrl: './my-tickets.css'
+  styleUrl: './my-tickets.css',
 })
 export class MyTicketsComponent implements OnInit {
   private readonly ticketsService = inject(TicketsService);
   private readonly authService = inject(AuthService);
   private readonly eventsService = inject(Events);
-  private readonly checkoutService = inject(CheckoutService);
   readonly router = inject(Router); // Make router public for template
 
   // Signals
@@ -70,12 +69,14 @@ export class MyTicketsComponent implements OnInit {
     const tab = this.activeTab();
 
     // Filter tickets
-    const filtered = tickets.filter(ticket => {
-      const matchesTab = tab === 'upcoming'
-        ? ticket.status === 'upcoming'
-        : ticket.status === 'past' || ticket.status === 'cancelled';
+    const filtered = tickets.filter((ticket) => {
+      const matchesTab =
+        tab === 'upcoming'
+          ? ticket.status === 'upcoming'
+          : ticket.status === 'past' || ticket.status === 'cancelled';
 
-      const matchesSearch = query === '' ||
+      const matchesSearch =
+        query === '' ||
         ticket.eventName.toLowerCase().includes(query) ||
         ticket.venue.toLowerCase().includes(query);
 
@@ -84,7 +85,7 @@ export class MyTicketsComponent implements OnInit {
 
     // Group by eventId
     const groups = new Map<string, DisplayTicket[]>();
-    filtered.forEach(ticket => {
+    filtered.forEach((ticket) => {
       if (!groups.has(ticket.eventId)) {
         groups.set(ticket.eventId, []);
       }
@@ -107,7 +108,7 @@ export class MyTicketsComponent implements OnInit {
           tickets: ticketsInGroup,
           ticketCount: ticketsInGroup.length,
           totalPrice: ticketsInGroup.reduce((sum, t) => sum + t.price, 0),
-          currentTicketIndex: 0
+          currentTicketIndex: 0,
         });
       }
     });
@@ -117,11 +118,11 @@ export class MyTicketsComponent implements OnInit {
 
   // Computed - Tab counts
   protected readonly upcomingCount = computed(() => {
-    return this.tickets().filter(t => t.status === 'upcoming').length;
+    return this.tickets().filter((t) => t.status === 'upcoming').length;
   });
 
   protected readonly historyCount = computed(() => {
-    return this.tickets().filter(t => t.status === 'past' || t.status === 'cancelled').length;
+    return this.tickets().filter((t) => t.status === 'past' || t.status === 'cancelled').length;
   });
 
   ngOnInit() {
@@ -147,25 +148,24 @@ export class MyTicketsComponent implements OnInit {
         console.log('[MyTickets] Backend tickets loaded:', backendTickets.length);
 
         // Get unique event IDs
-        const eventIds = [...new Set(backendTickets.map(t => t.eventId))];
+        const eventIds = [...new Set(backendTickets.map((t) => t.eventId))];
         console.log('[MyTickets] Fetching event details for:', eventIds);
 
         if (eventIds.length === 0) {
-          // No tickets from backend, try local
-          const localTickets = this.getLocalPurchasedTickets();
-          this.tickets.set(localTickets);
+          // No tickets from backend
+          this.tickets.set([]);
           this.isLoading.set(false);
           return;
         }
 
         // Fetch event details
-        const eventRequests = eventIds.map(id =>
+        const eventRequests = eventIds.map((id) =>
           this.eventsService.getEvent(id).pipe(
-            catchError(err => {
+            catchError((err) => {
               console.error(`[MyTickets] Error loading event ${id}:`, err);
               return of(null);
-            })
-          )
+            }),
+          ),
         );
 
         forkJoin(eventRequests).subscribe({
@@ -174,7 +174,7 @@ export class MyTicketsComponent implements OnInit {
 
             // Create event map
             const eventMap = new Map<string, any>();
-            events.forEach(event => {
+            events.forEach((event) => {
               if (event && event.id) {
                 eventMap.set(event.id.toString(), event);
               }
@@ -183,12 +183,8 @@ export class MyTicketsComponent implements OnInit {
             // Map tickets with event data
             const enrichedTickets = this.mapBackendTicketsWithEvents(backendTickets, eventMap);
 
-            // Merge with local tickets
-            const localTickets = this.getLocalPurchasedTickets();
-            const allTickets = [...enrichedTickets, ...localTickets];
-
-            console.log('[MyTickets] Total tickets:', allTickets.length);
-            this.tickets.set(allTickets);
+            console.log('[MyTickets] Total tickets:', enrichedTickets.length);
+            this.tickets.set(enrichedTickets);
             this.isLoading.set(false);
             this.showAuthWarning.set(false);
           },
@@ -196,10 +192,9 @@ export class MyTicketsComponent implements OnInit {
             console.error('[MyTickets] Error loading events:', err);
             // Still show tickets without event enrichment
             const tickets = this.mapBackendTickets(backendTickets);
-            const localTickets = this.getLocalPurchasedTickets();
-            this.tickets.set([...tickets, ...localTickets]);
+            this.tickets.set(tickets);
             this.isLoading.set(false);
-          }
+          },
         });
       },
       error: (error) => {
@@ -208,22 +203,19 @@ export class MyTicketsComponent implements OnInit {
         // Handle authentication errors
         if (error.status === 401 || error.status === 403 || error.status === 500) {
           this.showAuthWarning.set(true);
-          this.error.set('Please login to view your tickets from the server.');
+          this.error.set('Por favor inicia sesión para ver tus entradas.');
         } else {
-          this.error.set('Unable to load tickets from server.');
+          this.error.set('No se pudieron cargar las entradas del servidor.');
         }
 
-        // Fallback to local tickets
-        const localTickets = this.getLocalPurchasedTickets();
-        console.log('[MyTickets] Showing local tickets:', localTickets.length);
-        this.tickets.set(localTickets);
+        this.tickets.set([]);
         this.isLoading.set(false);
-      }
+      },
     });
   }
 
   private mapBackendTickets(tickets: Ticket[]): DisplayTicket[] {
-    return tickets.map(t => ({
+    return tickets.map((t) => ({
       id: t.id,
       eventId: t.eventId,
       eventName: `Event ${t.eventId.substring(0, 8)}`, // Placeholder - backend should return eventName
@@ -236,18 +228,21 @@ export class MyTicketsComponent implements OnInit {
       qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${t.qrToken}`,
       purchaseDate: t.purchaseDate,
       status: this.mapTicketStatus(t.status, t.purchaseDate),
-      seatNumber: undefined
+      seatNumber: undefined,
     }));
   }
 
-  private mapBackendTicketsWithEvents(tickets: Ticket[], eventMap: Map<string, any>): DisplayTicket[] {
-    return tickets.map(t => {
+  private mapBackendTicketsWithEvents(
+    tickets: Ticket[],
+    eventMap: Map<string, any>,
+  ): DisplayTicket[] {
+    return tickets.map((t) => {
       const event = eventMap.get(t.eventId);
       return {
         id: t.id,
         eventId: t.eventId,
         eventName: event?.name || `Event ${t.eventId.substring(0, 8)}`,
-        eventImageUrl: event?.imageUrl || '',
+        eventImageUrl: this.getEventImageUrl(event?.imageUrl),
         eventDate: event?.date || t.purchaseDate,
         eventTime: event?.time || '00:00',
         venue: event?.location || 'Ver detalles del evento',
@@ -256,9 +251,33 @@ export class MyTicketsComponent implements OnInit {
         qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${t.qrToken}`,
         purchaseDate: t.purchaseDate,
         status: this.mapTicketStatus(t.status, t.purchaseDate),
-        seatNumber: undefined
+        seatNumber: undefined,
       };
     });
+  }
+
+  /**
+   * Constructs the full image URL from the imageUrl field
+   * Handles both full URLs and filename-only values
+   */
+  private getEventImageUrl(imageUrl: string | undefined): string {
+    if (!imageUrl) {
+      return '';
+    }
+
+    // If it's already a full URL (http/https) and not from minio, return as-is
+    if (imageUrl.startsWith('http') && !imageUrl.includes('minio')) {
+      return imageUrl;
+    }
+
+    // Extract filename if it contains a path
+    let filename = imageUrl;
+    if (filename.includes('/')) {
+      filename = filename.split('/').pop() || filename;
+    }
+
+    // Build the full URL using the API endpoint
+    return `${environment.apiUrl}/events/file/${filename}`;
   }
 
   /**
@@ -266,39 +285,15 @@ export class MyTicketsComponent implements OnInit {
    * PAID → upcoming (not yet used)
    * USED → past (already used)
    */
-  private mapTicketStatus(backendStatus: string, purchaseDate: string): 'upcoming' | 'past' | 'cancelled' {
+  private mapTicketStatus(
+    backendStatus: string,
+    purchaseDate: string,
+  ): 'upcoming' | 'past' | 'cancelled' {
     if (backendStatus === 'USED') {
       return 'past';
     }
     // PAID tickets are considered upcoming until used
     return 'upcoming';
-  }
-
-  private getLocalPurchasedTickets(): DisplayTicket[] {
-    const purchasedOrders = this.checkoutService.getPurchasedTicketsHistory();
-    const displayTickets: DisplayTicket[] = [];
-
-    purchasedOrders.forEach((order: CompletedOrder) => {
-      order.tickets.forEach((ticket: PurchasedTicket) => {
-        displayTickets.push({
-          id: ticket.id,
-          eventId: String(order.eventId || ''),
-          eventName: order.eventName || 'Evento',
-          eventImageUrl: '',
-          eventDate: order.purchaseDate,
-          eventTime: '00:00',
-          venue: 'Ver detalles del evento',
-          ticketType: ticket.ticketTypeName,
-          price: ticket.price,
-          qrCode: ticket.qrCode,
-          purchaseDate: order.purchaseDate,
-          status: 'upcoming',
-          seatNumber: undefined
-        });
-      });
-    });
-
-    return displayTickets;
   }
 
   setActiveTab(tab: 'upcoming' | 'history') {
@@ -336,7 +331,7 @@ export class MyTicketsComponent implements OnInit {
 
   downloadTicket(ticketId: string) {
     const allTickets = this.tickets();
-    const ticket = allTickets.find(t => t.id === ticketId);
+    const ticket = allTickets.find((t) => t.id === ticketId);
 
     if (!ticket) {
       console.error('Ticket not found:', ticketId);
@@ -422,7 +417,12 @@ export class MyTicketsComponent implements OnInit {
     ctx.fillText((ticket.ticketType + ' ACCESS').toUpperCase(), 45, 52);
   }
 
-  private drawTicketContent(ctx: CanvasRenderingContext2D, ticket: DisplayTicket, qrImageUrl: string, canvas: HTMLCanvasElement): void {
+  private drawTicketContent(
+    ctx: CanvasRenderingContext2D,
+    ticket: DisplayTicket,
+    qrImageUrl: string,
+    canvas: HTMLCanvasElement,
+  ): void {
     // Event details section
     ctx.fillStyle = '#1f2937'; // gray-800
     ctx.font = 'bold 14px Arial';
@@ -475,7 +475,10 @@ export class MyTicketsComponent implements OnInit {
     ctx.fillText('PRECIO', 400, 390);
     ctx.fillStyle = '#374151';
     ctx.font = '16px Arial';
-    const formattedPrice = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(Number(ticket.price));
+    const formattedPrice = new Intl.NumberFormat('es-ES', {
+      style: 'currency',
+      currency: 'COP',
+    }).format(Number(ticket.price));
     ctx.fillText(formattedPrice, 400, 410);
 
     // Important info section
@@ -523,7 +526,11 @@ export class MyTicketsComponent implements OnInit {
       ctx.fillRect(680, 480, 140, 30);
       ctx.fillStyle = ticket.status === 'upcoming' ? '#065f46' : '#374151'; // green-800 or gray-700
       ctx.font = 'bold 12px Arial';
-      ctx.fillText(ticket.status === 'upcoming' ? '✓ CONFIRMED' : ticket.status.toUpperCase(), 750, 500);
+      ctx.fillText(
+        ticket.status === 'upcoming' ? '✓ CONFIRMED' : ticket.status.toUpperCase(),
+        750,
+        500,
+      );
 
       // Download the image
       canvas.toBlob((blob) => {
@@ -560,17 +567,21 @@ export class MyTicketsComponent implements OnInit {
         next: () => {
           this.loadTickets();
         },
-        error: (error) => console.error('Error cancelling ticket:', error)
+        error: (error) => console.error('Error cancelling ticket:', error),
       });
     }
   }
 
   getStatusColor(status: string): string {
     switch (status) {
-      case 'upcoming': return 'bg-green-100 text-green-800';
-      case 'past': return 'bg-gray-100 text-gray-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'upcoming':
+        return 'bg-green-100 text-green-800';
+      case 'past':
+        return 'bg-gray-100 text-gray-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   }
 
@@ -579,7 +590,7 @@ export class MyTicketsComponent implements OnInit {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     });
   }
 
@@ -588,7 +599,7 @@ export class MyTicketsComponent implements OnInit {
     return new Date(`2000-01-01T${time}`).toLocaleTimeString('es-ES', {
       hour: 'numeric',
       minute: '2-digit',
-      hour12: true
+      hour12: true,
     });
   }
 }

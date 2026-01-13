@@ -12,12 +12,13 @@ export interface User {
 export enum UserRole {
   BUYER = 'BUYER',
   ORGANIZER = 'ORGANIZER',
-  ADMIN = 'ADMIN'
+  ADMIN = 'ADMIN',
 }
 
 export enum EventCategory {
   CUALQUIER_CATEGORIA = 'Cualquier categoría',
   ACCION_EXTREMO = 'Acción Extremo',
+  CINE = 'Cine',
   CIRCO = 'Circo',
   COMEDIA = 'Comedia',
   COMFAMA = 'Comfama',
@@ -29,11 +30,12 @@ export enum EventCategory {
   INMERSIONES = 'Inmersiones a los centros de experiencias',
   INSCRIPCION_COSMO = 'Inscripción a proceso de admisión en Cosmo Schools',
   MUSICAL = 'Musical',
+  OTROS = 'Otros',
   PODCAST = 'Podcast',
   RECREATIVO = 'Recreativo',
   STAND_UP_COMEDY = 'Stand-Up Comedy',
   TEATRO = 'Teatro',
-  TURISMO = 'Turismo'
+  TURISMO = 'Turismo',
 }
 
 export interface CreateUserRequest {

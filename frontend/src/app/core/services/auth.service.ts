@@ -31,7 +31,7 @@ export interface User {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private readonly http = inject(HttpClient);
@@ -53,6 +53,21 @@ export class AuthService {
     this.loadFromStorage();
   }
 
+  /**
+   * Get the default redirect route based on user role
+   */
+  getDefaultRouteForUser(user: User): string {
+    switch (user.role) {
+      case 'ADMIN':
+        return '/admin/dashboard';
+      case 'ORGANIZER':
+        return '/admin/events';
+      case 'BUYER':
+      default:
+        return '/';
+    }
+  }
+
   login(credentials: LoginRequest): Observable<AuthResponse> {
     console.log('[AuthService.login] ===== LOGIN START =====');
     console.log('[AuthService.login] Email:', credentials.email);
@@ -60,18 +75,17 @@ export class AuthService {
     return this.http.get<{ csrfToken: string }>(`${environment.apiUrl}/csrf/token`).pipe(
       switchMap(({ csrfToken }) => {
         console.log('[AuthService.login] CSRF token received, posting to /auth/login');
-        return this.http.post<AuthResponse>(
-          `${environment.apiUrl}/auth/login`,
-          credentials,
-          {
-            headers: {
-              'X-CSRF-Token': csrfToken,
-            },
-          }
-        );
+        return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, credentials, {
+          headers: {
+            'X-CSRF-Token': csrfToken,
+          },
+        });
       }),
-      tap(response => {
-        console.log('[AuthService.login] 📨 RESPONSE RECEIVED:', { email: response.user?.email, tokenLength: response.accessToken?.length });
+      tap((response) => {
+        console.log('[AuthService.login] 📨 RESPONSE RECEIVED:', {
+          email: response.user?.email,
+          tokenLength: response.accessToken?.length,
+        });
         this._currentUser.set(response.user);
         console.log('[AuthService.login] ✓ User set in signal');
         this._accessToken.set(response.accessToken);
@@ -85,15 +99,19 @@ export class AuthService {
           console.log('[AuthService.login] ✓ RefreshToken saved to sessionStorage');
         }
         const storedToken = sessionStorage.getItem('accessToken');
-        console.log('[AuthService.login] 🔍 VERIFICATION: Token in storage?', !!storedToken, storedToken?.substring(0, 30) + '...');
+        console.log(
+          '[AuthService.login] 🔍 VERIFICATION: Token in storage?',
+          !!storedToken,
+          storedToken?.substring(0, 30) + '...',
+        );
         console.log('[AuthService.login] 🔍 isAuthenticated():', this.isAuthenticated());
         console.log('[AuthService.login] ===== LOGIN SUCCESS =====\n');
         this._isLoading.set(false);
       }),
-      catchError(error => {
+      catchError((error) => {
         this._isLoading.set(false);
         throw error;
-      })
+      }),
     );
   }
 
@@ -103,18 +121,17 @@ export class AuthService {
     return this.http.get<{ csrfToken: string }>(`${environment.apiUrl}/csrf/token`).pipe(
       switchMap(({ csrfToken }) => {
         // Then, register with CSRF token in header
-        return this.http.post<AuthResponse>(
-          `${environment.apiUrl}/auth/register`,
-          data,
-          {
-            headers: {
-              'X-CSRF-Token': csrfToken,
-            },
-          }
-        );
+        return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/register`, data, {
+          headers: {
+            'X-CSRF-Token': csrfToken,
+          },
+        });
       }),
-      tap(response => {
-        console.log('[AuthService.register] Response:', { email: response.user?.email, hasToken: !!response.accessToken });
+      tap((response) => {
+        console.log('[AuthService.register] Response:', {
+          email: response.user?.email,
+          hasToken: !!response.accessToken,
+        });
         this._currentUser.set(response.user);
         this._accessToken.set(response.accessToken);
         localStorage.setItem('user', JSON.stringify(response.user));
@@ -122,13 +139,16 @@ export class AuthService {
         if (response.refreshToken) {
           sessionStorage.setItem('refreshToken', response.refreshToken);
         }
-        console.log('[AuthService.register] Saved token. Verify:', sessionStorage.getItem('accessToken')?.substring(0, 20) + '...');
+        console.log(
+          '[AuthService.register] Saved token. Verify:',
+          sessionStorage.getItem('accessToken')?.substring(0, 20) + '...',
+        );
         this._isLoading.set(false);
       }),
-      catchError(error => {
+      catchError((error) => {
         this._isLoading.set(false);
         throw error;
-      })
+      }),
     );
   }
 
@@ -155,16 +175,16 @@ export class AuthService {
             headers: {
               'X-CSRF-Token': csrfToken,
             },
-          }
+          },
         );
       }),
       tap(() => {
         this._isLoading.set(false);
       }),
-      catchError(error => {
+      catchError((error) => {
         this._isLoading.set(false);
         throw error;
-      })
+      }),
     );
   }
 
@@ -182,7 +202,10 @@ export class AuthService {
     const userStr = localStorage.getItem('user');
     const accessToken = sessionStorage.getItem('accessToken');
 
-    console.log('[AuthService] Loading from storage:', { hasUser: !!userStr, hasToken: !!accessToken });
+    console.log('[AuthService] Loading from storage:', {
+      hasUser: !!userStr,
+      hasToken: !!accessToken,
+    });
 
     if (userStr) {
       try {
@@ -207,7 +230,7 @@ export class AuthService {
     console.log('[AuthService.getToken] Checking sessionStorage:', {
       hasStoredToken: !!storedToken,
       tokenLength: storedToken ? storedToken.length : 0,
-      tokenPreview: storedToken ? storedToken.substring(0, 30) + '...' : 'null'
+      tokenPreview: storedToken ? storedToken.substring(0, 30) + '...' : 'null',
     });
 
     if (storedToken) {
@@ -219,7 +242,7 @@ export class AuthService {
     const signalToken = this._accessToken();
     console.log('[AuthService.getToken] Checking signal:', {
       hasSignalToken: !!signalToken,
-      tokenLength: signalToken ? signalToken.length : 0
+      tokenLength: signalToken ? signalToken.length : 0,
     });
 
     if (signalToken) {

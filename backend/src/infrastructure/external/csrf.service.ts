@@ -1,16 +1,17 @@
-import { Injectable } from '@nestjs/common';
-import { createHash, randomBytes } from 'crypto';
+import { Injectable } from "@nestjs/common";
+import { createHash, randomBytes } from "crypto";
 
 /**
  * CSRF Service
  * Generates and validates CSRF tokens to prevent Cross-Site Request Forgery attacks
- * 
+ *
  * Security: A01:2021 - Broken Access Control (CSRF Protection)
  */
 @Injectable()
 export class CsrfService {
   // Store tokens in memory (in production, use Redis or similar)
-  private tokens: Map<string, { createdAt: number; expiresAt: number }> = new Map();
+  private tokens: Map<string, { createdAt: number; expiresAt: number }> =
+    new Map();
   private readonly TOKEN_EXPIRATION = 1 * 60 * 60 * 1000; // 1 hour
 
   /**
@@ -19,8 +20,8 @@ export class CsrfService {
    */
   generateToken(): string {
     // Generate random token
-    const token = randomBytes(32).toString('hex');
-    
+    const token = randomBytes(32).toString("hex");
+
     // Store token with expiration
     const now = Date.now();
     this.tokens.set(token, {

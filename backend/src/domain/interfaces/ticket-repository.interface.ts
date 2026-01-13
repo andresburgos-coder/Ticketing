@@ -1,11 +1,11 @@
-import { Ticket } from '../entities/ticket.entity';
-import { Email } from '../value-objects/email.vo';
+import { Ticket } from "../entities/ticket.entity";
+import { Email } from "../value-objects/email.vo";
 
 /**
  * ITicketRepository Interface
  * Defines the contract for persisting and retrieving Ticket entities
  * Follows Dependency Inversion Principle (DIP)
- * 
+ *
  * Requirements: 4.4, 6.1
  * - 4.4: Generate tickets with unique code, event, type and buyer data
  * - 6.1: Return all confirmed tickets for a buyer
@@ -37,12 +37,34 @@ export interface ITicketRepository {
   findByBuyer(email: Email): Promise<Ticket[]>;
 
   /**
+   * Finds all tickets purchased by a specific buyer email (string version)
+   * @param email - The email string of the buyer
+   * @returns Promise resolving to array of Tickets for the buyer
+   */
+  findByBuyerEmail(email: string): Promise<Ticket[]>;
+
+  /**
    * Finds all tickets for a specific event
    * Useful for event statistics and availability tracking
    * @param eventId - The ID of the event
    * @returns Promise resolving to array of Tickets for the event
    */
   findByEvent(eventId: string): Promise<Ticket[]>;
+
+  /**
+   * Finds all tickets for a specific event (alias for findByEvent)
+   * @param eventId - The ID of the event
+   * @returns Promise resolving to array of Tickets for the event
+   */
+  findByEventId(eventId: string): Promise<Ticket[]>;
+
+  /**
+   * Finds tickets for a specific event and buyer
+   * @param eventId - The ID of the event
+   * @param buyerEmail - The email of the buyer
+   * @returns Promise resolving to array of Tickets
+   */
+  findByEventAndBuyer(eventId: string, buyerEmail: string): Promise<Ticket[]>;
 
   /**
    * Finds a ticket by its QR token
@@ -62,6 +84,7 @@ export interface ITicketRepository {
   // Admin methods for statistics and management
   findWithFilters(filters: {
     eventId?: string;
+    eventIds?: string[]; // Added to support filtering by multiple events
     status?: string;
     limit?: number;
     offset?: number;
@@ -69,6 +92,7 @@ export interface ITicketRepository {
 
   countWithFilters(filters: {
     eventId?: string;
+    eventIds?: string[]; // Added to support filtering by multiple events
     status?: string;
   }): Promise<number>;
 
@@ -83,12 +107,27 @@ export interface ITicketRepository {
 
   getTicketsByStatus(): Promise<Array<{ status: string; count: number }>>;
   getTicketsByType(): Promise<Array<{ type: string; count: number }>>;
-  getTicketsByTypeForEvent(eventId: string): Promise<Array<{ type: string; count: number }>>;
+  getTicketsByTypeForEvent(
+    eventId: string,
+  ): Promise<Array<{ type: string; count: number }>>;
 
-  getSalesByMonth(): Promise<Array<{ month: string; count: number; revenue: number }>>;
-  getSalesByDateForEvent(eventId: string): Promise<Array<{ date: string; count: number }>>;
-  getSalesTrendForEvent(eventId: string): Promise<Array<{ date: string; count: number }>>;
+  getSalesByMonth(): Promise<
+    Array<{ month: string; count: number; revenue: number }>
+  >;
+  getSalesByDateForEvent(
+    eventId: string,
+  ): Promise<Array<{ date: string; count: number }>>;
+  getSalesTrendForEvent(
+    eventId: string,
+  ): Promise<Array<{ date: string; count: number }>>;
 
-  getTopSellingEvents(limit: number): Promise<Array<{ eventId: string; eventName: string; ticketsSold: number; revenue: number }>>;
+  getTopSellingEvents(limit: number): Promise<
+    Array<{
+      eventId: string;
+      eventName: string;
+      ticketsSold: number;
+      revenue: number;
+    }>
+  >;
 }
-export const TICKET_REPOSITORY = Symbol('TICKET_REPOSITORY');
+export const TICKET_REPOSITORY = Symbol("TICKET_REPOSITORY");

@@ -9,7 +9,7 @@ export interface ToastConfig {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ToastService {
   private readonly toastQueue = signal<ToastConfig[]>([]);
@@ -27,7 +27,7 @@ export class ToastService {
       }, duration);
     } else {
       // Queue the toast
-      this.toastQueue.update(queue => [...queue, config]);
+      this.toastQueue.update((queue) => [...queue, config]);
     }
   }
 

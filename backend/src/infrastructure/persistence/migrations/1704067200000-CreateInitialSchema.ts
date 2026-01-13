@@ -1,7 +1,7 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class CreateInitialSchema1704067200000 implements MigrationInterface {
-  name = 'CreateInitialSchema1704067200000';
+  name = "CreateInitialSchema1704067200000";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create events table
@@ -29,7 +29,6 @@ export class CreateInitialSchema1704067200000 implements MigrationInterface {
         CHECK (available_quantity <= total_quantity)
       )
     `);
-
 
     // Create reservations table
     await queryRunner.query(`

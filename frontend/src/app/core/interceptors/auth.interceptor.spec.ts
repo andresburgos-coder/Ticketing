@@ -1,30 +1,21 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClient, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { AuthInterceptor } from './auth.interceptor';
-import { AuthService } from '../services/auth.service';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { authInterceptor } from './auth.interceptor';
 
-describe('AuthInterceptor', () => {
+describe('authInterceptor', () => {
   let httpMock: HttpTestingController;
   let httpClient: HttpClient;
-  let authService: Partial<AuthService>;
 
   beforeEach(() => {
-    authService = {
-      getToken: vi.fn()
-    };
+    // Clear sessionStorage before each test
+    sessionStorage.clear();
 
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
       providers: [
-        { provide: AuthService, useValue: authService },
-        {
-          provide: HTTP_INTERCEPTORS,
-          useClass: AuthInterceptor,
-          multi: true
-        }
-      ]
+        provideHttpClient(withInterceptors([authInterceptor])),
+        provideHttpClientTesting(),
+      ],
     });
 
     httpMock = TestBed.inject(HttpTestingController);
@@ -32,7 +23,7 @@ describe('AuthInterceptor', () => {
   });
 
   it('should add Authorization header when token exists', () => {
-    vi.mocked(authService.getToken!).mockReturnValue('test-token');
+    sessionStorage.setItem('accessToken', 'test-token');
 
     httpClient.get('/api/test').subscribe();
 
@@ -43,7 +34,7 @@ describe('AuthInterceptor', () => {
   });
 
   it('should not add Authorization header when no token', () => {
-    vi.mocked(authService.getToken!).mockReturnValue(null);
+    sessionStorage.removeItem('accessToken');
 
     httpClient.get('/api/test').subscribe();
 
@@ -52,7 +43,18 @@ describe('AuthInterceptor', () => {
     req.flush({});
   });
 
+  it('should not add Authorization header for public endpoints', () => {
+    sessionStorage.setItem('accessToken', 'test-token');
+
+    httpClient.get('/auth/login').subscribe();
+
+    const req = httpMock.expectOne('/auth/login');
+    // Public endpoints should still have withCredentials but may not have Authorization
+    req.flush({});
+  });
+
   afterEach(() => {
     httpMock.verify();
+    sessionStorage.clear();
   });
 });

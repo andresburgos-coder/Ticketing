@@ -6,14 +6,14 @@ import {
   Logger,
   UnauthorizedException,
   HttpException,
-} from '@nestjs/common';
-import { Response } from 'express';
-import { InsufficientTicketsException } from '../../domain/exceptions/insufficient-tickets.exception';
-import { InvalidEmailException } from '../../domain/exceptions/invalid-email.exception';
-import { InvalidMoneyException } from '../../domain/exceptions/invalid-money.exception';
-import { InvalidQuantityException } from '../../domain/exceptions/invalid-quantity.exception';
-import { InvalidStateTransitionException } from '../../domain/exceptions/invalid-state-transition.exception';
-import { TicketTypeNotFoundException } from '../../domain/exceptions/ticket-type-not-found.exception';
+} from "@nestjs/common";
+import { Response } from "express";
+import { InsufficientTicketsException } from "../../domain/exceptions/insufficient-tickets.exception";
+import { InvalidEmailException } from "../../domain/exceptions/invalid-email.exception";
+import { InvalidMoneyException } from "../../domain/exceptions/invalid-money.exception";
+import { InvalidQuantityException } from "../../domain/exceptions/invalid-quantity.exception";
+import { InvalidStateTransitionException } from "../../domain/exceptions/invalid-state-transition.exception";
+import { TicketTypeNotFoundException } from "../../domain/exceptions/ticket-type-not-found.exception";
 
 /**
  * Maps domain exceptions to HTTP status codes and error responses.
@@ -50,10 +50,13 @@ export class DomainExceptionFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       const status = exception.getStatus();
       const response = exception.getResponse();
-      
+
       return {
         statusCode: status,
-        message: typeof response === 'string' ? response : (response as any).message || exception.message,
+        message:
+          typeof response === "string"
+            ? response
+            : (response as any).message || exception.message,
         error: exception.name,
         timestamp,
       };
@@ -64,7 +67,7 @@ export class DomainExceptionFilter implements ExceptionFilter {
       return {
         statusCode: HttpStatus.BAD_REQUEST,
         message: exception.message,
-        error: 'InvalidEmailException',
+        error: "InvalidEmailException",
         timestamp,
       };
     }
@@ -73,7 +76,7 @@ export class DomainExceptionFilter implements ExceptionFilter {
       return {
         statusCode: HttpStatus.BAD_REQUEST,
         message: exception.message,
-        error: 'InvalidMoneyException',
+        error: "InvalidMoneyException",
         timestamp,
       };
     }
@@ -82,7 +85,7 @@ export class DomainExceptionFilter implements ExceptionFilter {
       return {
         statusCode: HttpStatus.BAD_REQUEST,
         message: exception.message,
-        error: 'InvalidQuantityException',
+        error: "InvalidQuantityException",
         timestamp,
       };
     }
@@ -92,7 +95,7 @@ export class DomainExceptionFilter implements ExceptionFilter {
       return {
         statusCode: HttpStatus.CONFLICT,
         message: exception.message,
-        error: 'InsufficientTicketsException',
+        error: "InsufficientTicketsException",
         timestamp,
       };
     }
@@ -101,7 +104,7 @@ export class DomainExceptionFilter implements ExceptionFilter {
       return {
         statusCode: HttpStatus.CONFLICT,
         message: exception.message,
-        error: 'InvalidStateTransitionException',
+        error: "InvalidStateTransitionException",
         timestamp,
       };
     }
@@ -111,7 +114,7 @@ export class DomainExceptionFilter implements ExceptionFilter {
       return {
         statusCode: HttpStatus.NOT_FOUND,
         message: exception.message,
-        error: 'TicketTypeNotFoundException',
+        error: "TicketTypeNotFoundException",
         timestamp,
       };
     }
@@ -120,16 +123,16 @@ export class DomainExceptionFilter implements ExceptionFilter {
     if (exception instanceof Error) {
       return {
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: exception.message || 'Internal server error',
-        error: exception.name || 'UnknownException',
+        message: exception.message || "Internal server error",
+        error: exception.name || "UnknownException",
         timestamp,
       };
     }
 
     return {
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-      message: 'An unexpected error occurred',
-      error: 'UnknownException',
+      message: "An unexpected error occurred",
+      error: "UnknownException",
       timestamp,
     };
   }

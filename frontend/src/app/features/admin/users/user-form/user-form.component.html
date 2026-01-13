@@ -23,7 +23,7 @@
           required
           #email="ngModel"
           [disabled]="loading"
-        >
+        />
         <div class="error-msg" *ngIf="email.invalid && email.touched">
           Email es requerido y debe ser válido
         </div>
@@ -40,7 +40,7 @@
           minlength="8"
           #passwordInput="ngModel"
           [disabled]="loading"
-        >
+        />
         <div class="error-msg" *ngIf="passwordInput.invalid && passwordInput.touched">
           Contraseña debe tener al menos 8 caracteres
         </div>
@@ -56,7 +56,7 @@
           required
           #firstName="ngModel"
           [disabled]="loading"
-        >
+        />
         <div class="error-msg" *ngIf="firstName.invalid && firstName.touched">
           Nombre es requerido
         </div>
@@ -72,7 +72,7 @@
           required
           #lastName="ngModel"
           [disabled]="loading"
-        >
+        />
         <div class="error-msg" *ngIf="lastName.invalid && lastName.touched">
           Apellido es requerido
         </div>
@@ -80,13 +80,7 @@
 
       <div class="form-group">
         <label for="role">Rol:</label>
-        <select
-          id="role"
-          [(ngModel)]="userForm.role"
-          name="role"
-          required
-          [disabled]="loading"
-        >
+        <select id="role" [(ngModel)]="userForm.role" name="role" required [disabled]="loading">
           <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
         </select>
       </div>
@@ -96,7 +90,7 @@
           Cancelar
         </button>
         <button type="submit" class="btn btn-primary" [disabled]="!userFormRef.valid || loading">
-          {{ loading ? 'Guardando...' : (isEditMode ? 'Actualizar Usuario' : 'Crear Usuario') }}
+          {{ loading ? 'Guardando...' : isEditMode ? 'Actualizar Usuario' : 'Crear Usuario' }}
         </button>
       </div>
     </form>

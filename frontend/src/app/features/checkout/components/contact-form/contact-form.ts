@@ -14,14 +14,14 @@ export interface ContactFormData {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './contact-form.html',
-  styleUrl: './contact-form.css'
+  styleUrl: './contact-form.css',
 })
 export class ContactForm {
   formData: ContactFormData = {
     firstName: '',
     lastName: '',
     email: '',
-    phone: ''
+    phone: '',
   };
 
   errors: { [key: string]: string } = {};

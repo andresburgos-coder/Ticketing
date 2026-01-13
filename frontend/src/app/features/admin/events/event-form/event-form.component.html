@@ -18,10 +18,12 @@
           placeholder="Ej: Concierto de Rock"
           class="form-control"
           [class.is-invalid]="form.get('name')?.invalid && form.get('name')?.touched"
-        >
+        />
         <div class="error-message" *ngIf="form.get('name')?.invalid && form.get('name')?.touched">
           <span *ngIf="form.get('name')?.getError('required')">El nombre es requerido</span>
-          <span *ngIf="form.get('name')?.getError('minlength')">El nombre debe tener al menos 3 caracteres</span>
+          <span *ngIf="form.get('name')?.getError('minlength')"
+            >El nombre debe tener al menos 3 caracteres</span
+          >
         </div>
       </div>
 
@@ -34,7 +36,7 @@
             formControlName="date"
             class="form-control"
             [class.is-invalid]="form.get('date')?.invalid && form.get('date')?.touched"
-          >
+          />
           <div class="error-message" *ngIf="form.get('date')?.invalid && form.get('date')?.touched">
             La fecha es requerida
           </div>
@@ -51,7 +53,10 @@
             <option value="">Selecciona una categoría</option>
             <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
           </select>
-          <div class="error-message" *ngIf="form.get('category')?.invalid && form.get('category')?.touched">
+          <div
+            class="error-message"
+            *ngIf="form.get('category')?.invalid && form.get('category')?.touched"
+          >
             La categoría es requerida
           </div>
         </div>
@@ -67,7 +72,10 @@
           rows="3"
           [class.is-invalid]="form.get('description')?.invalid && form.get('description')?.touched"
         ></textarea>
-        <div class="error-message" *ngIf="form.get('description')?.invalid && form.get('description')?.touched">
+        <div
+          class="error-message"
+          *ngIf="form.get('description')?.invalid && form.get('description')?.touched"
+        >
           La descripción es requerida
         </div>
       </div>
@@ -87,8 +95,11 @@
             placeholder="Ej: Cra. 5 #6-64"
             class="form-control"
             [class.is-invalid]="form.get('location')?.invalid && form.get('location')?.touched"
+          />
+          <div
+            class="error-message"
+            *ngIf="form.get('location')?.invalid && form.get('location')?.touched"
           >
-          <div class="error-message" *ngIf="form.get('location')?.invalid && form.get('location')?.touched">
             La ubicación es requerida
           </div>
         </div>
@@ -102,8 +113,11 @@
             placeholder="Ej: Teatro Principal"
             class="form-control"
             [class.is-invalid]="form.get('venueName')?.invalid && form.get('venueName')?.touched"
+          />
+          <div
+            class="error-message"
+            *ngIf="form.get('venueName')?.invalid && form.get('venueName')?.touched"
           >
-          <div class="error-message" *ngIf="form.get('venueName')?.invalid && form.get('venueName')?.touched">
             El nombre del lugar es requerido
           </div>
         </div>
@@ -123,9 +137,9 @@
             accept="image/*"
             (change)="onImageSelected($event)"
             class="form-control"
-          >
+          />
           <div class="image-preview" *ngIf="imagePreview()">
-            <img [src]="imagePreview()" alt="Preview">
+            <img [src]="imagePreview()" alt="Preview" />
           </div>
         </div>
       </div>
@@ -149,11 +163,22 @@
                 placeholder="0.00"
                 class="form-control"
                 step="0.01"
-                [class.is-invalid]="generalTickets?.get('price')?.invalid && generalTickets?.get('price')?.touched"
+                [class.is-invalid]="
+                  generalTickets?.get('price')?.invalid && generalTickets?.get('price')?.touched
+                "
+              />
+              <div
+                class="error-message"
+                *ngIf="
+                  generalTickets?.get('price')?.invalid && generalTickets?.get('price')?.touched
+                "
               >
-              <div class="error-message" *ngIf="generalTickets?.get('price')?.invalid && generalTickets?.get('price')?.touched">
-                <span *ngIf="generalTickets?.get('price')?.getError('required')">El precio es requerido</span>
-                <span *ngIf="generalTickets?.get('price')?.getError('min')">El precio debe ser mayor a 0</span>
+                <span *ngIf="generalTickets?.get('price')?.getError('required')"
+                  >El precio es requerido</span
+                >
+                <span *ngIf="generalTickets?.get('price')?.getError('min')"
+                  >El precio debe ser mayor a 0</span
+                >
               </div>
             </div>
 
@@ -165,11 +190,24 @@
                 formControlName="quantity"
                 placeholder="0"
                 class="form-control"
-                [class.is-invalid]="generalTickets?.get('quantity')?.invalid && generalTickets?.get('quantity')?.touched"
+                [class.is-invalid]="
+                  generalTickets?.get('quantity')?.invalid &&
+                  generalTickets?.get('quantity')?.touched
+                "
+              />
+              <div
+                class="error-message"
+                *ngIf="
+                  generalTickets?.get('quantity')?.invalid &&
+                  generalTickets?.get('quantity')?.touched
+                "
               >
-              <div class="error-message" *ngIf="generalTickets?.get('quantity')?.invalid && generalTickets?.get('quantity')?.touched">
-                <span *ngIf="generalTickets?.get('quantity')?.getError('required')">La cantidad es requerida</span>
-                <span *ngIf="generalTickets?.get('quantity')?.getError('min')">La cantidad debe ser mayor a 0</span>
+                <span *ngIf="generalTickets?.get('quantity')?.getError('required')"
+                  >La cantidad es requerida</span
+                >
+                <span *ngIf="generalTickets?.get('quantity')?.getError('min')"
+                  >La cantidad debe ser mayor a 0</span
+                >
               </div>
             </div>
           </div>
@@ -189,7 +227,7 @@
                 placeholder="0.00"
                 class="form-control"
                 step="0.01"
-              >
+              />
             </div>
 
             <div class="form-group">
@@ -200,7 +238,7 @@
                 formControlName="quantity"
                 placeholder="0"
                 class="form-control"
-              >
+              />
             </div>
           </div>
         </div>
@@ -210,7 +248,7 @@
     <!-- Botones de Acción -->
     <div class="form-actions">
       <button type="submit" class="btn btn-primary" [disabled]="form.invalid || loading()">
-        {{ loading() ? 'Guardando...' : (isEditing() ? 'Actualizar Evento' : 'Crear Evento') }}
+        {{ loading() ? 'Guardando...' : isEditing() ? 'Actualizar Evento' : 'Crear Evento' }}
       </button>
       <button type="button" class="btn btn-secondary" (click)="onCancel()">Cancelar</button>
     </div>

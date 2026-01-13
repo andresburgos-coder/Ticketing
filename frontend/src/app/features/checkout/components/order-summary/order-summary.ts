@@ -8,7 +8,7 @@ import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pip
   standalone: true,
   imports: [CommonModule, CurrencyFormatPipe],
   templateUrl: './order-summary.html',
-  styleUrl: './order-summary.css'
+  styleUrl: './order-summary.css',
 })
 export class OrderSummary {
   private readonly checkoutService = inject(CheckoutService);

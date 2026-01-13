@@ -1,9 +1,7 @@
 <div class="admin-users">
   <div class="header">
     <h2>Gestión de Usuarios</h2>
-    <button class="btn btn-primary" (click)="createUser()">
-      + Crear Usuario
-    </button>
+    <button class="btn btn-primary" (click)="createUser()">+ Crear Usuario</button>
   </div>
 
   <div class="filters">
@@ -23,7 +21,7 @@
         [(ngModel)]="filters.search"
         (input)="searchUsers()"
         placeholder="Buscar por nombre o email..."
-      >
+      />
     </div>
   </div>
 
@@ -53,15 +51,10 @@
               {{ user.role }}
             </span>
           </td>
-          <td>{{ user.createdAt | date:'short' }}</td>
+          <td>{{ user.createdAt | date: 'short' }}</td>
           <td>
             <div class="actions">
-              <button
-                class="btn btn-sm btn-warning"
-                (click)="editUser(user)"
-              >
-                Editar
-              </button>
+              <button class="btn btn-sm btn-warning" (click)="editUser(user)">Editar</button>
               <button
                 class="btn btn-sm btn-danger"
                 (click)="deleteUser(user.id, getEmail(user))"
@@ -85,8 +78,8 @@
       </button>
 
       <span class="page-info">
-        Página {{ pagination().page }} de {{ pagination().totalPages }}
-        ({{ pagination().total }} usuarios)
+        Página {{ pagination().page }} de {{ pagination().totalPages }} ({{ pagination().total }}
+        usuarios)
       </span>
 
       <button

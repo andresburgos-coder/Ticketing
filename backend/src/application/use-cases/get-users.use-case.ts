@@ -1,7 +1,7 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { IUserRepository } from '../../domain/interfaces/user-repository.interface';
-import { USER_REPOSITORY } from '../../domain/interfaces/repository-tokens';
-import { GetUsersQueryDto } from '../../presentation/dtos/get-users-query.dto';
+import { Injectable, Inject } from "@nestjs/common";
+import { IUserRepository } from "../../domain/interfaces/user-repository.interface";
+import { USER_REPOSITORY } from "../../domain/interfaces/repository-tokens";
+import { GetUsersQueryDto } from "../../presentation/dtos/get-users-query.dto";
 
 @Injectable()
 export class GetUsersUseCase {
@@ -29,7 +29,7 @@ export class GetUsersUseCase {
     });
 
     // Remove passwords from response
-    const usersWithoutPasswords = users.map(user => {
+    const usersWithoutPasswords = users.map((user) => {
       const { passwordHash, ...userWithoutPassword } = user;
       return userWithoutPassword;
     });

@@ -23,7 +23,8 @@
     "backend:test": "docker-compose exec backend npm test",
     "backend:test:property": "docker-compose exec backend npm run test:property",
     "backend:migration:run": "docker-compose exec backend npm run migration:run",
-    "backend:migration:revert": "docker-compose exec backend npm run migration:revert"
+    "backend:migration:revert": "docker-compose exec backend npm run migration:revert",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,html,css,scss,md}\""
   },
   "keywords": [
     "ticket-sales",

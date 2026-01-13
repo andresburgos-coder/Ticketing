@@ -3,13 +3,14 @@ import { RouterOutlet } from '@angular/router';
 import { Header } from './shared/components/header/header';
 import { Footer } from './shared/components/footer/footer';
 import { ToastComponent } from './shared/components/toast/toast';
+import { QRScannerFabComponent } from './shared/components/qr-scanner-fab/qr-scanner-fab.component';
 import { ToastService } from './core/services/toast.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Header, Footer, ToastComponent],
+  imports: [RouterOutlet, Header, Footer, ToastComponent, QRScannerFabComponent],
   templateUrl: './app.html',
-  styleUrl: './app.css'
+  styleUrl: './app.css',
 })
 export class App {
   protected readonly title = signal('frontend');

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { OrderSummary } from './order-summary';
 import { CheckoutService } from '../../services/checkout.service';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+
 import { signal } from '@angular/core';
 
 describe('OrderSummary', () => {
@@ -13,19 +13,18 @@ describe('OrderSummary', () => {
     checkoutService = {
       cart: signal([
         { ticketTypeId: 1, ticketTypeName: 'VIP', quantity: 2, price: 100 },
-        { ticketTypeId: 2, ticketTypeName: 'General', quantity: 1, price: 50 }
+        { ticketTypeId: 2, ticketTypeName: 'General', quantity: 1, price: 50 },
       ]),
       subtotal: signal(250),
       tax: signal(25),
+      processingFee: signal(5),
       total: signal(275),
-      removeFromCart: vi.fn()
+      removeFromCart: jasmine.createSpy(),
     };
 
     await TestBed.configureTestingModule({
       imports: [OrderSummary],
-      providers: [
-        { provide: CheckoutService, useValue: checkoutService }
-      ]
+      providers: [{ provide: CheckoutService, useValue: checkoutService }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(OrderSummary);

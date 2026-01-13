@@ -2,7 +2,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
   name: 'dateFormat',
-  standalone: true
+  standalone: true,
 })
 export class DateFormatPipe implements PipeTransform {
   transform(value: string | Date, format: 'short' | 'medium' | 'long' = 'medium'): string {

@@ -3,7 +3,6 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 import { Router } from '@angular/router';
 import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -12,15 +11,12 @@ describe('AuthService', () => {
 
   beforeEach(() => {
     const routerMock = {
-      navigate: vi.fn()
+      navigate: jasmine.createSpy('navigate'),
     };
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [
-        AuthService,
-        { provide: Router, useValue: routerMock }
-      ]
+      providers: [AuthService, { provide: Router, useValue: routerMock }],
     });
 
     service = TestBed.inject(AuthService);
@@ -39,10 +35,12 @@ describe('AuthService', () => {
     it('should authenticate user and store token', async () => {
       const mockResponse = {
         user: { id: '1', email: 'test@example.com', firstName: 'Test', lastName: 'User' },
-        accessToken: 'mock-token'
+        accessToken: 'mock-token',
       };
 
-      const promise = service.login({ email: 'test@example.com', password: 'password' }).toPromise();
+      const promise = service
+        .login({ email: 'test@example.com', password: 'password' })
+        .toPromise();
       const req = httpMock.expectOne(`${environment.baseUrl}/auth/login`);
       expect(req.request.method).toBe('POST');
       req.flush(mockResponse);
@@ -55,7 +53,10 @@ describe('AuthService', () => {
     });
 
     it('should handle login errors', async () => {
-      const promise = service.login({ email: 'test@example.com', password: 'wrong-password' }).toPromise().catch(err => err);
+      const promise = service
+        .login({ email: 'test@example.com', password: 'wrong-password' })
+        .toPromise()
+        .catch((err) => err);
 
       const req = httpMock.expectOne(`${environment.baseUrl}/auth/login`);
       req.flush({ message: 'Invalid credentials' }, { status: 401, statusText: 'Unauthorized' });
@@ -71,10 +72,17 @@ describe('AuthService', () => {
     it('should register user and authenticate', async () => {
       const mockResponse = {
         user: { id: '1', email: 'new@example.com', firstName: 'New', lastName: 'User' },
-        accessToken: 'new-token'
+        accessToken: 'new-token',
       };
 
-      const promise = service.register({ email: 'new@example.com', password: 'password', firstName: 'New', lastName: 'User' }).toPromise();
+      const promise = service
+        .register({
+          email: 'new@example.com',
+          password: 'password',
+          firstName: 'New',
+          lastName: 'User',
+        })
+        .toPromise();
       const req = httpMock.expectOne(`${environment.baseUrl}/auth/register`);
       expect(req.request.method).toBe('POST');
       req.flush(mockResponse);
@@ -90,7 +98,13 @@ describe('AuthService', () => {
     it('should clear user data and navigate to login', () => {
       // Setup: login first
       localStorage.setItem('auth_token', 'test-token');
-      service['_currentUser'].set({ id: '1', email: 'test@example.com', firstName: 'Test', lastName: 'User' });
+      service['_currentUser'].set({
+        id: '1',
+        email: 'test@example.com',
+        firstName: 'Test',
+        lastName: 'User',
+        role: 'BUYER',
+      });
       service['_accessToken'].set('test-token');
 
       service.logout();
@@ -115,7 +129,13 @@ describe('AuthService', () => {
 
   describe('loadFromStorage', () => {
     it('should restore auth state from localStorage', () => {
-      const mockUser = { id: '1', email: 'stored@example.com', firstName: 'Stored', lastName: 'User' };
+      const mockUser = {
+        id: '1',
+        email: 'stored@example.com',
+        firstName: 'Stored',
+        lastName: 'User',
+        role: 'BUYER',
+      };
       localStorage.setItem('auth_token', 'stored-token');
       localStorage.setItem('auth_user', JSON.stringify(mockUser));
 
@@ -146,7 +166,7 @@ describe('AuthService', () => {
   describe('refreshToken', () => {
     it('should refresh access token', async () => {
       const mockResponse = {
-        accessToken: 'new-access-token'
+        accessToken: 'new-access-token',
       };
 
       const promise = service.refreshToken().toPromise();

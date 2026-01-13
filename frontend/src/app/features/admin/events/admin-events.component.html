@@ -1,15 +1,18 @@
 <div class="admin-events">
   <div class="header">
     <h2>Gestión de Eventos</h2>
-    <button class="btn btn-primary" routerLink="/admin/events/create">
-      + Crear Evento
-    </button>
+    <button class="btn btn-primary" routerLink="/admin/events/create">+ Crear Evento</button>
   </div>
 
   <div class="filters">
     <div class="filter-group">
       <label for="category">Categoría:</label>
-      <select id="category" [ngModel]="selectedCategory()" (change)="onCategoryChange($event)" (ngModelChange)="selectedCategory.set($event)">
+      <select
+        id="category"
+        [ngModel]="selectedCategory()"
+        (change)="onCategoryChange($event)"
+        (ngModelChange)="selectedCategory.set($event)"
+      >
         <option value="">Todas las categorías</option>
         <option *ngFor="let category of categories" [value]="category">
           {{ category }}
@@ -26,7 +29,7 @@
         (ngModelChange)="searchTerm.set($event)"
         (input)="filterEvents()"
         placeholder="Buscar por nombre o ubicación..."
-      >
+      />
     </div>
   </div>
 
@@ -51,7 +54,7 @@
               <small>ID: {{ event.id }}</small>
             </div>
           </td>
-          <td>{{ event.date | date:'short' }}</td>
+          <td>{{ event.date | date: 'short' }}</td>
           <td>
             <div class="location">
               <div>{{ event.location }}</div>
@@ -64,17 +67,16 @@
             </span>
           </td>
           <td class="text-center">
-            <strong>{{ getTicketsSold(event.id.toString()) }}</strong>
+            <strong>
+              {{ getTicketsSoldByEvent(event) }}
+            </strong>
           </td>
           <td class="text-center">
-            <strong class="revenue">${{ getRevenue(event.id.toString()) | number:'1.2-2' }}</strong>
+            <strong class="revenue">${{ calculateEventRevenue(event) | number: '1.2-2' }}</strong>
           </td>
           <td>
             <div class="actions">
-              <button
-                class="btn btn-sm btn-info"
-                [routerLink]="['/admin/events', event.id]"
-              >
+              <button class="btn btn-sm btn-info" [routerLink]="['/admin/events', event.id]">
                 Ver
               </button>
               <button

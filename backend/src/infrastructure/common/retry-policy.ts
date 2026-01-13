@@ -1,9 +1,9 @@
 /**
  * RetryPolicy - Generic retry mechanism with exponential backoff
- * 
+ *
  * Implements retry logic with exponential backoff for transient failures.
  * Useful for operations that may fail temporarily (network issues, database locks, etc.)
- * 
+ *
  * Requirements: 5.5 - Retry up to 3 times before escalating
  */
 export interface RetryPolicyConfig {
@@ -17,11 +17,13 @@ export class RetryPolicy<T> {
   private readonly initialDelayMs: number;
   private readonly backoffMultiplier: number;
 
-  constructor(config: RetryPolicyConfig = {
-    maxAttempts: 3,
-    initialDelayMs: 100,
-    backoffMultiplier: 2,
-  }) {
+  constructor(
+    config: RetryPolicyConfig = {
+      maxAttempts: 3,
+      initialDelayMs: 100,
+      backoffMultiplier: 2,
+    },
+  ) {
     this.maxAttempts = config.maxAttempts;
     this.initialDelayMs = config.initialDelayMs;
     this.backoffMultiplier = config.backoffMultiplier;
@@ -29,7 +31,7 @@ export class RetryPolicy<T> {
 
   /**
    * Executes an async operation with retry logic
-   * 
+   *
    * @param operation - The async operation to execute
    * @param operationName - Name of the operation for logging
    * @returns Promise resolving to the operation result
@@ -37,7 +39,7 @@ export class RetryPolicy<T> {
    */
   async execute<R>(
     operation: () => Promise<R>,
-    operationName: string = 'Operation'
+    operationName: string = "Operation",
   ): Promise<{ result: R; attempts: number }> {
     let lastError: Error | null = null;
     let delayMs = this.initialDelayMs;
@@ -48,7 +50,7 @@ export class RetryPolicy<T> {
         return { result, attempts: attempt };
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
-        
+
         // If this is the last attempt, don't delay
         if (attempt < this.maxAttempts) {
           await this.delay(delayMs);
@@ -58,20 +60,20 @@ export class RetryPolicy<T> {
     }
 
     throw new Error(
-      `${operationName} failed after ${this.maxAttempts} attempts. Last error: ${lastError?.message}`
+      `${operationName} failed after ${this.maxAttempts} attempts. Last error: ${lastError?.message}`,
     );
   }
 
   /**
    * Executes an async operation with retry logic, returning result or null on failure
-   * 
+   *
    * @param operation - The async operation to execute
    * @param operationName - Name of the operation for logging
    * @returns Promise resolving to { result, attempts } or { result: null, attempts, error }
    */
   async executeWithFallback<R>(
     operation: () => Promise<R>,
-    operationName: string = 'Operation'
+    operationName: string = "Operation",
   ): Promise<{ result: R | null; attempts: number; error?: Error }> {
     let lastError: Error | null = null;
     let delayMs = this.initialDelayMs;
@@ -82,7 +84,7 @@ export class RetryPolicy<T> {
         return { result, attempts: attempt };
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
-        
+
         if (attempt < this.maxAttempts) {
           await this.delay(delayMs);
           delayMs *= this.backoffMultiplier;
@@ -93,16 +95,18 @@ export class RetryPolicy<T> {
     return {
       result: null,
       attempts: this.maxAttempts,
-      error: lastError || new Error(`${operationName} failed after ${this.maxAttempts} attempts`),
+      error:
+        lastError ||
+        new Error(`${operationName} failed after ${this.maxAttempts} attempts`),
     };
   }
 
   /**
    * Delays execution for the specified number of milliseconds
-   * 
+   *
    * @param ms - Number of milliseconds to delay
    */
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

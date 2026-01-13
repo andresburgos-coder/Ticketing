@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute } from '@angular/router';
 import { EventCard } from './event-card';
 import { Event } from '../../../models/event.model';
+import { of } from 'rxjs';
 
 describe('EventCard', () => {
   let component: EventCard;
@@ -8,7 +10,8 @@ describe('EventCard', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [EventCard]
+      imports: [EventCard],
+      providers: [{ provide: ActivatedRoute, useValue: { queryParams: of({}) } }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(EventCard);
@@ -26,9 +29,9 @@ describe('EventCard', () => {
           id: 1,
           name: 'General',
           price: '50',
-          tickets: [{id: 1, eventId: 1, typeId: 1}]
-        }
-      ]
+          tickets: [{ id: 1, eventId: 1, typeId: 1 }],
+        },
+      ],
     } as unknown as Event;
 
     fixture.detectChanges();
@@ -49,7 +52,8 @@ describe('EventCard', () => {
   });
 
   it('should handle empty ticket types', () => {
-    component.event = { ...component.event, ticketTypes: [] } as unknown as Event;    const minPrice = component.getMinPrice();
+    component.event = { ...component.event, ticketTypes: [] } as unknown as Event;
+    const minPrice = component.getMinPrice();
     expect(minPrice).toBe(0);
   });
 });

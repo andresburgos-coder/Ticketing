@@ -133,7 +133,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\"\n}"
+              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"{{TEST_PASSWORD}}\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/register",
@@ -172,7 +172,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\"\n}"
+              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"{{TEST_PASSWORD}}\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/register",
@@ -266,7 +266,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"SecurePass123!\"\n}"
+              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"{{TEST_PASSWORD}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/login",

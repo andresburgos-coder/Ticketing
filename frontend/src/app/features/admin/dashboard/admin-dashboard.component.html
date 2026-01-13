@@ -1,88 +1,91 @@
 <div class="dashboard">
   <h2>Dashboard</h2>
 
-  <div class="debug-info">
-    <p><strong>Component Status:</strong></p>
-    <p>Loading: {{ loading() }}</p>
-    <p>Stats loaded: {{ stats() ? 'YES' : 'NO' }}</p>
-    <p>Error: {{ error() || 'None' }}</p>
-  </div>
-
-  <div *ngIf="loading()" class="loading">
-    <p>Cargando estadísticas...</p>
-  </div>
-
-  <div *ngIf="error()" class="error">
-    <p>Error: {{ error() }}</p>
-  </div>
-
-  <div *ngIf="stats() && !loading()" class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-icon">👥</div>
-      <div class="stat-content">
-        <h3>{{ stats()!.overview.totalUsers }}</h3>
-        <p>Total Usuarios</p>
-      </div>
+  @if (loading()) {
+    <div class="loading">
+      <p>Cargando estadísticas...</p>
     </div>
+  }
 
-    <div class="stat-card">
-      <div class="stat-icon">🎫</div>
-      <div class="stat-content">
-        <h3>{{ stats()!.overview.totalEvents }}</h3>
-        <p>Total Eventos</p>
-      </div>
+  @if (error()) {
+    <div class="error">
+      <p>Error: {{ error() }}</p>
     </div>
+  }
 
-    <div class="stat-card">
-      <div class="stat-icon">🎟️</div>
-      <div class="stat-content">
-        <h3>{{ stats()!.overview.totalTicketsSold }}</h3>
-        <p>Tickets Vendidos</p>
+  @if (stats() && !loading()) {
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-content">
+          <h3>{{ stats()!.overview.totalUsers }}</h3>
+          <p>Total Usuarios</p>
+        </div>
       </div>
-    </div>
 
-    <div class="stat-card">
-      <div class="stat-icon">💰</div>
-      <div class="stat-content">
-        <h3>{{ stats()!.overview.totalRevenue | currencyFormat }}</h3>
-        <p>Ingresos Totales</p>
+      <div class="stat-card">
+        <div class="stat-icon">🎫</div>
+        <div class="stat-content">
+          <h3>{{ stats()!.overview.totalEvents }}</h3>
+          <p>Total Eventos</p>
+        </div>
       </div>
-    </div>
 
-    <div class="stat-card">
-      <div class="stat-icon">📋</div>
-      <div class="stat-content">
-        <h3>{{ stats()!.overview.activeReservations }}</h3>
-        <p>Reservas Activas</p>
+      <div class="stat-card">
+        <div class="stat-icon">🎟️</div>
+        <div class="stat-content">
+          <h3>{{ stats()!.overview.totalTicketsSold }}</h3>
+          <p>Tickets Vendidos</p>
+        </div>
       </div>
-    </div>
-  </div>
 
-  <div *ngIf="stats() && !loading()" class="dashboard-content">
-    <div class="recent-events">
-      <h3>Eventos Recientes</h3>
-      <div class="events-list">
-        <div class="event-item" *ngFor="let event of stats()!.recentEvents">
-          <div class="event-info">
-            <h4>{{ event.name }}</h4>
-            <p>{{ event.date | date:'short' }}</p>
-            <p>{{ event.location }}</p>
-          </div>
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-content">
+          <h3>{{ stats()!.overview.totalRevenue | currencyFormat }}</h3>
+          <p>Ingresos Totales</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">📋</div>
+        <div class="stat-content">
+          <h3>{{ stats()!.overview.activeReservations }}</h3>
+          <p>Reservas Activas</p>
         </div>
       </div>
     </div>
 
-    <div class="top-events">
-      <h3>Eventos Más Vendidos</h3>
-      <div class="top-events-list">
-        <div class="top-event-item" *ngFor="let event of stats()!.topEvents">
-          <div class="event-details">
-            <h4>{{ event.eventName }}</h4>
-            <p>{{ event.ticketsSold }} tickets vendidos</p>
-            <p class="revenue">{{ event.revenue | currencyFormat }}</p>
-          </div>
+    <div class="dashboard-content">
+      <div class="recent-events">
+        <h3>Eventos Recientes</h3>
+        <div class="events-list">
+          @for (event of stats()!.recentEvents; track event.id) {
+            <div class="event-item">
+              <div class="event-info">
+                <h4>{{ event.name }}</h4>
+                <p>{{ event.date | date: 'short' }}</p>
+                <p>{{ event.location }}</p>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="top-events">
+        <h3>Eventos Más Vendidos</h3>
+        <div class="top-events-list">
+          @for (event of stats()!.topEvents; track event.eventName) {
+            <div class="top-event-item">
+              <div class="event-details">
+                <h4>{{ event.eventName }}</h4>
+                <p>{{ event.ticketsSold }} tickets vendidos</p>
+                <p class="revenue">{{ event.revenue | currencyFormat }}</p>
+              </div>
+            </div>
+          }
         </div>
       </div>
     </div>
-  </div>
+  }
 </div>

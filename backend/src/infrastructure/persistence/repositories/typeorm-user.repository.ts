@@ -1,16 +1,16 @@
-import { Injectable } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
-import { User } from '../../../domain/entities/user.entity';
-import { IUserRepository } from '../../../domain/interfaces/user-repository.interface';
-import { Email } from '../../../domain/value-objects/email.vo';
-import { UserOrmEntity } from '../entities/user.orm-entity';
-import { UserMapper } from '../mappers/user.mapper';
+import { Injectable } from "@nestjs/common";
+import { DataSource, Repository } from "typeorm";
+import { User } from "../../../domain/entities/user.entity";
+import { IUserRepository } from "../../../domain/interfaces/user-repository.interface";
+import { Email } from "../../../domain/value-objects/email.vo";
+import { UserOrmEntity } from "../entities/user.orm-entity";
+import { UserMapper } from "../mappers/user.mapper";
 
 /**
  * TypeOrmUserRepository
  * Implements the IUserRepository interface using TypeORM
  * Handles persistence of User entities to PostgreSQL database
- * 
+ *
  * Requirements: 9.1, 9.2
  */
 @Injectable()
@@ -76,7 +76,7 @@ export class TypeOrmUserRepository implements IUserRepository {
   async update(id: string, data: Partial<User>): Promise<User> {
     const existingUser = await this.repository.findOne({ where: { id } });
     if (!existingUser) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
 
     Object.assign(existingUser, data);
@@ -87,7 +87,7 @@ export class TypeOrmUserRepository implements IUserRepository {
   async delete(id: string): Promise<void> {
     const result = await this.repository.delete(id);
     if (result.affected === 0) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
   }
 
@@ -98,20 +98,22 @@ export class TypeOrmUserRepository implements IUserRepository {
     limit?: number;
     offset?: number;
   }): Promise<User[]> {
-    const queryBuilder = this.repository.createQueryBuilder('user');
+    const queryBuilder = this.repository.createQueryBuilder("user");
 
     if (filters.email) {
-      queryBuilder.andWhere('user.email ILIKE :email', { email: `%${filters.email}%` });
+      queryBuilder.andWhere("user.email ILIKE :email", {
+        email: `%${filters.email}%`,
+      });
     }
 
     if (filters.role) {
-      queryBuilder.andWhere('user.role = :role', { role: filters.role });
+      queryBuilder.andWhere("user.role = :role", { role: filters.role });
     }
 
     if (filters.search) {
       queryBuilder.andWhere(
-        '(user.firstName ILIKE :search OR user.lastName ILIKE :search OR user.email ILIKE :search)',
-        { search: `%${filters.search}%` }
+        "(user.firstName ILIKE :search OR user.lastName ILIKE :search OR user.email ILIKE :search)",
+        { search: `%${filters.search}%` },
       );
     }
 
@@ -124,7 +126,7 @@ export class TypeOrmUserRepository implements IUserRepository {
     }
 
     const ormEntities = await queryBuilder.getMany();
-    return ormEntities.map(ormEntity => UserMapper.toDomain(ormEntity));
+    return ormEntities.map((ormEntity) => UserMapper.toDomain(ormEntity));
   }
 
   async countWithFilters(filters: {
@@ -132,20 +134,22 @@ export class TypeOrmUserRepository implements IUserRepository {
     role?: any;
     search?: string;
   }): Promise<number> {
-    const queryBuilder = this.repository.createQueryBuilder('user');
+    const queryBuilder = this.repository.createQueryBuilder("user");
 
     if (filters.email) {
-      queryBuilder.andWhere('user.email ILIKE :email', { email: `%${filters.email}%` });
+      queryBuilder.andWhere("user.email ILIKE :email", {
+        email: `%${filters.email}%`,
+      });
     }
 
     if (filters.role) {
-      queryBuilder.andWhere('user.role = :role', { role: filters.role });
+      queryBuilder.andWhere("user.role = :role", { role: filters.role });
     }
 
     if (filters.search) {
       queryBuilder.andWhere(
-        '(user.firstName ILIKE :search OR user.lastName ILIKE :search OR user.email ILIKE :search)',
-        { search: `%${filters.search}%` }
+        "(user.firstName ILIKE :search OR user.lastName ILIKE :search OR user.email ILIKE :search)",
+        { search: `%${filters.search}%` },
       );
     }
 

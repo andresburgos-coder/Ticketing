@@ -1,19 +1,29 @@
-import { Injectable, Inject, NotFoundException, ConflictException } from '@nestjs/common';
-import { CreateAdminUserUseCase } from '../use-cases/create-admin-user.use-case';
-import { GetUsersUseCase } from '../use-cases/get-users.use-case';
-import { GetEventStatsUseCase } from '../use-cases/get-event-stats.use-case';
-import { GetTicketStatsUseCase } from '../use-cases/get-ticket-stats.use-case';
-import { GetDashboardStatsUseCase } from '../use-cases/get-dashboard-stats.use-case';
-import { CreateAdminUserDto } from '../../presentation/dtos/create-admin-user.dto';
-import { UpdateUserDto } from '../../presentation/dtos/update-user.dto';
-import { GetUsersQueryDto } from '../../presentation/dtos/get-users-query.dto';
-import { IUserRepository } from '../../domain/interfaces/user-repository.interface';
-import { ITicketRepository } from '../../domain/interfaces/ticket-repository.interface';
-import { IEventRepository } from '../../domain/interfaces/event-repository.interface';
-import { IReservationRepository } from '../../domain/interfaces/reservation-repository.interface';
-import { Email } from '../../domain/value-objects/email.vo';
-import { USER_REPOSITORY, TICKET_REPOSITORY, RESERVATION_REPOSITORY, EVENT_REPOSITORY } from '../../domain/interfaces/repository-tokens';
-import * as bcrypt from 'bcrypt';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  ConflictException,
+} from "@nestjs/common";
+import { CreateAdminUserUseCase } from "../use-cases/create-admin-user.use-case";
+import { GetUsersUseCase } from "../use-cases/get-users.use-case";
+import { GetEventStatsUseCase } from "../use-cases/get-event-stats.use-case";
+import { GetTicketStatsUseCase } from "../use-cases/get-ticket-stats.use-case";
+import { GetDashboardStatsUseCase } from "../use-cases/get-dashboard-stats.use-case";
+import { CreateAdminUserDto } from "../../presentation/dtos/create-admin-user.dto";
+import { UpdateUserDto } from "../../presentation/dtos/update-user.dto";
+import { GetUsersQueryDto } from "../../presentation/dtos/get-users-query.dto";
+import { IUserRepository } from "../../domain/interfaces/user-repository.interface";
+import { ITicketRepository } from "../../domain/interfaces/ticket-repository.interface";
+import { IEventRepository } from "../../domain/interfaces/event-repository.interface";
+import { IReservationRepository } from "../../domain/interfaces/reservation-repository.interface";
+import { Email } from "../../domain/value-objects/email.vo";
+import { UserRole } from "../../domain/enums/user-role.enum";
+import {
+  USER_REPOSITORY,
+  TICKET_REPOSITORY,
+  RESERVATION_REPOSITORY,
+  EVENT_REPOSITORY,
+} from "../../domain/interfaces/repository-tokens";
 
 @Injectable()
 export class AdminService {
@@ -38,7 +48,7 @@ export class AdminService {
     const emailObj = Email.create(createAdminUserDto.email);
     const existingUser = await this.userRepository.findByEmail(emailObj);
     if (existingUser) {
-      throw new ConflictException('Email already exists');
+      throw new ConflictException("Email already exists");
     }
 
     return this.createAdminUserUseCase.execute(createAdminUserDto);
@@ -51,9 +61,9 @@ export class AdminService {
   async getUserById(id: string) {
     const user = await this.userRepository.findById(id);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
-    
+
     // Remove password from response
     const { passwordHash, ...userWithoutPassword } = user;
     return userWithoutPassword;
@@ -62,16 +72,17 @@ export class AdminService {
   async updateUser(id: string, updateUserDto: UpdateUserDto) {
     const user = await this.userRepository.findById(id);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
 
     // Check if email is being changed and if it already exists
-    const currentEmailValue = typeof user.email === 'string' ? user.email : user.email.value;
+    const currentEmailValue =
+      typeof user.email === "string" ? user.email : user.email.value;
     if (updateUserDto.email && updateUserDto.email !== currentEmailValue) {
       const emailObj = Email.create(updateUserDto.email);
       const existingUser = await this.userRepository.findByEmail(emailObj);
       if (existingUser) {
-        throw new ConflictException('Email already exists');
+        throw new ConflictException("Email already exists");
       }
     }
 
@@ -83,11 +94,11 @@ export class AdminService {
   async deleteUser(id: string) {
     const user = await this.userRepository.findById(id);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
 
     await this.userRepository.delete(id);
-    return { message: 'User deleted successfully' };
+    return { message: "User deleted successfully" };
   }
 
   async getDashboardStats() {
@@ -98,33 +109,125 @@ export class AdminService {
     return this.getEventStatsUseCase.execute(eventId);
   }
 
-  async getTicketStats(eventId?: string) {
+  async getTicketStats(eventId?: string, user?: any) {
+    // If user is organizer, only allow their events
+    if (user?.role === UserRole.ORGANIZER) {
+      if (eventId) {
+        const event = await this.eventRepository.findById(eventId);
+        if (!event || event.createdBy !== user.id) {
+          throw new NotFoundException(
+            "Event not found or you don't have access to it",
+          );
+        }
+        // Return stats for this specific event
+        return this.getTicketStatsUseCase.execute(eventId);
+      } else {
+        // For organizers without specific eventId, we need to aggregate stats from all their events
+        // Get all events created by this organizer
+        const organizerEvents = await this.eventRepository.findByCreatedBy(
+          user.id,
+        );
+
+        if (organizerEvents.length === 0) {
+          return {
+            totalTicketsSold: 0,
+            totalRevenue: 0,
+            ticketsByStatus: [],
+            ticketsByType: [],
+            salesByMonth: [],
+            topSellingEvents: [],
+          };
+        }
+
+        // Aggregate stats from all organizer's events
+        const eventIds = organizerEvents.map((e) => e.id);
+        const stats = await Promise.all(
+          eventIds.map((id) => this.getTicketStatsUseCase.execute(id)),
+        );
+
+        // Aggregate the results (stats is an array of event-specific stats)
+        const totalTicketsSold = stats.reduce(
+          (sum, s: any) => sum + (s.soldTickets || 0),
+          0,
+        );
+        const totalRevenue = stats.reduce(
+          (sum, s: any) => sum + (s.revenue || 0),
+          0,
+        );
+
+        return {
+          totalTicketsSold,
+          totalRevenue,
+          events: stats,
+        };
+      }
+    }
+
     return this.getTicketStatsUseCase.execute(eventId);
   }
 
-  async getTickets(filters: {
-    eventId?: string;
-    status?: string;
-    page?: number;
-    limit?: number;
-  }) {
+  async getTickets(
+    filters: {
+      eventId?: string;
+      status?: string;
+      page?: number;
+      limit?: number;
+    },
+    user?: any,
+  ) {
     const { page = 1, limit = 10, eventId, status } = filters;
     const offset = (page - 1) * limit;
 
+    // If user is organizer, filter by their events only
+    let allowedEventIds: string[] | undefined;
+    if (user?.role === UserRole.ORGANIZER) {
+      if (eventId) {
+        // Validate organizer owns this specific event
+        const event = await this.eventRepository.findById(eventId);
+        if (!event || event.createdBy !== user.id) {
+          throw new NotFoundException(
+            "Event not found or you don't have access to it",
+          );
+        }
+        allowedEventIds = [eventId];
+      } else {
+        // Get all events created by this organizer
+        const organizerEvents = await this.eventRepository.findByCreatedBy(
+          user.id,
+        );
+        allowedEventIds = organizerEvents.map((e) => e.id);
+
+        if (allowedEventIds.length === 0) {
+          // Organizer has no events, return empty
+          return {
+            data: [],
+            pagination: {
+              page,
+              limit,
+              total: 0,
+              totalPages: 0,
+            },
+          };
+        }
+      }
+    }
+
     const tickets = await this.ticketRepository.findWithFilters({
-      eventId,
+      eventId: allowedEventIds ? undefined : eventId,
+      eventIds: allowedEventIds,
       status,
       limit,
       offset,
     });
 
     const total = await this.ticketRepository.countWithFilters({
-      eventId,
+      eventId: allowedEventIds ? undefined : eventId,
+      eventIds: allowedEventIds,
       status,
     });
 
     // Resolve event names for returned tickets (handles mixed IDs)
-    const uniqueEventIds = Array.from(new Set(tickets.map(t => t.eventId)));
+    const uniqueEventIds = Array.from(new Set(tickets.map((t) => t.eventId)));
     const eventNameMap = new Map<string, string>();
     for (const id of uniqueEventIds) {
       try {
@@ -135,13 +238,14 @@ export class AdminService {
       } catch {}
     }
 
-    const enriched = tickets.map(t => ({
+    const enriched = tickets.map((t) => ({
       id: t.id,
       code: t.code,
       eventId: t.eventId,
-      eventName: eventNameMap.get(t.eventId) || 'Evento no encontrado',
+      eventName: eventNameMap.get(t.eventId) || "Evento no encontrado",
       type: t.type,
-      buyerEmail: typeof t.buyerEmail === 'string' ? t.buyerEmail : t.buyerEmail.value,
+      buyerEmail:
+        typeof t.buyerEmail === "string" ? t.buyerEmail : t.buyerEmail.value,
       price: {
         amount: t.price.amount,
         currency: t.price.currency,

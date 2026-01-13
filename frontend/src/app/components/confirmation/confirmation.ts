@@ -6,8 +6,10 @@ import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { CheckoutService } from '../../features/checkout/services/checkout.service';
 import { TicketsService } from '../../core/services/tickets.service';
 import { AuthService } from '../../core/services/auth.service';
+import { EmailService } from '../../services/email.service';
 import { Events } from '../../services/events';
 import { forkJoin } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 interface BackendTicket {
   id: string;
@@ -49,13 +51,14 @@ interface EnrichedTicket extends BackendTicket {
   standalone: true,
   imports: [CommonModule, RouterLink, CurrencyFormatPipe, DateFormatPipe],
   templateUrl: './confirmation.html',
-  styleUrl: './confirmation.css'
+  styleUrl: './confirmation.css',
 })
 export class Confirmation implements OnInit {
   private readonly checkoutService = inject(CheckoutService);
   private readonly ticketsService = inject(TicketsService);
   private readonly authService = inject(AuthService);
   private readonly eventsService = inject(Events);
+  private readonly emailService = inject(EmailService);
   readonly router = inject(Router); // Make router public for template
   private readonly route = inject(ActivatedRoute);
 
@@ -67,6 +70,8 @@ export class Confirmation implements OnInit {
   private readonly _buyerName = signal<string>('');
   private readonly _buyerEmail = signal<string>('');
   private readonly _ticketCount = signal<number>(0);
+  private readonly _emailSending = signal(false);
+  private readonly _emailSent = signal(false);
 
   readonly tickets = this._tickets.asReadonly();
   readonly isLoading = this._isLoading.asReadonly();
@@ -74,6 +79,8 @@ export class Confirmation implements OnInit {
   readonly showAuthWarning = this._showAuthWarning.asReadonly();
   readonly buyerName = this._buyerName.asReadonly();
   readonly buyerEmail = this._buyerEmail.asReadonly();
+  readonly emailSending = this._emailSending.asReadonly();
+  readonly emailSent = this._emailSent.asReadonly();
   readonly ticketCount = computed(() => {
     const count = this._ticketCount();
     return count > 0 ? count : this._tickets().length;
@@ -105,10 +112,13 @@ export class Confirmation implements OnInit {
     // Fallback: fetch recent tickets
     this.loadRecentTickets();
     // If ticket IDs were passed via query, prefer those
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe((params) => {
       const idsParam = params['t'];
       if (idsParam) {
-        const ids = String(idsParam).split(',').map(s => s.trim()).filter(Boolean);
+        const ids = String(idsParam)
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
         if (ids.length > 0) {
           this._ticketCount.set(ids.length);
           this.loadTicketsByIds(ids);
@@ -132,9 +142,9 @@ export class Confirmation implements OnInit {
 
     this.ticketsService.getUserTickets().subscribe({
       next: (allTickets: BackendTicket[]) => {
-        const matched = allTickets.filter(t => ids.includes(t.id) || ids.includes(t.code));
-        const eventIds = [...new Set(matched.map(t => t.eventId))];
-        const eventRequests = eventIds.map(id => this.eventsService.getEvent(id));
+        const matched = allTickets.filter((t) => ids.includes(t.id) || ids.includes(t.code));
+        const eventIds = [...new Set(matched.map((t) => t.eventId))];
+        const eventRequests = eventIds.map((id) => this.eventsService.getEvent(id));
 
         if (eventRequests.length === 0) {
           this._tickets.set(matched as EnrichedTicket[]);
@@ -144,7 +154,7 @@ export class Confirmation implements OnInit {
 
         forkJoin(eventRequests).subscribe({
           next: (events: any[]) => {
-            events.forEach(event => {
+            events.forEach((event) => {
               this._eventCache.set(event.id.toString(), {
                 id: event.id.toString(),
                 name: event.name,
@@ -153,11 +163,11 @@ export class Confirmation implements OnInit {
                 venueName: event.venueName,
                 startTime: event.startTime,
                 endTime: event.endTime,
-                imageUrl: event.imageUrl
+                imageUrl: event.imageUrl,
               });
             });
 
-            const enriched: EnrichedTicket[] = matched.map(ticket => {
+            const enriched: EnrichedTicket[] = matched.map((ticket) => {
               const eventInfo = this._eventCache.get(ticket.eventId);
               return {
                 ...ticket,
@@ -167,7 +177,7 @@ export class Confirmation implements OnInit {
                 eventVenueName: eventInfo?.venueName,
                 eventStartTime: eventInfo?.startTime,
                 eventEndTime: eventInfo?.endTime,
-                eventImage: eventInfo?.imageUrl
+                eventImage: eventInfo?.imageUrl,
               };
             });
 
@@ -177,14 +187,14 @@ export class Confirmation implements OnInit {
           error: () => {
             this._tickets.set(matched as EnrichedTicket[]);
             this._isLoading.set(false);
-          }
+          },
         });
       },
       error: (err) => {
         console.error('[Confirmation] Error loading tickets (by ids):', err);
         this._error.set('No se pudieron cargar tus entradas');
         this._isLoading.set(false);
-      }
+      },
     });
   }
 
@@ -195,15 +205,15 @@ export class Confirmation implements OnInit {
     this.ticketsService.getUserTickets().subscribe({
       next: (tickets: BackendTicket[]) => {
         // Sort by purchase date descending
-        const sortedByDate = tickets.sort((a, b) =>
-          new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime()
+        const sortedByDate = tickets.sort(
+          (a, b) => new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime(),
         );
 
         // Filter tickets from the last 30 minutes (current purchase session)
         const now = Date.now();
-        const thirtyMinutesAgo = now - (30 * 60 * 1000);
+        const thirtyMinutesAgo = now - 30 * 60 * 1000;
 
-        const recentPurchase = sortedByDate.filter(t => {
+        const recentPurchase = sortedByDate.filter((t) => {
           const purchaseTime = new Date(t.purchaseDate).getTime();
           return purchaseTime >= thirtyMinutesAgo;
         });
@@ -215,10 +225,10 @@ export class Confirmation implements OnInit {
         this._ticketCount.set(ticketsToShow.length);
 
         // Get unique event IDs
-        const eventIds = [...new Set(ticketsToShow.map(t => t.eventId))];
+        const eventIds = [...new Set(ticketsToShow.map((t) => t.eventId))];
 
         // Fetch event details for all tickets
-        const eventRequests = eventIds.map(id => this.eventsService.getEvent(id));
+        const eventRequests = eventIds.map((id) => this.eventsService.getEvent(id));
 
         if (eventRequests.length === 0) {
           this._tickets.set(ticketsToShow as EnrichedTicket[]);
@@ -229,7 +239,7 @@ export class Confirmation implements OnInit {
         forkJoin(eventRequests).subscribe({
           next: (events: any[]) => {
             // Cache events
-            events.forEach(event => {
+            events.forEach((event) => {
               this._eventCache.set(event.id.toString(), {
                 id: event.id.toString(),
                 name: event.name,
@@ -238,12 +248,12 @@ export class Confirmation implements OnInit {
                 venueName: event.venueName,
                 startTime: event.startTime,
                 endTime: event.endTime,
-                imageUrl: event.imageUrl
+                imageUrl: event.imageUrl,
               });
             });
 
             // Enrich tickets with event info
-            const enriched: EnrichedTicket[] = ticketsToShow.map(ticket => {
+            const enriched: EnrichedTicket[] = ticketsToShow.map((ticket) => {
               const eventInfo = this._eventCache.get(ticket.eventId);
               return {
                 ...ticket,
@@ -253,7 +263,7 @@ export class Confirmation implements OnInit {
                 eventVenueName: eventInfo?.venueName,
                 eventStartTime: eventInfo?.startTime,
                 eventEndTime: eventInfo?.endTime,
-                eventImage: eventInfo?.imageUrl
+                eventImage: eventInfo?.imageUrl,
               };
             });
 
@@ -265,7 +275,7 @@ export class Confirmation implements OnInit {
             // Still show tickets without event details
             this._tickets.set(ticketsToShow as EnrichedTicket[]);
             this._isLoading.set(false);
-          }
+          },
         });
       },
       error: (err) => {
@@ -286,30 +296,37 @@ export class Confirmation implements OnInit {
           this._error.set('Failed to load tickets. Please refresh the page or try again later.');
           this._isLoading.set(false);
         }
-      }
+      },
     });
   }
 
-  private loadTicketsFromCompletedOrder(order: { tickets: { id: string; ticketTypeName: string }[] }): void {
+  private loadTicketsFromCompletedOrder(order: {
+    tickets: { id: string; ticketTypeName: string }[];
+  }): void {
     this._isLoading.set(true);
     this._error.set(null);
 
     // Collect ids and codes from completed order
-    const ids = order.tickets.map(t => t.id);
-    const codes = order.tickets.map(t => t.id); // when id stored as code fallback
+    const ids = order.tickets.map((t) => t.id);
+    const codes = order.tickets.map((t) => t.id); // when id stored as code fallback
 
     this.ticketsService.getUserTickets().subscribe({
       next: (allTickets: BackendTicket[]) => {
         // Filter backend tickets by id or code present in completed order
-        const matched = allTickets.filter(t => ids.includes(t.id) || codes.includes(t.code));
+        const matched = allTickets.filter((t) => ids.includes(t.id) || codes.includes(t.code));
 
         // If nothing matched (e.g., id mapping differs), fallback to recent tickets
-        const ticketsToUse = matched.length > 0 ? matched : allTickets
-          .sort((a, b) => new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime())
-          .slice(0, order.tickets.length);
+        const ticketsToUse =
+          matched.length > 0
+            ? matched
+            : allTickets
+                .sort(
+                  (a, b) => new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime(),
+                )
+                .slice(0, order.tickets.length);
 
-        const eventIds = [...new Set(ticketsToUse.map(t => t.eventId))];
-        const eventRequests = eventIds.map(id => this.eventsService.getEvent(id));
+        const eventIds = [...new Set(ticketsToUse.map((t) => t.eventId))];
+        const eventRequests = eventIds.map((id) => this.eventsService.getEvent(id));
 
         if (eventRequests.length === 0) {
           this._tickets.set(ticketsToUse as EnrichedTicket[]);
@@ -319,7 +336,7 @@ export class Confirmation implements OnInit {
 
         forkJoin(eventRequests).subscribe({
           next: (events: any[]) => {
-            events.forEach(event => {
+            events.forEach((event) => {
               this._eventCache.set(event.id.toString(), {
                 id: event.id.toString(),
                 name: event.name,
@@ -328,11 +345,11 @@ export class Confirmation implements OnInit {
                 venueName: event.venueName,
                 startTime: event.startTime,
                 endTime: event.endTime,
-                imageUrl: event.imageUrl
+                imageUrl: event.imageUrl,
               });
             });
 
-            const enriched: EnrichedTicket[] = ticketsToUse.map(ticket => {
+            const enriched: EnrichedTicket[] = ticketsToUse.map((ticket) => {
               const eventInfo = this._eventCache.get(ticket.eventId);
               return {
                 ...ticket,
@@ -342,7 +359,7 @@ export class Confirmation implements OnInit {
                 eventVenueName: eventInfo?.venueName,
                 eventStartTime: eventInfo?.startTime,
                 eventEndTime: eventInfo?.endTime,
-                eventImage: eventInfo?.imageUrl
+                eventImage: eventInfo?.imageUrl,
               };
             });
 
@@ -352,14 +369,14 @@ export class Confirmation implements OnInit {
           error: () => {
             this._tickets.set(ticketsToUse as EnrichedTicket[]);
             this._isLoading.set(false);
-          }
+          },
         });
       },
       error: (err) => {
         console.error('[Confirmation] Error loading tickets (order):', err);
         this._error.set('Unable to load your tickets');
         this._isLoading.set(false);
-      }
+      },
     });
   }
 
@@ -373,6 +390,30 @@ export class Confirmation implements OnInit {
       console.warn('Failed to parse buyer info from storage:', e);
     }
     return null;
+  }
+
+  /**
+   * Constructs the full image URL from the imageUrl field
+   * Handles both full URLs and filename-only values
+   */
+  getEventImageUrl(imageUrl: string | undefined): string {
+    if (!imageUrl) {
+      return '';
+    }
+
+    // If it's already a full URL (http/https) and not from minio, return as-is
+    if (imageUrl.startsWith('http') && !imageUrl.includes('minio')) {
+      return imageUrl;
+    }
+
+    // Extract filename if it contains a path
+    let filename = imageUrl;
+    if (filename.includes('/')) {
+      filename = filename.split('/').pop() || filename;
+    }
+
+    // Build the full URL using the API endpoint
+    return `${environment.apiUrl}/events/file/${filename}`;
   }
 
   continueShopping(): void {
@@ -411,7 +452,8 @@ export class Confirmation implements OnInit {
         this.drawGradientHeader(ctx, ticket);
         this.drawTicketContent(ctx, ticket, qrImageUrl, canvas);
       };
-      eventImg.src = ticket.eventImage;
+      // Use the helper method to get the correct URL
+      eventImg.src = this.getEventImageUrl(ticket.eventImage);
     } else {
       // Draw gradient header
       this.drawGradientHeader(ctx, ticket);
@@ -442,29 +484,34 @@ export class Confirmation implements OnInit {
     const maxWidth = 540;
     let fontSize = 40;
     ctx.font = `bold ${fontSize}px Arial`;
-    
+
     while (ctx.measureText(eventName).width > maxWidth && fontSize > 20) {
       fontSize -= 2;
       ctx.font = `bold ${fontSize}px Arial`;
     }
-    
+
     ctx.fillText(eventName, 30, 180);
 
     // Event date below name
     if (ticket.eventDate) {
       ctx.fillStyle = '#e0e7ff';
       ctx.font = '18px Arial';
-      const eventDate = new Date(ticket.eventDate).toLocaleDateString('es-ES', { 
+      const eventDate = new Date(ticket.eventDate).toLocaleDateString('es-ES', {
         weekday: 'long',
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
       });
       ctx.fillText(eventDate, 30, 210);
     }
   }
 
-  private drawTicketContent(ctx: CanvasRenderingContext2D, ticket: EnrichedTicket, qrImageUrl: string, canvas: HTMLCanvasElement): void {
+  private drawTicketContent(
+    ctx: CanvasRenderingContext2D,
+    ticket: EnrichedTicket,
+    qrImageUrl: string,
+    canvas: HTMLCanvasElement,
+  ): void {
     // Main content background
     ctx.fillStyle = '#f9fafb';
     ctx.fillRect(0, 250, canvas.width, canvas.height - 250);
@@ -475,28 +522,28 @@ export class Confirmation implements OnInit {
     ctx.fillText('📅 FECHA Y HORA', 30, 300);
     ctx.fillStyle = '#1f2937';
     ctx.font = 'bold 20px Arial';
-    
+
     // Use real event date and format it properly
     let eventDateText = 'TBD';
     let eventTimeText = 'Hora por confirmar';
-    
+
     if (ticket.eventDate) {
       const eventDate = new Date(ticket.eventDate);
-      eventDateText = eventDate.toLocaleDateString('es-ES', { 
+      eventDateText = eventDate.toLocaleDateString('es-ES', {
         weekday: 'long',
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
       });
     }
-    
+
     if (ticket.eventStartTime) {
       eventTimeText = `Inicio: ${ticket.eventStartTime}`;
       if (ticket.eventEndTime) {
         eventTimeText += ` - Fin: ${ticket.eventEndTime}`;
       }
     }
-    
+
     ctx.fillText(eventDateText, 30, 330);
     ctx.fillStyle = '#6b7280';
     ctx.font = '14px Arial';
@@ -508,9 +555,9 @@ export class Confirmation implements OnInit {
     ctx.fillText('📍 UBICACIÓN', 30, 400);
     ctx.fillStyle = '#1f2937';
     ctx.font = 'bold 18px Arial';
-    
+
     // Use real venue name and location
-    const locationText = ticket.eventVenueName 
+    const locationText = ticket.eventVenueName
       ? `${ticket.eventVenueName} - ${ticket.eventLocation || 'Ubicación por confirmar'}`
       : ticket.eventLocation || 'Ubicación por confirmar';
     ctx.fillText(locationText, 30, 425);
@@ -540,7 +587,7 @@ export class Confirmation implements OnInit {
     const currency = ticket.currency || 'COP';
     const formattedPrice = new Intl.NumberFormat('es-ES', {
       style: 'currency',
-      currency: currency
+      currency: currency,
     }).format(Number(ticket.price));
     ctx.fillText(formattedPrice, 370, 495);
 
@@ -553,11 +600,11 @@ export class Confirmation implements OnInit {
     ctx.fillText(ticket.type, 30, 540);
 
     // Status badge
-    const statusColor = ticket.status === 'PAID' ? '#10b981' : 
-                       ticket.status === 'USED' ? '#6b7280' : '#f59e0b';
-    const statusText = ticket.status === 'PAID' ? 'PAGADO' :
-                      ticket.status === 'USED' ? 'USADO' : ticket.status;
-    
+    const statusColor =
+      ticket.status === 'PAID' ? '#10b981' : ticket.status === 'USED' ? '#6b7280' : '#f59e0b';
+    const statusText =
+      ticket.status === 'PAID' ? 'PAGADO' : ticket.status === 'USED' ? 'USADO' : ticket.status;
+
     ctx.fillStyle = statusColor;
     ctx.fillRect(200, 520, 100, 28);
     ctx.fillStyle = '#ffffff';
@@ -616,5 +663,37 @@ export class Confirmation implements OnInit {
       }, 'image/png');
     };
     qrImage.src = qrImageUrl;
+  }
+
+  /**
+   * Reenvía el email de confirmación con las entradas
+   */
+  resendConfirmationEmail(): void {
+    const email = this._buyerEmail();
+    if (!email) {
+      console.error('No buyer email available for resending');
+      return;
+    }
+
+    this._emailSending.set(true);
+    this._emailSent.set(false);
+
+    this.emailService.resendConfirmationEmail({ email }).subscribe({
+      next: (response) => {
+        this._emailSending.set(false);
+        if (response.success) {
+          this._emailSent.set(true);
+          console.log('✅ Email reenviado exitosamente');
+          // Reset the flag after 5 seconds
+          setTimeout(() => this._emailSent.set(false), 5000);
+        } else {
+          console.error('❌ Error al reenviar email:', response.message);
+        }
+      },
+      error: (error) => {
+        this._emailSending.set(false);
+        console.error('❌ Error al reenviar email:', error);
+      },
+    });
   }
 }

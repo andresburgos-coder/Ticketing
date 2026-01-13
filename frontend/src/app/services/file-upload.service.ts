@@ -25,12 +25,12 @@ export interface FileListResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class FileUploadService {
   private apiUrl = `${environment.fileServerUrl}/api`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   /**
    * Subir un archivo de imagen

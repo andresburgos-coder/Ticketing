@@ -4,6 +4,6 @@
 export class TicketTypeNotFoundException extends Error {
   constructor(ticketType: string) {
     super(`Ticket type '${ticketType}' not found in event configuration`);
-    this.name = 'TicketTypeNotFoundException';
+    this.name = "TicketTypeNotFoundException";
   }
 }

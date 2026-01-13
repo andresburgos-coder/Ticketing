@@ -8,7 +8,9 @@
       <div class="report-content">
         <div class="metric">
           <span class="label">Ingresos Totales:</span>
-          <span class="value revenue">{{ dashboardStats.overview.totalRevenue | currencyFormat }}</span>
+          <span class="value revenue">{{
+            dashboardStats.overview.totalRevenue | currencyFormat
+          }}</span>
         </div>
         <div class="metric">
           <span class="label">Tickets Vendidos:</span>
@@ -100,7 +102,7 @@
           <div class="month-info">
             <h4>{{ month.month }}</h4>
             <p>{{ month.count }} tickets</p>
-            <p class="revenue">${{ month.revenue | number:'1.2-2' }}</p>
+            <p class="revenue">${{ month.revenue | number: '1.2-2' }}</p>
           </div>
         </div>
       </div>
@@ -110,18 +112,10 @@
     <div class="report-card">
       <h3>📤 Exportar Datos</h3>
       <div class="export-actions">
-        <button class="btn btn-primary" (click)="exportReport('events')">
-          Exportar Eventos
-        </button>
-        <button class="btn btn-primary" (click)="exportReport('tickets')">
-          Exportar Tickets
-        </button>
-        <button class="btn btn-primary" (click)="exportReport('users')">
-          Exportar Usuarios
-        </button>
-        <button class="btn btn-success" (click)="exportReport('full')">
-          Reporte Completo
-        </button>
+        <button class="btn btn-primary" (click)="exportReport('events')">Exportar Eventos</button>
+        <button class="btn btn-primary" (click)="exportReport('tickets')">Exportar Tickets</button>
+        <button class="btn btn-primary" (click)="exportReport('users')">Exportar Usuarios</button>
+        <button class="btn btn-success" (click)="exportReport('full')">Reporte Completo</button>
       </div>
     </div>
   </div>

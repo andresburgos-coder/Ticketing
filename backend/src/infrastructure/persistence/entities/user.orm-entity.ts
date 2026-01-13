@@ -1,16 +1,16 @@
-import { Entity, PrimaryColumn, Column, CreateDateColumn } from 'typeorm';
-import { UserRole } from '../../../domain/enums/user-role.enum';
+import { Entity, PrimaryColumn, Column, CreateDateColumn } from "typeorm";
+import { UserRole } from "../../../domain/enums/user-role.enum";
 
 /**
  * User ORM Entity
  * Represents the database schema for users.
  * Separated from domain User entity to maintain clean architecture.
- * 
+ *
  * Requirements: 9.1, 9.2
  */
-@Entity('users')
+@Entity("users")
 export class UserOrmEntity {
-  @PrimaryColumn('uuid')
+  @PrimaryColumn("uuid")
   id!: string;
 
   @Column({ length: 255, unique: true })
@@ -25,10 +25,10 @@ export class UserOrmEntity {
   @Column({ length: 255 })
   lastName!: string;
 
-  @Column({ 
-    type: 'enum', 
-    enum: UserRole, 
-    default: UserRole.BUYER 
+  @Column({
+    type: "enum",
+    enum: UserRole,
+    default: UserRole.BUYER,
   })
   role!: UserRole;
 

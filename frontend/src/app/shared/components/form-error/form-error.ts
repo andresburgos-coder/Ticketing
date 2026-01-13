@@ -7,7 +7,7 @@ import { ValidationErrors } from '@angular/forms';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './form-error.html',
-  styleUrl: './form-error.css'
+  styleUrl: './form-error.css',
 })
 export class FormError {
   @Input() errors: ValidationErrors | null = null;

@@ -1,16 +1,20 @@
-import { IReservationState, Reservation, ReservationStatusType } from './reservation-state.interface';
-import { InvalidStateTransitionException } from '../exceptions/invalid-state-transition.exception';
+import {
+  IReservationState,
+  Reservation,
+  ReservationStatusType,
+} from "./reservation-state.interface";
+import { InvalidStateTransitionException } from "../exceptions/invalid-state-transition.exception";
 
 /**
  * Cancelled Reservation State - Terminal state after cancellation
  * No transitions allowed - this is a final state
- * 
+ *
  * Requirements: 5.1, 5.2
  * - 5.1: Estado final después de pago fallido
  * - 5.2: Tickets liberados automáticamente
  */
 export class CancelledReservationState implements IReservationState {
-  readonly name: ReservationStatusType = 'CANCELLED';
+  readonly name: ReservationStatusType = "CANCELLED";
 
   canConfirm(): boolean {
     return false;
@@ -25,14 +29,14 @@ export class CancelledReservationState implements IReservationState {
   }
 
   confirm(_reservation: Reservation): void {
-    throw new InvalidStateTransitionException('CANCELLED', 'confirm');
+    throw new InvalidStateTransitionException("CANCELLED", "confirm");
   }
 
   cancel(_reservation: Reservation): void {
-    throw new InvalidStateTransitionException('CANCELLED', 'cancel');
+    throw new InvalidStateTransitionException("CANCELLED", "cancel");
   }
 
   expire(_reservation: Reservation): void {
-    throw new InvalidStateTransitionException('CANCELLED', 'expire');
+    throw new InvalidStateTransitionException("CANCELLED", "expire");
   }
 }

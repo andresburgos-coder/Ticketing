@@ -1,4 +1,20 @@
 services:
+  # Proxy reverso NGINX con HTTPS
+  nginx:
+    image: nginx:alpine
+    container_name: ticket-nginx
+    ports:
+      - "0.0.0.0:443:443"
+      - "0.0.0.0:80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx-ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - ticket-network
+
   postgres:
     image: postgres:15-alpine
     container_name: ticket-db
@@ -6,10 +22,16 @@ services:
       POSTGRES_USER: ticket_user
       POSTGRES_PASSWORD: ticket_pass
       POSTGRES_DB: ticket_sales
+      # Zona horaria de Colombia
+      TZ: America/Bogota
+      PGTZ: America/Bogota
     ports:
-      - "5432:5432"
+      - "0.0.0.0:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      # Montar zona horaria del host
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     networks:
       - ticket-network
     healthcheck:
@@ -38,10 +60,32 @@ services:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin123
       MINIO_EXTERNAL_URL: http://127.0.0.1:9001
-    ports:
-      - "3000:3000"
+      # Email Configuration (Gmail SMTP)
+      SMTP_HOST: smtp.gmail.com
+      SMTP_PORT: 587
+      SMTP_SECURE: false
+      SMTP_USER: rapidoysabrosocol23@gmail.com
+      SMTP_PASSWORD: cvpidcmqaoxbfasd
+      FROM_NAME: TicketSales
+      FROM_EMAIL: rapidoysabrosocol23@gmail.com
+      SUPPORT_EMAIL: soporte@ticketsales.com
+      COMPANY_NAME: TicketSales
+      FRONTEND_URL: http://localhost:4200
+      # Email Attachments Configuration
+      EMAIL_ATTACH_PDF: true
+      EMAIL_ATTACH_PNG: true
+      # Mock Payment Gateway Configuration
+      MOCK_PAYMENT_SUCCESS_RATE: 1.0
+      # Zona horaria de Colombia
+      TZ: America/Bogota
+    # Puerto interno solamente - NGINX se encargará del tráfico externo
+    # ports:
+    #   - "0.0.0.0:3000:3000"
     volumes:
       - ./backend/src:/app/src
+      # Montar zona horaria del host
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -49,7 +93,7 @@ services:
       - ticket-network
     command: npm run start:dev
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -61,16 +105,23 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: ticket-frontend
-    ports:
-      - "4200:4200"
+    environment:
+      # Zona horaria de Colombia
+      TZ: America/Bogota
+    # Puerto interno solamente - NGINX se encargará del tráfico externo 
+    # ports:
+    #   - "0.0.0.0:4200:4200"
     volumes:
       - ./frontend/src:/app/src
       - ./frontend/public:/app/public
+      # Montar zona horaria del host
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     depends_on:
       - backend
     networks:
       - ticket-network
-    command: npm run start -- --host 0.0.0.0
+    command: npm run start -- --host 0.0.0.0 --configuration docker
 
   test-db:
     image: postgres:15-alpine
@@ -94,8 +145,8 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin123
     ports:
-      - "9000:9000"      # API endpoint
-      - "9001:9001"      # Console Web UI
+      - "0.0.0.0:9000:9000"      # API endpoint
+      - "0.0.0.0:9001:9001"      # Console Web UI
     volumes:
       - minio_data:/minio_data
     command: server /minio_data --console-address ":9001"
@@ -116,7 +167,7 @@ services:
       PGADMIN_DEFAULT_PASSWORD: Admin123!
       PGADMIN_CONFIG_SERVER_MODE: 'False'
     ports:
-      - "5050:80"
+      - "0.0.0.0:5050:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     networks:
@@ -135,7 +186,7 @@ services:
       PORT: 3001
       UPLOAD_DIR: /uploads
     ports:
-      - "3001:3001"
+      - "0.0.0.0:3001:3001"
     volumes:
       - file_uploads:/uploads
       - ./file-server/server.js:/app/server.js

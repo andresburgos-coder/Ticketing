@@ -1,5 +1,5 @@
-import { IsString, IsUUID, IsNotEmpty } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsUUID, IsNotEmpty, Matches } from "class-validator";
+import { ApiProperty } from "@nestjs/swagger";
 
 /**
  * DTO for validating a QR code
@@ -7,18 +7,21 @@ import { ApiProperty } from '@nestjs/swagger';
  */
 export class ValidateQRDto {
   @ApiProperty({
-    description: 'QR token to validate',
-    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: "QR token to validate",
+    example: "123e4567-e89b-12d3-a456-426614174000",
   })
   @IsUUID()
   @IsNotEmpty()
   qrToken!: string;
 
   @ApiProperty({
-    description: 'Event ID where the ticket is being validated',
-    example: '123e4567-e89b-12d3-a456-426614174000',
+    description:
+      "Event ID where the ticket is being validated (Event code format: TICK0009-XXX)",
+    example: "TICK0009-004",
   })
-  @IsUUID()
+  @Matches(/^TICK0009-\d{3}$/, {
+    message: "eventId must be a valid event code in format TICK0009-XXX",
+  })
   @IsNotEmpty()
   eventId!: string;
 }

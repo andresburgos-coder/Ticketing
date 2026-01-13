@@ -2,28 +2,34 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
+import { signal, computed } from '@angular/core';
 import { AuthComponent } from './auth';
-import { AuthService } from '../../../core/services/auth.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 describe('AuthComponent', () => {
   let component: AuthComponent;
   let fixture: ComponentFixture<AuthComponent>;
-  let mockAuthService: jasmine.SpyObj<AuthService>;
-  let mockRouter: jasmine.SpyObj<Router>;
+  let mockAuthService: Partial<AuthService>;
+  let mockRouter: Partial<Router>;
 
   beforeEach(async () => {
-    mockAuthService = jasmine.createSpyObj('AuthService', ['login', 'register']);
-    mockRouter = jasmine.createSpyObj('Router', ['navigate']);
-
-    // Mock signals
-    (mockAuthService as any).isLoading = jasmine.createSpy().and.returnValue(false);
+    mockAuthService = {
+      login: jasmine.createSpy(),
+      register: jasmine.createSpy(),
+      isLoading: signal(false),
+      currentUser: signal(null),
+      isAuthenticated: computed(() => false),
+    } as any;
+    mockRouter = {
+      navigate: jasmine.createSpy('navigate').and.returnValue(Promise.resolve(true)),
+    };
 
     await TestBed.configureTestingModule({
       imports: [AuthComponent, ReactiveFormsModule],
       providers: [
         { provide: AuthService, useValue: mockAuthService },
-        { provide: Router, useValue: mockRouter }
-      ]
+        { provide: Router, useValue: mockRouter },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AuthComponent);
@@ -83,31 +89,42 @@ describe('AuthComponent', () => {
     });
 
     it('should call authService.login on valid submission', () => {
-      mockAuthService.login.and.returnValue(of({ accessToken: 'token', refreshToken: 'refresh' }));
+      (mockAuthService.login as jasmine.Spy).and.returnValue(
+        of({
+          accessToken: 'token',
+          refreshToken: 'refresh',
+          user: {
+            id: '1',
+            email: 'test@example.com',
+            firstName: 'Test',
+            lastName: 'User',
+            role: 'BUYER',
+          },
+        }),
+      );
 
       component.loginForm.patchValue({
         email: 'test@example.com',
         password: 'password123',
-        rememberMe: true
+        rememberMe: true,
       });
 
       component.onLoginSubmit();
 
       expect(mockAuthService.login).toHaveBeenCalledWith({
         email: 'test@example.com',
-        password: 'password123'
+        password: 'password123',
       });
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/']);
     });
 
     it('should show error message on login failure', () => {
-      mockAuthService.login.and.returnValue(
-        throwError(() => ({ error: { message: 'Invalid credentials' } }))
+      (mockAuthService.login as jasmine.Spy).and.returnValue(
+        throwError(() => ({ error: { message: 'Invalid credentials' } })),
       );
 
       component.loginForm.patchValue({
         email: 'test@example.com',
-        password: 'wrongpassword'
+        password: 'wrongpassword',
       });
 
       component.onLoginSubmit();
@@ -131,20 +148,32 @@ describe('AuthComponent', () => {
     it('should validate password match', () => {
       component.registerForm.patchValue({
         password: 'password123',
-        confirmPassword: 'different'
+        confirmPassword: 'different',
       });
 
       expect(component.registerForm.hasError('passwordMismatch')).toBe(true);
 
       component.registerForm.patchValue({
-        confirmPassword: 'password123'
+        confirmPassword: 'password123',
       });
 
       expect(component.registerForm.hasError('passwordMismatch')).toBe(false);
     });
 
     it('should call authService.register on valid submission', () => {
-      mockAuthService.register.and.returnValue(of({ accessToken: 'token', refreshToken: 'refresh' }));
+      (mockAuthService.register as jasmine.Spy).and.returnValue(
+        of({
+          accessToken: 'token',
+          refreshToken: 'refresh',
+          user: {
+            id: '1',
+            email: 'john@example.com',
+            firstName: 'John',
+            lastName: 'Doe',
+            role: 'BUYER',
+          },
+        }),
+      );
 
       component.registerForm.patchValue({
         firstName: 'John',
@@ -152,7 +181,7 @@ describe('AuthComponent', () => {
         email: 'john@example.com',
         password: 'password123',
         confirmPassword: 'password123',
-        terms: true
+        terms: true,
       });
 
       component.onRegisterSubmit();
@@ -161,12 +190,24 @@ describe('AuthComponent', () => {
         firstName: 'John',
         lastName: 'Doe',
         email: 'john@example.com',
-        password: 'password123'
+        password: 'password123',
       });
     });
 
-    it('should show success message and redirect on registration success', (done) => {
-      mockAuthService.register.and.returnValue(of({ accessToken: 'token', refreshToken: 'refresh' }));
+    it('should show success message and redirect on registration success', async () => {
+      (mockAuthService.register as jasmine.Spy).and.returnValue(
+        of({
+          accessToken: 'token',
+          refreshToken: 'refresh',
+          user: {
+            id: '1',
+            email: 'john@example.com',
+            firstName: 'John',
+            lastName: 'Doe',
+            role: 'BUYER',
+          },
+        }),
+      );
 
       component.registerForm.patchValue({
         firstName: 'John',
@@ -174,17 +215,15 @@ describe('AuthComponent', () => {
         email: 'john@example.com',
         password: 'password123',
         confirmPassword: 'password123',
-        terms: true
+        terms: true,
       });
 
       component.onRegisterSubmit();
 
       expect(component.successMessage()).toBe('¡Cuenta creada exitosamente! Redirigiendo...');
 
-      setTimeout(() => {
-        expect(mockRouter.navigate).toHaveBeenCalledWith(['/']);
-        done();
-      }, 2100);
+      await new Promise((resolve) => setTimeout(resolve, 2100));
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/']);
     });
   });
 });

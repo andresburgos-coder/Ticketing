@@ -1,6 +1,9 @@
-import * as fc from 'fast-check';
-import { TicketType } from '../../../src/domain/value-objects/ticket-type.vo';
-import { validAmountArbitrary, validCurrencyArbitrary } from './money.generator';
+import * as fc from "fast-check";
+import { TicketType } from "../../../src/domain/value-objects/ticket-type.vo";
+import {
+  validAmountArbitrary,
+  validCurrencyArbitrary,
+} from "./money.generator";
 
 /**
  * Generator for valid TicketType enum values
@@ -30,19 +33,23 @@ export const validAvailableQuantityArbitrary = (totalQuantity: number) =>
 /**
  * Generator for ticket configuration data
  */
-export const ticketConfigurationArbitrary = fc.record({
-  type: ticketTypeArbitrary,
-  price: fc.record({
-    amount: validAmountArbitrary,
-    currency: validCurrencyArbitrary,
-  }),
-  totalQuantity: validTotalQuantityArbitrary,
-}).chain(config => 
-  validAvailableQuantityArbitrary(config.totalQuantity).map(availableQuantity => ({
-    ...config,
-    availableQuantity,
-  }))
-);
+export const ticketConfigurationArbitrary = fc
+  .record({
+    type: ticketTypeArbitrary,
+    price: fc.record({
+      amount: validAmountArbitrary,
+      currency: validCurrencyArbitrary,
+    }),
+    totalQuantity: validTotalQuantityArbitrary,
+  })
+  .chain((config) =>
+    validAvailableQuantityArbitrary(config.totalQuantity).map(
+      (availableQuantity) => ({
+        ...config,
+        availableQuantity,
+      }),
+    ),
+  );
 
 /**
  * Generator for Event data with multiple ticket configurations
@@ -50,17 +57,24 @@ export const ticketConfigurationArbitrary = fc.record({
 export const eventDataArbitrary = fc.record({
   id: fc.string({ minLength: 1, maxLength: 50 }),
   name: fc.string({ minLength: 1, maxLength: 100 }),
-  date: fc.date({ min: new Date(), max: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) }),
+  date: fc.date({
+    min: new Date(),
+    max: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+  }),
   location: fc.string({ minLength: 1, maxLength: 100 }),
-  ticketConfigurations: fc.array(ticketConfigurationArbitrary, { minLength: 1, maxLength: 3 })
-    .map(configs => {
+  ticketConfigurations: fc
+    .array(ticketConfigurationArbitrary, { minLength: 1, maxLength: 3 })
+    .map((configs) => {
       // Ensure unique ticket types
-      const uniqueConfigs = configs.reduce((acc, config) => {
-        if (!acc.some(c => c.type === config.type)) {
-          acc.push(config);
-        }
-        return acc;
-      }, [] as typeof configs);
+      const uniqueConfigs = configs.reduce(
+        (acc, config) => {
+          if (!acc.some((c) => c.type === config.type)) {
+            acc.push(config);
+          }
+          return acc;
+        },
+        [] as typeof configs,
+      );
       return uniqueConfigs;
     }),
 });
@@ -71,7 +85,7 @@ export const eventDataArbitrary = fc.record({
 export const reservationOperationArbitrary = fc.record({
   ticketType: ticketTypeArbitrary,
   quantity: validTicketQuantityArbitrary,
-  operation: fc.constantFrom('reserve' as const, 'release' as const),
+  operation: fc.constantFrom("reserve" as const, "release" as const),
 });
 
 /**
@@ -79,5 +93,5 @@ export const reservationOperationArbitrary = fc.record({
  */
 export const reservationSequenceArbitrary = fc.array(
   reservationOperationArbitrary,
-  { minLength: 1, maxLength: 10 }
+  { minLength: 1, maxLength: 10 },
 );

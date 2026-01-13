@@ -1,6 +1,13 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+  AbstractControl,
+  ValidationErrors,
+} from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
 
@@ -9,12 +16,12 @@ import { AuthService } from '../../../../core/services/auth.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   template: `
-    <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div
+      class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8"
+    >
       <div class="max-w-md w-full space-y-8">
         <div>
-          <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Crear Cuenta
-          </h2>
+          <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Crear Cuenta</h2>
           <p class="mt-2 text-center text-sm text-gray-600">
             O
             <a routerLink="/login" class="font-medium text-indigo-600 hover:text-indigo-500">
@@ -51,7 +58,9 @@ import { AuthService } from '../../../../core/services/auth.service';
           <div class="rounded-md shadow-sm space-y-4">
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label for="firstName" class="block text-sm font-medium text-gray-700">Nombre</label>
+                <label for="firstName" class="block text-sm font-medium text-gray-700"
+                  >Nombre</label
+                >
                 <input
                   id="firstName"
                   name="firstName"
@@ -61,13 +70,17 @@ import { AuthService } from '../../../../core/services/auth.service';
                   class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   placeholder="Nombre"
                 />
-                @if (registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched) {
+                @if (
+                  registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched
+                ) {
                   <p class="mt-1 text-sm text-red-600">Nombre requerido</p>
                 }
               </div>
 
               <div>
-                <label for="lastName" class="block text-sm font-medium text-gray-700">Apellido</label>
+                <label for="lastName" class="block text-sm font-medium text-gray-700"
+                  >Apellido</label
+                >
                 <input
                   id="lastName"
                   name="lastName"
@@ -77,7 +90,9 @@ import { AuthService } from '../../../../core/services/auth.service';
                   class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   placeholder="Apellido"
                 />
-                @if (registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched) {
+                @if (
+                  registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched
+                ) {
                   <p class="mt-1 text-sm text-red-600">Apellido requerido</p>
                 }
               </div>
@@ -100,7 +115,9 @@ import { AuthService } from '../../../../core/services/auth.service';
             </div>
 
             <div>
-              <label for="password" class="block text-sm font-medium text-gray-700">Contraseña</label>
+              <label for="password" class="block text-sm font-medium text-gray-700"
+                >Contraseña</label
+              >
               <input
                 id="password"
                 name="password"
@@ -116,7 +133,9 @@ import { AuthService } from '../../../../core/services/auth.service';
             </div>
 
             <div>
-              <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirmar Contraseña</label>
+              <label for="confirmPassword" class="block text-sm font-medium text-gray-700"
+                >Confirmar Contraseña</label
+              >
               <input
                 id="confirmPassword"
                 name="confirmPassword"
@@ -126,12 +145,18 @@ import { AuthService } from '../../../../core/services/auth.service';
                 class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 placeholder="Confirma tu contraseña"
               />
-              @if (registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched) {
+              @if (
+                registerForm.get('confirmPassword')?.invalid &&
+                registerForm.get('confirmPassword')?.touched
+              ) {
                 @if (registerForm.get('confirmPassword')?.errors?.['required']) {
                   <p class="mt-1 text-sm text-red-600">Confirma tu contraseña</p>
                 }
               }
-              @if (registerForm.errors?.['passwordMismatch'] && registerForm.get('confirmPassword')?.touched) {
+              @if (
+                registerForm.errors?.['passwordMismatch'] &&
+                registerForm.get('confirmPassword')?.touched
+              ) {
                 <p class="mt-1 text-sm text-red-600">Las contraseñas no coinciden</p>
               }
             </div>
@@ -146,7 +171,8 @@ import { AuthService } from '../../../../core/services/auth.service';
               class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
             />
             <label for="terms" class="ml-2 block text-sm text-gray-900">
-              Acepto los <a href="#" class="text-indigo-600 hover:text-indigo-500">términos y condiciones</a>
+              Acepto los
+              <a href="#" class="text-indigo-600 hover:text-indigo-500">términos y condiciones</a>
             </label>
           </div>
           @if (registerForm.get('terms')?.invalid && registerForm.get('terms')?.touched) {
@@ -160,9 +186,25 @@ import { AuthService } from '../../../../core/services/auth.service';
               class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               @if (isLoading()) {
-                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
                 Creando cuenta...
               } @else {
@@ -174,7 +216,7 @@ import { AuthService } from '../../../../core/services/auth.service';
       </div>
     </div>
   `,
-  styles: []
+  styles: [],
 })
 export class RegisterComponent {
   private readonly authService = inject(AuthService);
@@ -188,16 +230,19 @@ export class RegisterComponent {
   registerForm: FormGroup;
 
   constructor() {
-    this.registerForm = this.fb.group({
-      firstName: ['', [Validators.required]],
-      lastName: ['', [Validators.required]],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', [Validators.required]],
-      terms: [false, [Validators.requiredTrue]]
-    }, {
-      validators: this.passwordMatchValidator
-    });
+    this.registerForm = this.fb.group(
+      {
+        firstName: ['', [Validators.required]],
+        lastName: ['', [Validators.required]],
+        email: ['', [Validators.required, Validators.email]],
+        password: ['', [Validators.required, Validators.minLength(6)]],
+        confirmPassword: ['', [Validators.required]],
+        terms: [false, [Validators.requiredTrue]],
+      },
+      {
+        validators: this.passwordMatchValidator,
+      },
+    );
   }
 
   passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
@@ -228,9 +273,9 @@ export class RegisterComponent {
         error: (error: any) => {
           console.error('Register error:', error);
           this.errorMessage.set(
-            error.error?.message || 'Error al crear la cuenta. Intenta nuevamente.'
+            error.error?.message || 'Error al crear la cuenta. Intenta nuevamente.',
           );
-        }
+        },
       });
     }
   }

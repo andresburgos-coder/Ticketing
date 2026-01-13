@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReservationTimer } from './reservation-timer';
 import { CheckoutService } from '../../services/checkout.service';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+
 import { signal } from '@angular/core';
 
 describe('ReservationTimer', () => {
@@ -11,14 +11,12 @@ describe('ReservationTimer', () => {
 
   beforeEach(async () => {
     checkoutService = {
-      timeRemaining: signal(900) // 15 minutes in seconds
+      timeRemaining: signal(900), // 15 minutes in seconds
     };
 
     await TestBed.configureTestingModule({
       imports: [ReservationTimer],
-      providers: [
-        { provide: CheckoutService, useValue: checkoutService }
-      ]
+      providers: [{ provide: CheckoutService, useValue: checkoutService }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ReservationTimer);
@@ -58,5 +56,27 @@ describe('ReservationTimer', () => {
     component['updateDisplayTime']();
 
     expect(component.displayTime).toBe('00:00');
+  });
+
+  it('should set isExpired to true when time is 0', () => {
+    (checkoutService as any).timeRemaining = signal(0);
+    fixture.detectChanges();
+    component['updateDisplayTime']();
+    expect(component.isExpired).toBeTrue();
+  });
+
+  it('should set isExpired to false when time is positive', () => {
+    (checkoutService as any).timeRemaining = signal(120);
+    fixture.detectChanges();
+    component['updateDisplayTime']();
+    expect(component.isExpired).toBeFalse();
+  });
+
+  it('should subscribe and unsubscribe timer in ngOnInit/ngOnDestroy', () => {
+    spyOn(component as any, 'updateDisplayTime').and.callThrough();
+    component.ngOnInit();
+    expect((component as any).timerSubscription).toBeTruthy();
+    component.ngOnDestroy();
+    expect((component as any).timerSubscription.closed).toBeTrue();
   });
 });

@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { signal } from '@angular/core';
 import { checkoutGuard } from './checkout.guard';
 import { CheckoutService } from '../../features/checkout/services/checkout.service';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 describe('checkoutGuard', () => {
   let router: Router;
@@ -11,16 +10,19 @@ describe('checkoutGuard', () => {
 
   beforeEach(() => {
     const routerMock = {
-      navigate: vi.fn()
+      navigate: jasmine.createSpy(),
     };
 
     TestBed.configureTestingModule({
       providers: [
         { provide: Router, useValue: routerMock },
-        { provide: CheckoutService, useValue: {
-          cart: signal([])
-        }}
-      ]
+        {
+          provide: CheckoutService,
+          useValue: {
+            cart: signal([]),
+          },
+        },
+      ],
     });
 
     router = TestBed.inject(Router);
@@ -29,12 +31,10 @@ describe('checkoutGuard', () => {
 
   it('should allow access when cart has items', () => {
     (checkoutService as any).cart = signal([
-      { ticketTypeId: 1, ticketTypeName: 'VIP', quantity: 2, price: 100 }
+      { ticketTypeId: 1, ticketTypeName: 'VIP', quantity: 2, price: 100 },
     ] as any);
 
-    const result = TestBed.runInInjectionContext(() =>
-      checkoutGuard({} as any, {} as any)
-    );
+    const result = TestBed.runInInjectionContext(() => checkoutGuard({} as any, {} as any));
 
     expect(result).toBe(true);
     expect(router.navigate).not.toHaveBeenCalled();
@@ -43,9 +43,7 @@ describe('checkoutGuard', () => {
   it('should deny access and redirect when cart is empty', () => {
     (checkoutService as any).cart = signal([]);
 
-    const result = TestBed.runInInjectionContext(() =>
-      checkoutGuard({} as any, {} as any)
-    );
+    const result = TestBed.runInInjectionContext(() => checkoutGuard({} as any, {} as any));
 
     expect(result).toBe(false);
     expect(router.navigate).toHaveBeenCalledWith(['/']);

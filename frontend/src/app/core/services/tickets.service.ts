@@ -26,7 +26,7 @@ export interface TicketPurchase {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class TicketsService {
   private readonly http = inject(HttpClient);
@@ -46,10 +46,10 @@ export class TicketsService {
   getUserTickets(): Observable<Ticket[]> {
     this._isLoading.set(true);
     return this.http.get<Ticket[]>(`${this.baseUrl}/me`).pipe(
-      tap(tickets => {
+      tap((tickets) => {
         this._tickets.set(tickets);
         this._isLoading.set(false);
-      })
+      }),
     );
   }
 
@@ -65,7 +65,7 @@ export class TicketsService {
    */
   getTicketsByStatus(status: 'upcoming' | 'past'): Observable<Ticket[]> {
     return this.http.get<Ticket[]>(`${this.baseUrl}/me`, {
-      params: { status }
+      params: { status },
     });
   }
 
@@ -81,7 +81,7 @@ export class TicketsService {
    */
   downloadTicket(ticketId: string): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/${ticketId}/download`, {
-      responseType: 'blob'
+      responseType: 'blob',
     });
   }
 
@@ -90,7 +90,7 @@ export class TicketsService {
    */
   transferTicket(ticketId: string, recipientEmail: string): Observable<void> {
     return this.http.post<void>(`${this.baseUrl}/${ticketId}/transfer`, {
-      recipientEmail
+      recipientEmail,
     });
   }
 }

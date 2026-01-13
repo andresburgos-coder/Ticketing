@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Confirmation } from './confirmation';
 import { CheckoutService } from '../../features/checkout/services/checkout.service';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { signal } from '@angular/core';
+import { of } from 'rxjs';
 
 describe('Confirmation', () => {
   let component: Confirmation;
@@ -13,21 +13,23 @@ describe('Confirmation', () => {
 
   beforeEach(async () => {
     const routerMock = {
-      navigate: vi.fn()
+      navigate: jasmine.createSpy('navigate'),
     };
 
     checkoutService = {
       total: signal(220),
       cartItemCount: signal(2),
-      clearCart: vi.fn()
+      clearCart: jasmine.createSpy('clearCart'),
+      completedOrder: signal(null),
     };
 
     await TestBed.configureTestingModule({
       imports: [Confirmation],
       providers: [
         { provide: Router, useValue: routerMock },
-        { provide: CheckoutService, useValue: checkoutService }
-      ]
+        { provide: CheckoutService, useValue: checkoutService },
+        { provide: ActivatedRoute, useValue: { queryParams: of({}) } },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Confirmation);
@@ -40,22 +42,67 @@ describe('Confirmation', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should generate order ID', () => {
-    expect(component.orderId).toMatch(/^ORD-[A-Z0-9]+$/);
+  it('should have tickets signal', () => {
+    expect(component.tickets).toBeDefined();
   });
 
-  it('should generate QR code URL', () => {
-    expect(component.qrCode).toContain('https://api.qrserver.com');
-    expect(component.qrCode).toContain(component.orderId);
-  });
+  it('should download ticket when downloadTicket is called', () => {
+    const mockTicket = {
+      id: '1',
+      code: 'TICKET-001',
+      qrToken: 'qr-token-123',
+      eventId: 'event-1',
+      type: 'VIP',
+      buyerEmail: 'test@example.com',
+      price: 100,
+      currency: 'COP',
+      status: 'PAID',
+      purchaseDate: new Date().toISOString(),
+      usedAt: null,
+      eventName: 'Test Event',
+      eventDate: new Date().toISOString(),
+      eventLocation: 'Test Location',
+    };
 
-  it('should log message when downloading tickets', () => {
-    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    // Mock canvas methods
+    const mockCanvas = {
+      getContext: jasmine.createSpy('getContext').and.returnValue({
+        fillStyle: '',
+        fillRect: jasmine.createSpy('fillRect'),
+        drawImage: jasmine.createSpy('drawImage'),
+        createLinearGradient: jasmine.createSpy('createLinearGradient').and.returnValue({
+          addColorStop: jasmine.createSpy('addColorStop'),
+        }),
+        fillText: jasmine.createSpy('fillText'),
+        strokeStyle: '',
+        lineWidth: 0,
+        strokeRect: jasmine.createSpy('strokeRect'),
+        textAlign: '',
+        measureText: jasmine.createSpy('measureText').and.returnValue({ width: 100 }),
+      }),
+      width: 900,
+      height: 600,
+      toBlob: jasmine.createSpy('toBlob').and.callFake((callback) => {
+        callback(new Blob());
+      }),
+    };
 
-    component.downloadTickets();
+    spyOn(document, 'createElement').and.returnValue(mockCanvas as any);
+    spyOn(window.URL, 'createObjectURL').and.returnValue('blob:mock-url');
+    spyOn(window.URL, 'revokeObjectURL').and.callFake(() => {});
 
-    expect(consoleSpy).toHaveBeenCalledWith('Downloading tickets...');
-    consoleSpy.mockRestore();
+    const mockLink = {
+      href: '',
+      download: '',
+      click: jasmine.createSpy('click'),
+    };
+    (document.createElement as jasmine.Spy).and.returnValue(mockCanvas as any);
+    (document.createElement as jasmine.Spy).and.returnValue(mockLink as any);
+
+    component.downloadTicket(mockTicket);
+
+    // Verify canvas was created
+    expect(document.createElement).toHaveBeenCalledWith('canvas');
   });
 
   it('should navigate to home and clear cart when continue shopping', () => {

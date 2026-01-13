@@ -1,7 +1,12 @@
-
-
-
-import { Component, OnInit, OnDestroy, inject, effect, computed, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  inject,
+  effect,
+  computed,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -20,7 +25,15 @@ import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-event-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, LoadingSpinner, CurrencyFormatPipe, DateFormatPipe, CheckoutButton, MapViewerComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    LoadingSpinner,
+    CurrencyFormatPipe,
+    DateFormatPipe,
+    CheckoutButton,
+    MapViewerComponent,
+  ],
   templateUrl: './event-detail.html',
   styleUrls: ['./event-detail.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -206,7 +219,12 @@ export class EventDetail implements OnInit, OnDestroy {
 
   getSelectedItems() {
     const currentEvent = this.event();
-    const items: { ticketTypeId: number; ticketTypeName: string; quantity: number; price: number }[] = [];
+    const items: {
+      ticketTypeId: number;
+      ticketTypeName: string;
+      quantity: number;
+      price: number;
+    }[] = [];
     if (!currentEvent) return items;
 
     if (currentEvent.ticketConfigurations && currentEvent.ticketConfigurations.length > 0) {
@@ -217,7 +235,7 @@ export class EventDetail implements OnInit, OnDestroy {
             ticketTypeId: (config as any).id ?? idx,
             ticketTypeName: config.type,
             quantity: qty,
-            price: config.price
+            price: config.price,
           });
         }
       });
@@ -229,7 +247,7 @@ export class EventDetail implements OnInit, OnDestroy {
             ticketTypeId: Number(type.id),
             ticketTypeName: type.name,
             quantity: qty,
-            price: Number(type.price)
+            price: Number(type.price),
           });
         }
       });
@@ -266,7 +284,7 @@ export class EventDetail implements OnInit, OnDestroy {
     }
 
     this.router.navigate(['/checkout'], {
-      queryParams: { eventId: currentEvent.id, eventName: currentEvent.name }
+      queryParams: { eventId: currentEvent.id, eventName: currentEvent.name },
     });
   }
 

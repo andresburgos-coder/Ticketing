@@ -9,7 +9,7 @@ export interface CacheInvalidationEvent {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CacheInvalidationService {
   private readonly _invalidationEvents = new BehaviorSubject<CacheInvalidationEvent | null>(null);
@@ -25,12 +25,12 @@ export class CacheInvalidationService {
     const event: CacheInvalidationEvent = {
       type: 'event-updated',
       eventId,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
-    
+
     this._lastUpdate.set(event.timestamp);
     this._invalidationEvents.next(event);
-    
+
     console.log('🔄 [CacheInvalidation] Event cache invalidated:', eventId);
   }
 
@@ -42,13 +42,16 @@ export class CacheInvalidationService {
       type: 'ticket-purchased',
       eventId,
       ticketType,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
-    
+
     this._lastUpdate.set(event.timestamp);
     this._invalidationEvents.next(event);
-    
-    console.log('🔄 [CacheInvalidation] Cache invalidated after purchase:', { eventId, ticketType });
+
+    console.log('🔄 [CacheInvalidation] Cache invalidated after purchase:', {
+      eventId,
+      ticketType,
+    });
   }
 
   /**
@@ -59,12 +62,12 @@ export class CacheInvalidationService {
       type: 'availability-changed',
       eventId,
       ticketType,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
-    
+
     this._lastUpdate.set(event.timestamp);
     this._invalidationEvents.next(event);
-    
+
     console.log('🔄 [CacheInvalidation] Availability cache invalidated:', { eventId, ticketType });
   }
 
@@ -74,12 +77,12 @@ export class CacheInvalidationService {
   forceRefresh(): void {
     const event: CacheInvalidationEvent = {
       type: 'event-updated',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
-    
+
     this._lastUpdate.set(event.timestamp);
     this._invalidationEvents.next(event);
-    
+
     console.log('🔄 [CacheInvalidation] Force refresh triggered');
   }
 }

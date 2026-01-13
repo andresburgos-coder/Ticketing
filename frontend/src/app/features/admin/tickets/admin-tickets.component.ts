@@ -13,12 +13,17 @@ import { CurrencyFormatPipe } from '../../../shared/pipes/currency-format.pipe';
   standalone: true,
   imports: [CommonModule, FormsModule, CurrencyFormatPipe],
   templateUrl: './admin-tickets.component.html',
-  styleUrl: './admin-tickets.component.css'
+  styleUrl: './admin-tickets.component.css',
 })
 export class AdminTicketsComponent implements OnInit {
   tickets: AdminTicket[] = [];
   events: Event[] = [];
-  filters: TicketsQuery = { page: 1, limit: 10 };
+  filters: TicketsQuery = {
+    eventId: '',
+    status: '',
+    page: 1,
+    limit: 10,
+  };
   pagination: any = null;
   loading = true;
   error: string | null = null;
@@ -28,7 +33,7 @@ export class AdminTicketsComponent implements OnInit {
   constructor(
     private adminService: AdminService,
     private eventService: EventService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
@@ -85,33 +90,40 @@ export class AdminTicketsComponent implements OnInit {
     try {
       console.log('[AdminTickets] Loading tickets with filters:', this.filters);
       const response = await firstValueFrom(this.adminService.getTickets(this.filters));
-      console.log('[AdminTickets] Tickets response:', response);
-      this.tickets = response.data.map(ticket => ({
+      console.log('[AdminTickets] Raw backend response:', response);
+      console.log('[AdminTickets] Backend response data count:', response.data?.length || 0);
+
+      this.tickets = response.data.map((ticket) => ({
         ...ticket,
-        eventName: ticket.eventName ?? this.getEventName(ticket.eventId)
+        eventName: ticket.eventName ?? this.getEventName(ticket.eventId),
       }));
       this.pagination = response.pagination;
       console.log('[AdminTickets] Tickets processed:', this.tickets.length);
+      console.log(
+        '[AdminTickets] Processed tickets:',
+        this.tickets.map((t) => ({ code: t.code, eventName: t.eventName, eventId: t.eventId })),
+      );
     } catch (error: any) {
       console.error('[AdminTickets] Error loading tickets:', error);
-      this.error = error.message || 'Error al cargar los tickets';
-      throw error;
+
+      // Mejorar el mensaje de error basado en el tipo de error
+      if (error.status === 500) {
+        this.error = 'Error interno del servidor. Por favor verifica los filtros aplicados.';
+      } else if (error.status === 0) {
+        this.error = 'Error de conexión. Verifica que el servidor esté disponible.';
+      } else {
+        this.error = error.message || `Error ${error.status}: ${error.statusText}`;
+      }
+
+      // En caso de error, limpiar los tickets actuales
+      this.tickets = [];
+      this.pagination = null;
     }
   }
 
   loadTickets() {
-    this.filters.page = 1;
-    // Normalizar eventId: convertir código a UUID si es posible
-    if (this.filters.eventId && !this.isUuid(this.filters.eventId)) {
-      const mapped = this.eventCodeMap.get(this.filters.eventId);
-      if (mapped) {
-        console.log('[AdminTickets] Mapping event code → UUID:', this.filters.eventId, '→', mapped);
-        this.filters.eventId = mapped as any;
-      } else {
-        console.warn('[AdminTickets] Invalid eventId for filtering, ignoring:', this.filters.eventId);
-        this.filters.eventId = '' as any;
-      }
-    }
+    this.loading = true;
+    this.error = null;
     this.loadPageData();
   }
 
@@ -146,12 +158,44 @@ export class AdminTicketsComponent implements OnInit {
       return nameFromMap;
     }
     // Fallback: buscar directamente en el arreglo por si el mapa no contiene la clave
-    const found = this.events.find(ev => String(ev.id) === key);
+    const found = this.events.find((ev) => String(ev.id) === key);
     const name = found?.name;
     return name ?? 'Evento no encontrado';
   }
 
   private isUuid(id: string): boolean {
     return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+  }
+
+  onEventFilterChange(eventId: string) {
+    console.log('[AdminTickets] Event filter changed to:', eventId);
+    console.log('[AdminTickets] Current filters object:', this.filters);
+    console.log(
+      '[AdminTickets] Available events:',
+      this.events.map((e) => ({ id: e.id, name: e.name })),
+    );
+    this.filters.eventId = eventId;
+    this.filters.page = 1;
+    this.loadTickets();
+  }
+
+  onStatusFilterChange(status: string) {
+    console.log('[AdminTickets] Status filter changed to:', status);
+    console.log('[AdminTickets] Current filters object:', this.filters);
+    this.filters.status = status;
+    this.filters.page = 1;
+    this.loadTickets();
+  }
+
+  clearFilters() {
+    console.log('[AdminTickets] Clearing all filters');
+    this.filters = {
+      eventId: '',
+      status: '',
+      page: 1,
+      limit: 10,
+    };
+    this.error = null;
+    this.loadTickets();
   }
 }

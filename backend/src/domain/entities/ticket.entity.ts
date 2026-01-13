@@ -1,14 +1,14 @@
-import { TicketType } from '../value-objects/ticket-type.vo';
-import { Email } from '../value-objects/email.vo';
-import { Money } from '../value-objects/money.vo';
+import { TicketType } from "../value-objects/ticket-type.vo";
+import { Email } from "../value-objects/email.vo";
+import { Money } from "../value-objects/money.vo";
 
 /**
  * Ticket Status Enum
  * Represents the lifecycle of a ticket
  */
 export enum TicketStatus {
-  PAID = 'PAID',     // Ticket purchased and paid
-  USED = 'USED',     // Ticket already used for event entry
+  PAID = "PAID", // Ticket purchased and paid
+  USED = "USED", // Ticket already used for event entry
 }
 
 /**
@@ -35,7 +35,7 @@ export interface TicketJSON {
 /**
  * Ticket Entity - Represents a purchased ticket for an event
  * Immutable entity that contains all ticket information
- * 
+ *
  * Requirements: 4.4, 6.2
  * - 4.4: Tickets are generated with unique code, event, type and buyer data
  * - 6.2: Each ticket includes: code, event name, ticket type, purchase date
@@ -54,7 +54,7 @@ export class Ticket {
     public readonly purchaseDate: Date,
     public readonly qrToken: string,
     public readonly status: TicketStatus = TicketStatus.PAID,
-    public readonly usedAt: Date | null = null
+    public readonly usedAt: Date | null = null,
   ) {}
 
   /**
@@ -86,7 +86,7 @@ export class Ticket {
    */
   markAsUsed(): Ticket {
     if (this.status === TicketStatus.USED) {
-      throw new Error('Ticket already used');
+      throw new Error("Ticket already used");
     }
     return new Ticket(
       this.id,
@@ -98,7 +98,7 @@ export class Ticket {
       this.purchaseDate,
       this.qrToken,
       TicketStatus.USED,
-      new Date()
+      new Date(),
     );
   }
 }

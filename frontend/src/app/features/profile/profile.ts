@@ -8,7 +8,7 @@ import { ProfileService, UserProfile, PurchaseHistory } from '../../core/service
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './profile.html',
-  styleUrl: './profile.css'
+  styleUrl: './profile.css',
 })
 export class ProfileComponent implements OnInit {
   private readonly profileService = inject(ProfileService);
@@ -42,13 +42,13 @@ export class ProfileComponent implements OnInit {
       city: [''],
       state: [''],
       zipCode: [''],
-      country: ['']
+      country: [''],
     });
 
     this.passwordForm = this.fb.group({
       currentPassword: ['', [Validators.required, Validators.minLength(8)]],
       newPassword: ['', [Validators.required, Validators.minLength(8)]],
-      confirmPassword: ['', [Validators.required]]
+      confirmPassword: ['', [Validators.required]],
     });
   }
 
@@ -64,7 +64,7 @@ export class ProfileComponent implements OnInit {
         console.error('Error loading profile:', error);
         this.errorMessage.set('Failed to load profile');
         this.isLoading.set(false);
-      }
+      },
     });
   }
 
@@ -78,7 +78,7 @@ export class ProfileComponent implements OnInit {
       city: profile.address?.city || '',
       state: profile.address?.state || '',
       zipCode: profile.address?.zipCode || '',
-      country: profile.address?.country || ''
+      country: profile.address?.country || '',
     });
   }
 
@@ -109,8 +109,8 @@ export class ProfileComponent implements OnInit {
         city: formValue.city,
         state: formValue.state,
         zipCode: formValue.zipCode,
-        country: formValue.country
-      }
+        country: formValue.country,
+      },
     };
 
     this.profileService.updateProfile(updateData).subscribe({
@@ -124,7 +124,7 @@ export class ProfileComponent implements OnInit {
         console.error('Error updating profile:', error);
         this.errorMessage.set('Failed to update profile');
         this.isSaving.set(false);
-      }
+      },
     });
   }
 
@@ -155,7 +155,7 @@ export class ProfileComponent implements OnInit {
         console.error('Error changing password:', error);
         this.errorMessage.set(error.error?.message || 'Failed to change password');
         this.isSaving.set(false);
-      }
+      },
     });
   }
 
@@ -166,7 +166,7 @@ export class ProfileComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading purchase history:', error);
-      }
+      },
     });
   }
 
@@ -174,7 +174,7 @@ export class ProfileComponent implements OnInit {
     return new Date(date).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     });
   }
 

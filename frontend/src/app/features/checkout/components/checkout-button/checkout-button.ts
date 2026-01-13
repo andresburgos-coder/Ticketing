@@ -10,7 +10,7 @@ import { AuthService } from '../../../../core/services/auth.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './checkout-button.html',
-  styleUrl: './checkout-button.css'
+  styleUrl: './checkout-button.css',
 })
 export class CheckoutButton {
   private readonly checkoutService = inject(CheckoutService);
@@ -25,7 +25,7 @@ export class CheckoutButton {
 
   goToCheckout(): void {
     // Validate items
-    const validItems = (this.items || []).filter(i => i && i.quantity > 0);
+    const validItems = (this.items || []).filter((i) => i && i.quantity > 0);
     if (validItems.length === 0) {
       this.toastService.show('Selecciona al menos una entrada', 'warning');
       return;
@@ -49,7 +49,7 @@ export class CheckoutButton {
         item.ticketTypeId,
         item.ticketTypeName,
         item.quantity,
-        item.price
+        item.price,
       );
     }
 
@@ -60,8 +60,8 @@ export class CheckoutButton {
     this.router.navigate(['/checkout'], {
       queryParams: {
         eventId: this.eventId,
-        eventName: this.eventName
-      }
+        eventName: this.eventName,
+      },
     });
   }
 }

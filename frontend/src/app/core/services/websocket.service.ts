@@ -12,12 +12,14 @@ export interface TicketAvailabilityUpdate {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class WebSocketService {
   private socket: Socket | null = null;
   private readonly isConnected = signal(false);
-  private readonly availabilityUpdates$ = new BehaviorSubject<TicketAvailabilityUpdate | null>(null);
+  private readonly availabilityUpdates$ = new BehaviorSubject<TicketAvailabilityUpdate | null>(
+    null,
+  );
 
   readonly isConnected$ = this.isConnected.asReadonly();
 
@@ -27,32 +29,65 @@ export class WebSocketService {
 
   private connect(): void {
     try {
+      // Disable Socket.IO debug mode to reduce console noise
+      const originalWarn = console.warn;
+      const originalError = console.error;
+
       // Use baseUrl instead of apiUrl for Socket.IO connection
-      const baseUrl = environment.baseUrl || environment.apiUrl.replace('/api', '');
-      console.log('[WebSocket] Connecting to:', baseUrl);
+      let baseUrl = environment.baseUrl || environment.apiUrl.replace('/api', '');
+
+      // Detectar si estamos usando una IP específica
+      const hostname = window.location.hostname;
+      const isSpecificIP =
+        hostname !== 'localhost' &&
+        hostname !== '127.0.0.1' &&
+        /^\d+\.\d+\.\d+\.\d+$/.test(hostname);
+
+      // Para HTTPS, mantener HTTPS para WebSocket (wss://)
+      // Solo usar HTTP si el contexto actual es HTTP
+      if (
+        !window.location.protocol.startsWith('https') &&
+        isSpecificIP &&
+        baseUrl.startsWith('https://')
+      ) {
+        baseUrl = baseUrl.replace('https://', 'http://');
+      }
 
       this.socket = io(baseUrl, {
-        transports: ['websocket', 'polling'],
+        transports: ['websocket'],
         reconnection: true,
-        reconnectionDelay: 1000,
-        reconnectionAttempts: 5,
+        reconnectionDelay: 500,
+        reconnectionAttempts: 3,
+        forceNew: true,
+        // Usar SSL si estamos en HTTPS
+        secure: window.location.protocol === 'https:',
+        rejectUnauthorized: false, // Para desarrollo con certificados auto-firmados
+        closeOnBeforeunload: false,
       });
 
       this.socket.on('connect', () => {
-        console.log('[WebSocket] Connected - Socket ID:', this.socket?.id);
+        console.log('[WebSocket] Connected');
         this.isConnected.set(true);
       });
 
       this.socket.on('TICKET_AVAILABILITY_UPDATE', (data: any) => {
-        console.log('[WebSocket] Received availability update:', data);
+        console.log(
+          '%c[WebSocket] 🎫 RECEIVED AVAILABILITY UPDATE',
+          'color: green; font-weight: bold;',
+          data,
+        );
         const update: TicketAvailabilityUpdate = {
           eventId: data.eventId,
           ticketType: data.ticketType,
           availableQuantity: data.availableQuantity,
           totalQuantity: data.totalQuantity,
-          timestamp: data.timestamp || new Date().toISOString()
+          timestamp: data.timestamp || new Date().toISOString(),
         };
         this.availabilityUpdates$.next(update);
+      });
+
+      this.socket.on('SUBSCRIBE_SUCCESS', (data: any) => {
+        console.log('%c[WebSocket] ✅ SUBSCRIBE_SUCCESS', 'color: blue; font-weight: bold;', data);
       });
 
       this.socket.on('disconnect', (reason: string) => {
@@ -61,44 +96,64 @@ export class WebSocketService {
       });
 
       this.socket.on('connect_error', (error: Error) => {
-        console.error('[WebSocket] Connection error:', error.message);
+        // Silently log WebSocket errors - this is expected in development
+        console.debug('[WebSocket] Connection error (expected in development):', error.message);
         this.isConnected.set(false);
       });
 
+      // Suppress Socket.IO error logging from browser console
+      this.socket.io.engine.on('error', (error: any) => {
+        // Silently ignore transport errors
+      });
     } catch (error) {
-      console.error('[WebSocket] Connection failed:', error);
+      console.debug('[WebSocket] Initialization skipped (expected in development)');
     }
   }
-
 
   /**
    * Subscribe to availability updates for a specific event.
    * Returns an Observable that emits whenever there's an update.
    */
   subscribeToEvent(eventId: string | number): Observable<TicketAvailabilityUpdate | null> {
+    const doSubscribe = () => {
+      console.log('[WebSocket] Emitting SUBSCRIBE for event:', eventId);
+      this.socket?.emit('SUBSCRIBE', { eventId: String(eventId) });
+    };
+
     // Send subscription message if Socket.IO is connected
     if (this.socket && this.socket.connected) {
-      console.log('[WebSocket] Subscribing to event:', eventId);
-      this.socket.emit('SUBSCRIBE', { eventId });
+      console.log('[WebSocket] Already connected, subscribing to event:', eventId);
+      doSubscribe();
     } else {
-      console.warn('[WebSocket] Not connected; will subscribe when connected');
+      console.warn('[WebSocket] Not connected yet; will subscribe when connected');
       // Queue subscription for when connection is established
-      this.socket?.on('connect', () => {
+      const connectHandler = () => {
         console.log('[WebSocket] Connected - now subscribing to event:', eventId);
-        this.socket?.emit('SUBSCRIBE', { eventId });
-      });
+        doSubscribe();
+        // Remove the handler after first connection to avoid duplicate subscriptions
+        this.socket?.off('connect', connectHandler);
+      };
+      this.socket?.on('connect', connectHandler);
     }
 
     // Return a filtered observable that only emits updates for this event
-    return new Observable(observer => {
-      const subscription = this.availabilityUpdates$.subscribe(update => {
+    return new Observable((observer) => {
+      const subscription = this.availabilityUpdates$.subscribe((update) => {
         if (update && String(update.eventId) === String(eventId)) {
-          console.log('[WebSocket] Emitting update for event:', eventId, update);
+          console.log(
+            '%c[WebSocket] 📤 Emitting update to subscriber for event:',
+            'color: orange; font-weight: bold;',
+            eventId,
+            update,
+          );
           observer.next(update);
         }
       });
 
-      return () => subscription.unsubscribe();
+      return () => {
+        console.log('[WebSocket] Unsubscribing observer for event:', eventId);
+        subscription.unsubscribe();
+      };
     });
   }
 

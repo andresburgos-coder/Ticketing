@@ -1,10 +1,10 @@
-import { Event } from '../entities/event.entity';
+import { Event } from "../entities/event.entity";
 
 /**
  * IEventRepository Interface
  * Defines the contract for persisting and retrieving Event entities
  * Follows Dependency Inversion Principle (DIP) - high-level modules depend on abstractions
- * 
+ *
  * Requirements: 1.1, 1.3
  * - 1.1: Persist event and return unique identifier
  * - 1.3: Return event with all ticket types and current availability
@@ -33,6 +33,13 @@ export interface IEventRepository {
   findAll(): Promise<Event[]>;
 
   /**
+   * Finds events created by a specific user
+   * @param createdBy - The ID of the user who created the events
+   * @returns Promise resolving to an array of Events created by the user
+   */
+  findByCreatedBy(createdBy: string): Promise<Event[]>;
+
+  /**
    * Updates an existing event in the repository
    * @param event - The Event entity with updated data
    * @returns Promise resolving to the updated Event
@@ -53,10 +60,10 @@ export interface IEventRepository {
   findRecent(limit: number): Promise<Event[]>;
   findUpcoming(limit: number): Promise<Event[]>;
   findPast(limit: number): Promise<Event[]>;
-  
+
   getEventsByCategory(): Promise<Array<{ category: string; count: number }>>;
   getEventsByMonth(): Promise<Array<{ month: string; count: number }>>;
-  
+
   /**
    * Gets the real-time availability for a specific event and ticket type
    * Calculates: totalQuantity - soldTickets - activeReservations
@@ -73,7 +80,11 @@ export interface IEventRepository {
    * @param ticketType - The ticket type
    * @param newAvailableQuantity - The new available quantity
    */
-  updateTicketAvailability(eventId: string, ticketType: string, newAvailableQuantity: number): Promise<void>;
+  updateTicketAvailability(
+    eventId: string,
+    ticketType: string,
+    newAvailableQuantity: number,
+  ): Promise<void>;
 }
 
-export const EVENT_REPOSITORY = Symbol('EVENT_REPOSITORY');
+export const EVENT_REPOSITORY = Symbol("EVENT_REPOSITORY");

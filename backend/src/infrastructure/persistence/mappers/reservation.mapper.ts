@@ -1,14 +1,14 @@
-import { Reservation } from '../../../domain/entities/reservation.entity';
-import { ReservationOrmEntity } from '../entities/reservation.orm-entity';
-import { Email } from '../../../domain/value-objects/email.vo';
-import { Money } from '../../../domain/value-objects/money.vo';
-import { TicketQuantity } from '../../../domain/value-objects/ticket-quantity.vo';
+import { Reservation } from "../../../domain/entities/reservation.entity";
+import { ReservationOrmEntity } from "../entities/reservation.orm-entity";
+import { Email } from "../../../domain/value-objects/email.vo";
+import { Money } from "../../../domain/value-objects/money.vo";
+import { TicketQuantity } from "../../../domain/value-objects/ticket-quantity.vo";
 
 /**
  * ReservationMapper
  * Converts between domain Reservation entities and ORM ReservationOrmEntity
  * Implements the Mapper pattern for clean separation of concerns
- * 
+ *
  * Requirements: 3.1, 3.3, 3.4, 8.3
  * - 8.3: Persistence round-trip (serialize/deserialize)
  */
@@ -26,13 +26,13 @@ export class ReservationMapper {
       TicketQuantity.create(ormEntity.quantity),
       Email.create(ormEntity.buyerEmail),
       Money.create(
-        typeof ormEntity.totalAmount === 'string'
+        typeof ormEntity.totalAmount === "string"
           ? parseFloat(ormEntity.totalAmount)
           : ormEntity.totalAmount,
-        ormEntity.currency
+        ormEntity.currency,
       ),
       ormEntity.expiresAt,
-      ormEntity.createdAt
+      ormEntity.createdAt,
     );
 
     // Restore the state from the persisted status
@@ -66,32 +66,37 @@ export class ReservationMapper {
    * Restores the internal state of a Reservation based on the persisted status
    * This is necessary because the State Pattern uses internal state objects
    * that are not persisted, only the status string is persisted
-   * 
+   *
    * @param reservation - The domain Reservation entity to restore state for
    * @param status - The persisted status string
    */
-  private static restoreState(
-    reservation: Reservation,
-    status: string
-  ): void {
+  private static restoreState(reservation: Reservation, status: string): void {
     // Import state classes dynamically to avoid circular dependencies
-    const { ActiveReservationState } = require('../../../domain/states/active-reservation.state');
-    const { ConfirmedReservationState } = require('../../../domain/states/confirmed-reservation.state');
-    const { ExpiredReservationState } = require('../../../domain/states/expired-reservation.state');
-    const { CancelledReservationState } = require('../../../domain/states/cancelled-reservation.state');
+    const {
+      ActiveReservationState,
+    } = require("../../../domain/states/active-reservation.state");
+    const {
+      ConfirmedReservationState,
+    } = require("../../../domain/states/confirmed-reservation.state");
+    const {
+      ExpiredReservationState,
+    } = require("../../../domain/states/expired-reservation.state");
+    const {
+      CancelledReservationState,
+    } = require("../../../domain/states/cancelled-reservation.state");
 
     let state;
     switch (status) {
-      case 'ACTIVE':
+      case "ACTIVE":
         state = new ActiveReservationState();
         break;
-      case 'CONFIRMED':
+      case "CONFIRMED":
         state = new ConfirmedReservationState();
         break;
-      case 'EXPIRED':
+      case "EXPIRED":
         state = new ExpiredReservationState();
         break;
-      case 'CANCELLED':
+      case "CANCELLED":
         state = new CancelledReservationState();
         break;
       default:

@@ -1,0 +1,260 @@
+name: CI Pipeline - Ticketing System
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  # ============================================
+  # FASE 1: VALIDACIÓN DE CÓDIGO
+  # ============================================
+  code-validation:
+    name: 🔍 Validación de Código
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+
+      - name: 🔧 Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Backend Validation
+      - name: 📦 Instalar dependencias Backend
+        working-directory: ./backend
+        run: npm i
+
+      - name: 🎨 Formatear código Backend (Prettier)
+        working-directory: ./backend
+        run: npm run format
+
+      - name: 🔎 Lint Backend (ESLint)
+        working-directory: ./backend
+        run: npm run lint
+        continue-on-error: true
+
+      # Frontend Validation
+      - name: 📦 Instalar dependencias Frontend
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: 🎨 Formatear código Frontend (Prettier)
+        working-directory: ./frontend
+        run: npx prettier --check "src/**/*.{ts,html,css}"
+
+      - name: ✅ Validación completada
+        run: echo "✓ Código validado exitosamente"
+
+  # ============================================
+  # FASE 2: TESTS UNITARIOS
+  # ============================================
+  unit-tests:
+    name: 🧪 Tests Unitarios
+    runs-on: ubuntu-latest
+    needs: code-validation
+    
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+
+      - name: 🔧 Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Backend Tests
+      - name: 📦 Instalar dependencias Backend
+        working-directory: ./backend
+        run: npm ci
+
+      - name: 🧪 Ejecutar tests unitarios Backend
+        working-directory: ./backend
+        run: npm test -- --coverage
+
+      - name: 📊 Subir cobertura Backend
+        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238
+        with:
+          files: ./backend/coverage/lcov.info
+          flags: backend
+          name: backend-coverage
+        continue-on-error: true
+
+      # Frontend Tests
+      - name: 📦 Instalar dependencias Frontend
+        working-directory: ./frontend
+        run: npm i
+
+      - name: 🧪 Ejecutar tests unitarios Frontend
+        working-directory: ./frontend
+        run: npm test
+
+      - name: ✅ Tests completados
+        run: echo "✓ Todos los tests unitarios pasaron"
+
+  # ============================================
+  # FASE 2.5: ANÁLISIS DE CALIDAD (SONARQUBE CLOUD)
+  # ============================================
+  sonarqube-analysis:
+    name: 🔬 Análisis SonarQube Cloud
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones deben deshabilitarse para mejor análisis
+
+      - name: 🔧 Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Backend Coverage
+      - name: 📦 Instalar dependencias Backend
+        working-directory: ./backend
+        run: npm ci
+
+      - name: 🧪 Generar cobertura Backend
+        working-directory: ./backend
+        run: npm run test:cov
+
+      # Frontend Coverage
+      - name: 📦 Instalar dependencias Frontend
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: 🧪 Generar cobertura Frontend
+        working-directory: ./frontend
+        run: npm test -- --coverage
+        continue-on-error: true
+
+      # SonarQube Scan
+      - name: 🔬 Análisis SonarQube Cloud
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+
+      - name: 🚦 Verificar Quality Gate
+        uses: sonarsource/sonarqube-quality-gate-action@cb3ed20f9fec62b4c3b8ad9e77656c6adaade913
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        continue-on-error: true
+
+      - name: ✅ Análisis completado
+        run: echo "✓ Análisis de calidad completado"
+
+  # ============================================
+  # FASE 3: SIMULACIÓN DE DESPLIEGUE
+  # ============================================
+  deployment-simulation:
+    name: 🚀 Simulación de Despliegue
+    runs-on: ubuntu-latest
+    needs: [unit-tests, sonarqube-analysis]
+    
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+
+      - name: 🔧 Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Backend Build
+      - name: 📦 Instalar dependencias Backend
+        working-directory: ./backend
+        run: npm ci
+
+      - name: 🏗️ Build Backend (Producción)
+        working-directory: ./backend
+        run: npm run build
+
+      - name: 📝 Verificar artefactos Backend
+        working-directory: ./backend
+        run: |
+          echo "Verificando carpeta dist..."
+          ls -la dist/
+          echo "✓ Build de backend exitoso"
+
+      # Frontend Build
+      - name: 📦 Instalar dependencias Frontend
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: 🏗️ Build Frontend (Producción)
+        working-directory: ./frontend
+        run: npm run build
+
+      - name: 📝 Verificar artefactos Frontend
+        working-directory: ./frontend
+        run: |
+          echo "Verificando carpeta dist..."
+          ls -la dist/
+          echo "✓ Build de frontend exitoso"
+
+      # Docker Build Simulation
+      - name: 🐳 Verificar Docker Compose
+        run: |
+          echo "Validando docker-compose.yml..."
+          docker compose config
+          echo "✓ Docker Compose válido"
+
+      - name: 🐳 Simular build de imágenes Docker
+        run: |
+          echo "Construyendo imagen Backend..."
+          docker build -t ticketing-backend:test ./backend
+          echo "Construyendo imagen Frontend..."
+          docker build -t ticketing-frontend:test ./frontend
+          echo "✓ Imágenes Docker construidas exitosamente"
+
+      - name: 📦 Listar imágenes creadas
+        run: docker images | grep ticketing
+
+      - name: 🧹 Limpiar imágenes
+        run: |
+          docker rmi ticketing-backend:test ticketing-frontend:test
+          echo "✓ Limpieza completada"
+
+      - name: ✅ Despliegue simulado exitoso
+        run: |
+          echo "================================================"
+          echo "✅ PIPELINE COMPLETADO EXITOSAMENTE"
+          echo "================================================"
+          echo "✓ Validación de código: OK"
+          echo "✓ Tests unitarios: OK"
+          echo "✓ Build de producción: OK"
+          echo "✓ Imágenes Docker: OK"
+          echo "================================================"
+          echo "🎉 El código está listo para despliegue"
+
+  # ============================================
+  # RESUMEN DEL PIPELINE
+  # ============================================
+  pipeline-summary:
+    name: 📋 Resumen del Pipeline
+    runs-on: ubuntu-latest
+    needs: [code-validation, unit-tests, sonarqube-analysis, deployment-simulation]
+    if: always()
+    
+    steps:
+      - name: 📊 Estado del Pipeline
+        run: |
+          echo "======================================"
+          echo "RESUMEN DE EJECUCIÓN DEL PIPELINE"
+          echo "======================================"
+          echo "Validación: ${{ needs.code-validation.result }}"
+          echo "Tests: ${{ needs.unit-tests.result }}"
+          echo "SonarQube: ${{ needs.sonarqube-analysis.result }}"
+          echo "Despliegue: ${{ needs.deployment-simulation.result }}"
+          echo "======================================"

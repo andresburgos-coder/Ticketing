@@ -15,7 +15,7 @@ export interface PaymentFormData {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './payment-form.html',
-  styleUrl: './payment-form.css'
+  styleUrl: './payment-form.css',
 })
 export class PaymentForm {
   formData: PaymentFormData = {
@@ -23,7 +23,7 @@ export class PaymentForm {
     cardNumber: '',
     expiryMonth: '',
     expiryYear: '',
-    cvv: ''
+    cvv: '',
   };
 
   errors: { [key: string]: string } = {};
@@ -54,8 +54,8 @@ export class PaymentForm {
       const currentDate = new Date();
       const currentYear = currentDate.getFullYear();
       const currentMonth = currentDate.getMonth() + 1;
-      const expiryYear = parseInt(this.formData.expiryYear);
-      const expiryMonth = parseInt(this.formData.expiryMonth);
+      const expiryYear = parseInt(this.formData.expiryYear, 10);
+      const expiryMonth = parseInt(this.formData.expiryMonth, 10);
 
       if (expiryYear < currentYear || (expiryYear === currentYear && expiryMonth < currentMonth)) {
         this.errors['expiryYear'] = 'La tarjeta está vencida';
@@ -77,7 +77,7 @@ export class PaymentForm {
     let isEven = false;
 
     for (let i = cardNumber.length - 1; i >= 0; i--) {
-      let digit = parseInt(cardNumber.charAt(i));
+      let digit = parseInt(cardNumber.charAt(i), 10);
 
       if (isEven) {
         digit *= 2;
@@ -111,7 +111,7 @@ export class PaymentForm {
   getFormData(): PaymentFormData & { expiryDate: string } {
     return {
       ...this.formData,
-      expiryDate: `${this.formData.expiryMonth}/${this.formData.expiryYear}`
+      expiryDate: `${this.formData.expiryMonth}/${this.formData.expiryYear}`,
     };
   }
 }

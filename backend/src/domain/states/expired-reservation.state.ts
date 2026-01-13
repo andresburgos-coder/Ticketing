@@ -1,16 +1,20 @@
-import { IReservationState, Reservation, ReservationStatusType } from './reservation-state.interface';
-import { InvalidStateTransitionException } from '../exceptions/invalid-state-transition.exception';
+import {
+  IReservationState,
+  Reservation,
+  ReservationStatusType,
+} from "./reservation-state.interface";
+import { InvalidStateTransitionException } from "../exceptions/invalid-state-transition.exception";
 
 /**
  * Expired Reservation State - Terminal state after timeout
  * No transitions allowed - this is a final state
- * 
+ *
  * Requirements: 3.3, 5.2
  * - 3.3: Estado final después de expiración automática
  * - 5.2: Tickets liberados automáticamente
  */
 export class ExpiredReservationState implements IReservationState {
-  readonly name: ReservationStatusType = 'EXPIRED';
+  readonly name: ReservationStatusType = "EXPIRED";
 
   canConfirm(): boolean {
     return false;
@@ -25,14 +29,14 @@ export class ExpiredReservationState implements IReservationState {
   }
 
   confirm(_reservation: Reservation): void {
-    throw new InvalidStateTransitionException('EXPIRED', 'confirm');
+    throw new InvalidStateTransitionException("EXPIRED", "confirm");
   }
 
   cancel(_reservation: Reservation): void {
-    throw new InvalidStateTransitionException('EXPIRED', 'cancel');
+    throw new InvalidStateTransitionException("EXPIRED", "cancel");
   }
 
   expire(_reservation: Reservation): void {
-    throw new InvalidStateTransitionException('EXPIRED', 'expire');
+    throw new InvalidStateTransitionException("EXPIRED", "expire");
   }
 }

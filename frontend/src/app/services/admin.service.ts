@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import {
@@ -15,11 +15,11 @@ import {
   PaginatedResponse,
   UsersQuery,
   TicketsQuery,
-  ReservationsQuery
+  ReservationsQuery,
 } from '../models/admin.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AdminService {
   private readonly apiUrl = `${environment.apiUrl}/admin`;
@@ -57,13 +57,11 @@ export class AdminService {
 
   // Dashboard Statistics
   getDashboardStats(): Observable<DashboardStats> {
-    console.log('[AdminService] Calling getDashboardStats from:', `${this.apiUrl}/dashboard/stats`);
     return this.http.get<DashboardStats>(`${this.apiUrl}/dashboard/stats`).pipe(
-      tap(data => console.log('[AdminService] Dashboard stats received:', data)),
-      catchError(error => {
+      catchError((error) => {
         console.error('[AdminService] Error getting dashboard stats:', error);
         throw error;
-      })
+      }),
     );
   }
 
@@ -85,12 +83,35 @@ export class AdminService {
   getTickets(query: TicketsQuery = {}): Observable<PaginatedResponse<AdminTicket>> {
     let params = new HttpParams();
 
-    if (query.eventId) params = params.set('eventId', query.eventId);
-    if (query.status) params = params.set('status', query.status);
+    console.log('[AdminService] getTickets called with query:', query);
+    console.log('[AdminService] eventId type:', typeof query.eventId, 'value:', query.eventId);
+    console.log('[AdminService] status type:', typeof query.status, 'value:', query.status);
+
+    // Simplificar condiciones - enviar si hay valor
+    if (query.eventId !== undefined && query.eventId !== null && query.eventId !== '') {
+      params = params.set('eventId', String(query.eventId));
+      console.log('[AdminService] Adding eventId param:', String(query.eventId));
+    }
+    if (query.status !== undefined && query.status !== null && query.status !== '') {
+      params = params.set('status', query.status);
+      console.log('[AdminService] Adding status param:', query.status);
+    }
     if (query.page) params = params.set('page', query.page.toString());
     if (query.limit) params = params.set('limit', query.limit.toString());
 
-    return this.http.get<PaginatedResponse<AdminTicket>>(`${this.apiUrl}/tickets`, { params });
+    console.log('[AdminService] Final HTTP params:', params.toString());
+    console.log('[AdminService] Making request to:', `${this.apiUrl}/tickets`);
+
+    return this.http.get<PaginatedResponse<AdminTicket>>(`${this.apiUrl}/tickets`, { params }).pipe(
+      tap((response) => console.log('[AdminService] Success response:', response)),
+      catchError((error) => {
+        console.error('[AdminService] HTTP Error:', error);
+        console.error('[AdminService] Error status:', error.status);
+        console.error('[AdminService] Error message:', error.message);
+        console.error('[AdminService] Error body:', error.error);
+        return throwError(() => error);
+      }),
+    );
   }
 
   // Reservation Management
@@ -101,16 +122,28 @@ export class AdminService {
     if (query.page) params = params.set('page', query.page.toString());
     if (query.limit) params = params.set('limit', query.limit.toString());
 
-    return this.http.get<PaginatedResponse<AdminReservation>>(`${this.apiUrl}/reservations`, { params });
+    return this.http.get<PaginatedResponse<AdminReservation>>(`${this.apiUrl}/reservations`, {
+      params,
+    });
   }
 
   // Event Management
   getEvents(): Observable<any[]> {
-    return this.http.get<any[]>(`${environment.apiUrl}/events`);
+    return this.http.get<any[]>(`${environment.apiUrl}/events`).pipe(
+      catchError((error) => {
+        console.error('[AdminService] getEvents failed:', error);
+        throw error;
+      }),
+    );
   }
 
   getEvent(id: string): Observable<any> {
-    return this.http.get<any>(`${environment.apiUrl}/events/${id}`);
+    return this.http.get<any>(`${environment.apiUrl}/events/${id}`).pipe(
+      catchError((error) => {
+        console.error('[AdminService] getEvent failed:', error);
+        throw error;
+      }),
+    );
   }
 
   createEvent(formData: FormData): Observable<any> {

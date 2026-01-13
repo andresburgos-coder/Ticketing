@@ -15,7 +15,7 @@ import { ToastService } from '../../../core/services/toast.service';
   imports: [CommonModule, RouterModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './admin-events.component.html',
-  styleUrl: './admin-events.component.css'
+  styleUrl: './admin-events.component.css',
 })
 export class AdminEventsComponent implements OnInit {
   events = signal<Event[]>([]);
@@ -66,7 +66,7 @@ export class AdminEventsComponent implements OnInit {
         error: (err) => {
           console.warn('[AdminEvents] Error loading events');
           reject(err);
-        }
+        },
       });
 
       // Trigger the API call
@@ -87,38 +87,39 @@ export class AdminEventsComponent implements OnInit {
     }
 
     // Load stats for each event with Promise.all for better performance
-    const statsPromises = events.map(event =>
-      new Promise<void>((resolve) => {
-        this.adminService.getTicketStats(event.id.toString()).subscribe({
-          next: (stats) => {
-            this.eventStats[event.id] = {
-              ticketsSold: stats.totalTicketsSold,
-              revenue: stats.totalRevenue
-            };
-            console.log(`[AdminEvents] Stats loaded for event ${event.id}`);
-            resolve();
-          },
-          error: (error) => {
-            console.warn(`Error loading stats for event ${event.id}`);
-            resolve();
-          }
-        });
-      })
+    const statsPromises = events.map(
+      (event) =>
+        new Promise<void>((resolve) => {
+          this.adminService.getTicketStats(event.id.toString()).subscribe({
+            next: (stats) => {
+              this.eventStats[event.id] = {
+                ticketsSold: stats.totalTicketsSold,
+                revenue: stats.totalRevenue,
+              };
+              console.log(`[AdminEvents] Stats loaded for event ${event.id}`);
+              resolve();
+            },
+            error: (error) => {
+              console.warn(`Error loading stats for event ${event.id}`);
+              resolve();
+            },
+          });
+        }),
     );
 
     // Wait for all stats to load
-    Promise.all(statsPromises)
-      .then(() => {
-        console.log('[AdminEvents] All stats loaded');
-      });
+    Promise.all(statsPromises).then(() => {
+      console.log('[AdminEvents] All stats loaded');
+    });
   }
 
   filterEvents() {
-    const filtered = this.events().filter(event => {
-      const matchesCategory = !this.selectedCategory() ||
-        event.eventDetails?.[0]?.category === this.selectedCategory();
+    const filtered = this.events().filter((event) => {
+      const matchesCategory =
+        !this.selectedCategory() || event.eventDetails?.[0]?.category === this.selectedCategory();
 
-      const matchesSearch = !this.searchTerm() ||
+      const matchesSearch =
+        !this.searchTerm() ||
         event.name.toLowerCase().includes(this.searchTerm().toLowerCase()) ||
         event.location.toLowerCase().includes(this.searchTerm().toLowerCase());
 
@@ -136,6 +137,28 @@ export class AdminEventsComponent implements OnInit {
     return this.eventStats[eventId]?.ticketsSold || 0;
   }
 
+  /**
+   * Calcula los tickets vendidos de un evento basándose en su configuración
+   * Tickets Vendidos = Total Quantity - Available Quantity
+   */
+  getTicketsSoldByEvent(event: Event): number {
+    if (!event.ticketConfigurations || !event.ticketConfigurations[0]) {
+      return 0;
+    }
+    const config = event.ticketConfigurations[0];
+    return (config.totalQuantity || 0) - (config.availableQuantity || 0);
+  }
+
+  /**
+   * Calcula el ingreso total de un evento
+   * Ingresos = Tickets Vendidos × Precio
+   */
+  calculateEventRevenue(event: Event): number {
+    const ticketsSold = this.getTicketsSoldByEvent(event);
+    const price = event.ticketConfigurations?.[0]?.price || 0;
+    return ticketsSold * price;
+  }
+
   getRevenue(eventId: string): number {
     return this.eventStats[eventId]?.revenue || 0;
   }
@@ -144,13 +167,16 @@ export class AdminEventsComponent implements OnInit {
     if (confirm(`¿Estás seguro de que quieres eliminar el evento "${eventName}"?`)) {
       this.eventService.deleteEvent(eventId).subscribe({
         next: () => {
-          const updatedEvents = this.events().filter(e => e.id !== eventId);
+          const updatedEvents = this.events().filter((e) => e.id !== eventId);
           this.events.set(updatedEvents);
           this.filterEvents();
         },
         error: (error) => {
-          this.toastService.show('Error al eliminar el evento: ' + (error.message || 'Error desconocido'), 'error');
-        }
+          this.toastService.show(
+            'Error al eliminar el evento: ' + (error.message || 'Error desconocido'),
+            'error',
+          );
+        },
       });
     }
   }

@@ -7,7 +7,7 @@ import { ToastConfig, ToastType } from '../../../core/services/toast.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './toast.html',
-  styleUrl: './toast.css'
+  styleUrl: './toast.css',
 })
 export class ToastComponent {
   readonly show = signal(false);
@@ -45,11 +45,16 @@ export class ToastComponent {
 
   getIcon(): string {
     switch (this.type()) {
-      case 'success': return 'check_circle';
-      case 'error': return 'error';
-      case 'warning': return 'warning';
-      case 'info': return 'info';
-      default: return 'info';
+      case 'success':
+        return 'check_circle';
+      case 'error':
+        return 'error';
+      case 'warning':
+        return 'warning';
+      case 'info':
+        return 'info';
+      default:
+        return 'info';
     }
   }
 }

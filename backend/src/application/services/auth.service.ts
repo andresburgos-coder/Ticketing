@@ -1,11 +1,16 @@
-import { Injectable, Inject, UnauthorizedException, ConflictException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { IUserRepository } from '../../domain/interfaces/user-repository.interface';
-import { USER_REPOSITORY } from '../../domain/interfaces/repository-tokens';
-import { User } from '../../domain/entities/user.entity';
-import { Email } from '../../domain/value-objects/email.vo';
-import { UserRole } from '../../domain/enums/user-role.enum';
-import { v4 as uuidv4 } from 'uuid';
+import {
+  Injectable,
+  Inject,
+  UnauthorizedException,
+  ConflictException,
+} from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { IUserRepository } from "../../domain/interfaces/user-repository.interface";
+import { USER_REPOSITORY } from "../../domain/interfaces/repository-tokens";
+import { User } from "../../domain/entities/user.entity";
+import { Email } from "../../domain/value-objects/email.vo";
+import { UserRole } from "../../domain/enums/user-role.enum";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * JWT Payload interface
@@ -38,7 +43,7 @@ export interface AuthResponse {
 /**
  * AuthService
  * Handles user authentication including registration, login, and token refresh
- * 
+ *
  * Requirements: 9.1, 9.2, 9.3
  * - 9.1: User registration with email and password
  * - 9.2: JWT token generation and validation
@@ -46,14 +51,14 @@ export interface AuthResponse {
  */
 @Injectable()
 export class AuthService {
-  private readonly JWT_SECRET = process.env.JWT_SECRET ?? 'your-secret-key';
-  private readonly JWT_EXPIRATION = '15m';
-  private readonly REFRESH_TOKEN_EXPIRATION = '7d';
+  private readonly JWT_SECRET = process.env.JWT_SECRET ?? "your-secret-key";
+  private readonly JWT_EXPIRATION = "15m";
+  private readonly REFRESH_TOKEN_EXPIRATION = "7d";
 
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
   ) {}
 
   /**
@@ -69,7 +74,7 @@ export class AuthService {
     email: string,
     password: string,
     firstName: string,
-    lastName: string
+    lastName: string,
   ): Promise<AuthResponse> {
     // Validate email format
     const emailVo = Email.create(email);
@@ -77,7 +82,7 @@ export class AuthService {
     // Check if user already exists
     const existingUser = await this.userRepository.findByEmail(emailVo);
     if (existingUser) {
-      throw new ConflictException('User with this email already exists');
+      throw new ConflictException("User with this email already exists");
     }
 
     // Create new user
@@ -85,10 +90,10 @@ export class AuthService {
     const user = new User(
       userId,
       emailVo,
-      '', // placeholder, will be hashed
+      "", // placeholder, will be hashed
       firstName,
       lastName,
-      UserRole.BUYER // default role
+      UserRole.BUYER, // default role
     );
 
     // Hash password
@@ -101,7 +106,7 @@ export class AuthService {
       hashedPassword,
       firstName,
       lastName,
-      UserRole.BUYER
+      UserRole.BUYER,
     );
 
     // Save user
@@ -114,7 +119,10 @@ export class AuthService {
       ...tokens,
       user: {
         id: savedUser.id,
-        email: typeof savedUser.email === 'string' ? savedUser.email : savedUser.email.value,
+        email:
+          typeof savedUser.email === "string"
+            ? savedUser.email
+            : savedUser.email.value,
         firstName: savedUser.firstName,
         lastName: savedUser.lastName,
         role: savedUser.role,
@@ -136,13 +144,16 @@ export class AuthService {
     // Find user by email
     const user = await this.userRepository.findByEmail(emailVo);
     if (!user) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException("Invalid email or password");
     }
 
     // Verify password
-    const isPasswordValid = await user.verifyPassword(password, user.passwordHash);
+    const isPasswordValid = await user.verifyPassword(
+      password,
+      user.passwordHash,
+    );
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException("Invalid email or password");
     }
 
     // Generate tokens
@@ -152,7 +163,7 @@ export class AuthService {
       ...tokens,
       user: {
         id: user.id,
-        email: typeof user.email === 'string' ? user.email : user.email.value,
+        email: typeof user.email === "string" ? user.email : user.email.value,
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
@@ -176,25 +187,26 @@ export class AuthService {
       // Find user
       const user = await this.userRepository.findById(payload.sub);
       if (!user) {
-        throw new UnauthorizedException('User not found');
+        throw new UnauthorizedException("User not found");
       }
 
       // Generate new tokens
-      const { accessToken, refreshToken: newRefreshToken } = this.generateTokens(user);
+      const { accessToken, refreshToken: newRefreshToken } =
+        this.generateTokens(user);
 
       return {
         accessToken,
         refreshToken: newRefreshToken,
         user: {
           id: user.id,
-          email: typeof user.email === 'string' ? user.email : user.email.value,
+          email: typeof user.email === "string" ? user.email : user.email.value,
           firstName: user.firstName,
           lastName: user.lastName,
           role: user.role,
         },
       };
     } catch (error) {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new UnauthorizedException("Invalid refresh token");
     }
   }
 
@@ -203,10 +215,13 @@ export class AuthService {
    * @param user - User entity
    * @returns Object with accessToken and refreshToken
    */
-  private generateTokens(user: User): { accessToken: string; refreshToken: string } {
+  private generateTokens(user: User): {
+    accessToken: string;
+    refreshToken: string;
+  } {
     const payload: JwtPayload = {
       sub: user.id,
-      email: typeof user.email === 'string' ? user.email : user.email.value,
+      email: typeof user.email === "string" ? user.email : user.email.value,
       role: user.role,
     };
 

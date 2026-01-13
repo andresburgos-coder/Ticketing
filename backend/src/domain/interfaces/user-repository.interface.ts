@@ -1,12 +1,12 @@
-import { User } from '../entities/user.entity';
-import { Email } from '../value-objects/email.vo';
-import { UserRole } from '../enums/user-role.enum';
+import { User } from "../entities/user.entity";
+import { Email } from "../value-objects/email.vo";
+import { UserRole } from "../enums/user-role.enum";
 
 /**
  * IUserRepository Interface
  * Defines the contract for persisting and retrieving User entities
  * Follows Dependency Inversion Principle (DIP)
- * 
+ *
  * Requirements: 9.1, 9.2
  * - 9.1: User registration and authentication
  * - 9.2: JWT token generation and validation
@@ -80,4 +80,4 @@ export interface IUserRepository {
   count(): Promise<number>;
 }
 
-export const USER_REPOSITORY = Symbol('USER_REPOSITORY');
+export const USER_REPOSITORY = Symbol("USER_REPOSITORY");

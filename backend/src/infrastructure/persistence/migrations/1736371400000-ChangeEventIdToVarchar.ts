@@ -1,7 +1,7 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class ChangeEventIdToVarchar1736371400000 implements MigrationInterface {
-  name = 'ChangeEventIdToVarchar1736371400000';
+  name = "ChangeEventIdToVarchar1736371400000";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Change event_id column type from UUID to VARCHAR(50) in tickets table

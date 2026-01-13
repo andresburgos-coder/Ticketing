@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { ToastService } from '../../../../core/services/toast.service';
 import { AdminService } from '../../../../services/admin.service';
+import { EventCategory } from '../../../../models/admin.model';
 
 @Component({
   selector: 'app-event-form',
@@ -11,7 +12,7 @@ import { AdminService } from '../../../../services/admin.service';
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './event-form.component.html',
-  styleUrl: './event-form.component.css'
+  styleUrl: './event-form.component.css',
 })
 export class EventFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
@@ -26,7 +27,27 @@ export class EventFormComponent implements OnInit {
   selectedImage: File | null = null;
   imagePreview = signal<string | null>(null);
 
-  categories = ['Concierto', 'Deportes', 'Teatro', 'Cine', 'Otros'];
+  //// HUMAN REVIEW: Se refectoriza para mejorar la manejabilidad de los tipos de entradas
+  categories = [
+    EventCategory.CONCIERTO,
+    EventCategory.DEPORTES,
+    EventCategory.TEATRO,
+    EventCategory.CINE,
+    EventCategory.COMEDIA,
+    EventCategory.MUSICAL,
+    EventCategory.FESTIVAL,
+    EventCategory.CULTURAL,
+    EventCategory.RECREATIVO,
+    EventCategory.STAND_UP_COMEDY,
+    EventCategory.PODCAST,
+    EventCategory.CIRCO,
+    EventCategory.FERIA,
+    EventCategory.TURISMO,
+    EventCategory.ACCION_EXTREMO,
+    EventCategory.INMERSIONES,
+    EventCategory.COMFAMA,
+    EventCategory.OTROS,
+  ];
 
   ngOnInit() {
     this.initForm();
@@ -44,13 +65,13 @@ export class EventFormComponent implements OnInit {
       ticketTypes: this.fb.group({
         general: this.fb.group({
           price: ['', [Validators.required, Validators.min(0)]],
-          quantity: ['', [Validators.required, Validators.min(1)]]
+          quantity: ['', [Validators.required, Validators.min(1)]],
         }),
         vip: this.fb.group({
           price: [''],
-          quantity: ['']
-        })
-      })
+          quantity: [''],
+        }),
+      }),
     });
   }
 
@@ -65,7 +86,7 @@ export class EventFormComponent implements OnInit {
         error: (err) => {
           console.error('Error loading event:', err);
           this.toastService.error('Error al cargar el evento');
-        }
+        },
       });
     }
   }
@@ -76,8 +97,36 @@ export class EventFormComponent implements OnInit {
       date: this.formatDateForInput(event.date),
       location: event.location,
       venueName: event.venueName,
-      description: event.eventDetails?.[0]?.seating || ''
+      description: event.eventDetails?.[0]?.seating || '',
+      category: event.eventDetails?.[0]?.category || '',
     });
+
+    // Load ticket configurations
+    if (event.ticketConfigurations && event.ticketConfigurations.length > 0) {
+      const generalTicket = event.ticketConfigurations.find((t: any) => t.type === 'GENERAL');
+      const vipTicket = event.ticketConfigurations.find((t: any) => t.type === 'VIP');
+
+      // Build updated ticket types
+      const ticketTypesUpdate: any = { general: {}, vip: {} };
+
+      if (generalTicket) {
+        ticketTypesUpdate.general = {
+          price: generalTicket.price,
+          quantity: generalTicket.totalQuantity,
+        };
+      }
+
+      if (vipTicket) {
+        ticketTypesUpdate.vip = {
+          price: vipTicket.price,
+          quantity: vipTicket.totalQuantity,
+        };
+      }
+
+      this.form.patchValue({
+        ticketTypes: ticketTypesUpdate,
+      });
+    }
 
     if (event.imageUrl) {
       this.imagePreview.set(event.imageUrl);
@@ -121,7 +170,7 @@ export class EventFormComponent implements OnInit {
         type: 'GENERAL',
         price: Number(generalPrice),
         currency: 'COP',
-        quantity: Number(generalQty)
+        quantity: Number(generalQty),
       });
     }
 
@@ -133,7 +182,7 @@ export class EventFormComponent implements OnInit {
         type: 'VIP',
         price: Number(vipPrice),
         currency: 'COP',
-        quantity: Number(vipQty)
+        quantity: Number(vipQty),
       });
     }
 
@@ -146,16 +195,18 @@ export class EventFormComponent implements OnInit {
     formData.append('ticketConfigurations', JSON.stringify(ticketConfigurations));
 
     // Add event details
-    const eventDetails = [{
-      category: this.form.get('category')?.value || 'General',
-      minAge: null,
-      seating: 'General Admission',
-      capacity: ticketConfigurations.reduce((total, config) => total + config.quantity, 0),
-      foodSale: false,
-      liquorSale: false,
-      reducedMobilityAccess: false,
-      pregnantAccess: false
-    }];
+    const eventDetails = [
+      {
+        category: this.form.get('category')?.value || 'General',
+        minAge: null,
+        seating: 'General Admission',
+        capacity: ticketConfigurations.reduce((total, config) => total + config.quantity, 0),
+        foodSale: false,
+        liquorSale: false,
+        reducedMobilityAccess: false,
+        pregnantAccess: false,
+      },
+    ];
     formData.append('eventDetails', JSON.stringify(eventDetails));
 
     if (this.selectedImage) {
@@ -169,7 +220,7 @@ export class EventFormComponent implements OnInit {
     request$.subscribe({
       next: () => {
         this.toastService.success(
-          this.isEditing() ? 'Evento actualizado correctamente' : 'Evento creado correctamente'
+          this.isEditing() ? 'Evento actualizado correctamente' : 'Evento creado correctamente',
         );
         this.router.navigate(['/admin/events']);
       },
@@ -177,7 +228,7 @@ export class EventFormComponent implements OnInit {
         console.error('Error saving event:', err);
         this.toastService.error('Error al guardar el evento');
         this.loading.set(false);
-      }
+      },
     });
   }
 
