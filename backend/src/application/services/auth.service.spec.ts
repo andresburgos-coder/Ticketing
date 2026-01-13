@@ -4,6 +4,7 @@ import { AuthService } from "./auth.service";
 import { IUserRepository } from "../../domain/interfaces/user-repository.interface";
 import { User } from "../../domain/entities/user.entity";
 import { Email } from "../../domain/value-objects/email.vo";
+import { UserRole } from "../../domain/enums/user-role.enum";
 import { USER_REPOSITORY } from "../../domain/interfaces/repository-tokens";
 
 /**
@@ -40,7 +41,7 @@ describe("AuthService", () => {
         return {
           sub: "user-123",
           email: "user@example.com",
-          role: "BUYER",
+          role: UserRole.BUYER,
         };
       }),
     };
@@ -78,7 +79,7 @@ describe("AuthService", () => {
         "hashed-password",
         firstName,
         lastName,
-        "BUYER",
+        UserRole.BUYER,
       );
 
       jest.spyOn(userRepository, "findByEmail").mockResolvedValue(null);
@@ -110,7 +111,7 @@ describe("AuthService", () => {
         "hashed-password",
         "John",
         "Doe",
-        "BUYER",
+        UserRole.BUYER,
       );
 
       jest.spyOn(userRepository, "findByEmail").mockResolvedValue(existingUser);
@@ -133,7 +134,7 @@ describe("AuthService", () => {
         "hashed-password",
         "John",
         "Doe",
-        "BUYER",
+        UserRole.BUYER,
       );
 
       jest.spyOn(userRepository, "findByEmail").mockResolvedValue(user);
@@ -170,7 +171,7 @@ describe("AuthService", () => {
         "hashed-password",
         "John",
         "Doe",
-        "BUYER",
+        UserRole.BUYER,
       );
 
       jest.spyOn(userRepository, "findByEmail").mockResolvedValue(user);
@@ -191,7 +192,7 @@ describe("AuthService", () => {
         "hashed-password",
         "John",
         "Doe",
-        "BUYER",
+        UserRole.BUYER,
       );
 
       // First, create tokens

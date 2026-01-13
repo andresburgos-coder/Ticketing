@@ -2,6 +2,7 @@
 const TEST_PASSWORD = process.env.TEST_PASSWORD || "TestPassword123";
 import { User } from "./user.entity";
 import { Email } from "../value-objects/email.vo";
+import { UserRole } from "../enums/user-role.enum";
 
 describe("User Entity", () => {
   describe("constructor", () => {
@@ -15,14 +16,14 @@ describe("User Entity", () => {
         password,
         "John",
         "Doe",
-        "BUYER",
+        UserRole.BUYER,
       );
 
       expect(user.id).toBe("user-123");
       expect(user.email).toEqual(email);
       expect(user.firstName).toBe("John");
       expect(user.lastName).toBe("Doe");
-      expect(user.role).toBe("BUYER");
+      expect(user.role).toBe(UserRole.BUYER);
     });
   });
 
@@ -37,7 +38,7 @@ describe("User Entity", () => {
         password,
         "John",
         "Doe",
-        "BUYER",
+        UserRole.BUYER,
       );
 
       const hashedPassword = await user.hashPassword(password);
@@ -60,7 +61,7 @@ describe("User Entity", () => {
         password,
         "John",
         "Doe",
-        "BUYER",
+        UserRole.BUYER,
       );
 
       const hash1 = await user.hashPassword(password);
@@ -82,7 +83,7 @@ describe("User Entity", () => {
         password,
         "John",
         "Doe",
-        "BUYER",
+        UserRole.BUYER,
       );
 
       const hashedPassword = await user.hashPassword(password);
@@ -94,7 +95,7 @@ describe("User Entity", () => {
     it("should return false when password is incorrect", async () => {
       const email = Email.create("user@example.com");
       const password = TEST_PASSWORD;
-      const wrongPassword = process.env.TEST_WRONG_PASSWORD;
+      const wrongPassword = process.env.TEST_WRONG_PASSWORD || "WrongPassword123";
 
       const user = new User(
         "user-123",
@@ -102,7 +103,7 @@ describe("User Entity", () => {
         password,
         "John",
         "Doe",
-        "BUYER",
+        UserRole.BUYER,
       );
 
       const hashedPassword = await user.hashPassword(password);
@@ -121,7 +122,7 @@ describe("User Entity", () => {
         password,
         "John",
         "Doe",
-        "BUYER",
+        UserRole.BUYER,
       );
 
       const hashedPassword = await user.hashPassword(password);
@@ -142,7 +143,7 @@ describe("User Entity", () => {
         password,
         "John",
         "Doe",
-        "BUYER",
+        UserRole.BUYER,
       );
 
       // Hash the password
