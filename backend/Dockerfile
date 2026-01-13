@@ -8,8 +8,10 @@ FROM base AS development
 COPY package*.json ./
 RUN npm install --prefer-offline --no-audit
 COPY . .
+# Ensure templates directory exists and copy templates after build
+RUN mkdir -p dist/templates/email
 EXPOSE 3000
-CMD ["npm", "run", "start:dev"]
+CMD ["sh", "-c", "npm run build && cp -r src/templates/* dist/templates/ 2>/dev/null || true && npm run start:dev"]
 
 # Build stage
 FROM base AS builder
@@ -17,6 +19,8 @@ COPY package*.json ./
 RUN npm install --prefer-offline --no-audit
 COPY . .
 RUN npm run build
+# Copy templates to dist folder
+RUN mkdir -p dist/templates && cp -r src/templates/* dist/templates/ 2>/dev/null || true
 
 # Production stage
 FROM base AS production
