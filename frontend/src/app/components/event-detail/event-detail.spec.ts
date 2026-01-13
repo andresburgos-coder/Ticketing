@@ -32,8 +32,9 @@ describe('EventDetail', () => {
   };
 
   beforeEach(async () => {
+    const selectedEventSignal = signal(mockEvent);
     eventService = jasmine.createSpyObj('EventService', ['loadEventById', 'clearSelectedEvent'], {
-      selectedEvent: signal(mockEvent),
+      selectedEvent: selectedEventSignal,
       isLoading: signal(false),
     });
     orders = jasmine.createSpyObj('Orders', []);
@@ -89,23 +90,23 @@ describe('EventDetail', () => {
     const config = mockEvent.ticketConfigurations[0];
     component.selectedQuantities = { VIP: 0 };
     component.increaseQty(config);
-    expect(component.selectedQuantities.VIP).toBe(1);
+    expect(component.selectedQuantities['VIP']).toBe(1);
     component.decreaseQty(config);
-    expect(component.selectedQuantities.VIP).toBe(0);
+    expect(component.selectedQuantities['VIP']).toBe(0);
   });
 
   it('increaseQty does not exceed max', () => {
     const config = mockEvent.ticketConfigurations[0];
     component.selectedQuantities = { VIP: 5 };
     component.increaseQty(config);
-    expect(component.selectedQuantities.VIP).toBe(5);
+    expect(component.selectedQuantities['VIP']).toBe(5);
   });
 
   it('decreaseQty does not go below 0', () => {
     const config = mockEvent.ticketConfigurations[0];
     component.selectedQuantities = { VIP: 0 };
     component.decreaseQty(config);
-    expect(component.selectedQuantities.VIP).toBe(0);
+    expect(component.selectedQuantities['VIP']).toBe(0);
   });
 
   it('getConfigKey returns correct key', () => {
@@ -121,7 +122,7 @@ describe('EventDetail', () => {
   it('clampSelectedQuantities clamps values', () => {
     component.selectedQuantities = { VIP: 10, 1: 100 };
     component['clampSelectedQuantities']();
-    expect(component.selectedQuantities.VIP).toBe(5);
+    expect(component.selectedQuantities['VIP']).toBe(5);
     expect(component.selectedQuantities[1]).toBe(50);
   });
 
@@ -182,22 +183,22 @@ describe('EventDetail', () => {
 
   it('getEventTags returns tags or default', () => {
     expect(component.getEventTags()).toEqual(['#Test']);
-    eventService.selectedEvent.set({ ...mockEvent, tags: undefined });
+    (eventService.selectedEvent as any).set({ ...mockEvent, tags: undefined });
     expect(component.getEventTags()).toEqual(['#Event', '#Conference']);
   });
 
   it('getEventImage returns default if missing', () => {
-    eventService.selectedEvent.set({ ...mockEvent, imageUrl: undefined });
+    (eventService.selectedEvent as any).set({ ...mockEvent, imageUrl: undefined });
     expect(component.getEventImage()).toContain('http');
   });
 
   it('getEventImage returns minio url if needed', () => {
-    eventService.selectedEvent.set({ ...mockEvent, imageUrl: 'minio/test.jpg' });
+    (eventService.selectedEvent as any).set({ ...mockEvent, imageUrl: 'minio/test.jpg' });
     expect(component.getEventImage()).toContain('/events/file/');
   });
 
   it('getEventImage returns direct url if http', () => {
-    eventService.selectedEvent.set({ ...mockEvent, imageUrl: 'http://test.com/img.jpg' });
+    (eventService.selectedEvent as any).set({ ...mockEvent, imageUrl: 'http://test.com/img.jpg' });
     expect(component.getEventImage()).toBe('http://test.com/img.jpg');
   });
 });
