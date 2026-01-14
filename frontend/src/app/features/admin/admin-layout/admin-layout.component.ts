@@ -29,8 +29,6 @@ export class AdminLayoutComponent {
     { path: '/admin/tickets', label: 'Tickets', icon: 'icon-tickets' },
     { path: '/admin/qr-scanner', label: 'Escáner QR', icon: 'icon-qr-scanner' },
     { path: '/admin/users', label: 'Usuarios', icon: 'icon-users', adminOnly: true },
-    { path: '/admin/reservations', label: 'Reservas', icon: 'icon-reservations', adminOnly: true },
-    { path: '/admin/reports', label: 'Reportes', icon: 'icon-reports', adminOnly: true },
   ];
 
   readonly visibleMenuItems = computed(() => {
