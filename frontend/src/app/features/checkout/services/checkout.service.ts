@@ -136,6 +136,13 @@ export class CheckoutService {
     const eventId = this.cartService.eventId();
     const eventName = this.cartService.eventName();
 
+    console.log('[CheckoutService] processPayment called with:', { 
+      cartItemsCount: cartItems.length, 
+      eventId, 
+      eventName,
+      contactEmail: contactData.email
+    });
+
     if (cartItems.length === 0) {
       throw new Error('Cart is empty');
     }
@@ -248,14 +255,7 @@ export class CheckoutService {
   /**
    * Confirm order - backward compatibility method
    */
-  async confirmOrder(paymentMethod: string, email: string, paymentData: PaymentData): Promise<void> {
-    const contactData: ContactData = {
-      firstName: '',
-      lastName: '',
-      email: email,
-      phone: ''
-    };
-
+  async confirmOrder(paymentMethod: string, contactData: ContactData, paymentData: PaymentData): Promise<void> {
     try {
       await this.processPayment(contactData, paymentData);
     } catch (error) {

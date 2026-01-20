@@ -153,7 +153,7 @@ export class Checkout implements OnInit, OnDestroy {
     };
     localStorage.setItem('currentBuyerInfo', JSON.stringify(buyerInfo));
 
-    this.checkoutService.confirmOrder('stripe', this.contactData.email, this.paymentData);
+    this.checkoutService.confirmOrder('stripe', this.contactData, this.paymentData);
     setTimeout(() => {
       const completed = this.checkoutService.completedOrder();
       const ids = completed?.tickets?.map((t) => t.id) || [];
