@@ -89,27 +89,47 @@ export class PaymentService {
       this.validatePaymentData(paymentData);
       this.validateContactData(contactData);
 
-      // Create order payload - simplified for CreateOrderDto
-      const orderPayload: CreateOrderDto = {
-        ticketIds: cartItems.map(item => item.ticketTypeId),
-        userId: 'temp-user-id' // This should come from auth service in real implementation
+      // Validate event ID
+      if (!eventId) {
+        throw new Error('Event ID is required for ticket purchase');
+      }
+
+      // Purchase tickets using the backend endpoint
+      const purchasePayload = {
+        eventId: String(eventId),
+        ticketType: cartItems[0].ticketTypeName, // Get ticket type from cart item
+        quantity: cartItems.reduce((sum, item) => sum + item.quantity, 0),
+        buyerEmail: contactData.email,
+        paymentInfo: {
+          cardNumber: paymentData.cardNumber,
+          expiryDate: paymentData.expiryDate,
+          cvv: paymentData.cvv
+        }
       };
 
-      console.log('[PaymentService] Processing payment for order:', orderPayload);
+      console.log('[PaymentService] Processing payment for tickets:', purchasePayload);
 
-      // Process payment through orders service
-      const response = await this.ordersService.createOrder(orderPayload).toPromise();
+      // Process payment through tickets/purchase endpoint
+      const response = await this.http.post<any[]>(`${environment.apiUrl}/tickets/purchase`, purchasePayload).toPromise();
 
-      if (!response) {
+      if (!response || response.length === 0) {
         throw new Error('No response from payment service');
       }
 
       console.log('[PaymentService] Payment processed successfully:', response);
 
+      // Map backend tickets to PurchasedTicket format
+      const tickets: PurchasedTicket[] = response.map(ticket => ({
+        id: ticket.id,
+        ticketTypeName: ticket.type,
+        price: ticket.price,
+        qrCode: ticket.qrToken || ''
+      }));
+
       // Create completed order object
       const completedOrder: CompletedOrder = {
-        orderId: String(response.id), // Convert number to string
-        tickets: [], // Will be populated from response if available
+        orderId: response[0]?.id || 'unknown',
+        tickets,
         cartItems,
         subtotal,
         tax,
